@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Push Notification Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d9488",
+                        "primary-dark": "#0a756a",
+                        "background-light": "#f8fcfb",
+                        "background-dark": "#102220",
+                        "rose-gold": "#d4a5a5", 
+                        "rose-gold-light": "#fbeeee",
+                        "neutral-soft": "#f5f7f7",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }.no-scrollbar {
+            -ms-overflow-style: none;scrollbar-width: none;}.toggle-checkbox:checked {
+            right: 0;
+            border-color: #0d9488;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #0d9488;
+        }.transition-all-300 {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+<style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-neutral-100 text-[#0d1b1a] dark:text-white h-screen w-full flex justify-center overflow-hidden font-display">
+<div class="relative flex h-full w-full max-w-md flex-col bg-background-light dark:bg-background-dark shadow-xl overflow-hidden">
+<div class="flex-none bg-background-light dark:bg-background-dark z-20 pb-2">
+<div class="flex items-center px-6 pt-6 pb-2 justify-between">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-[#0d1b1a] dark:text-white transition-colors -ml-2">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-[#0d1b1a] dark:text-white text-lg font-bold leading-tight text-center">Notifications</h2>
+<div class="size-10"></div> 
+</div>
+<div class="px-6 pb-4">
+<h1 class="text-2xl font-bold text-[#0d1b1a] dark:text-white mb-1">Push Settings</h1>
+<p class="text-sm text-gray-500 dark:text-gray-400">Manage how you receive alerts for clinic activities.</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto no-scrollbar px-6 pb-24">
+<div class="bg-white dark:bg-[#1a3835] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/5 mb-6 flex items-center justify-between">
+<div>
+<h3 class="font-bold text-base text-[#0d1b1a] dark:text-white">Allow Notifications</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Enable all push alerts</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer" for="master-toggle">
+<input checked="" class="sr-only peer" id="master-toggle" type="checkbox"/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="mb-8">
+<h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 pl-1">Appointments</h4>
+<div class="bg-white dark:bg-[#1a3835] rounded-2xl p-1 shadow-sm border border-gray-100 dark:border-white/5 space-y-1">
+<div class="flex items-center justify-between p-3 hover:bg-neutral-soft dark:hover:bg-white/5 rounded-xl transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-rose-gold-light/50 dark:bg-rose-gold/20 flex items-center justify-center text-rose-gold dark:text-rose-gold">
+<span class="material-symbols-outlined text-[20px]">calendar_add_on</span>
+</div>
+<div>
+<h3 class="font-semibold text-sm text-[#0d1b1a] dark:text-white">New Bookings</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">When a client schedules online</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-white/5 mx-3 max-w-[calc(100%-24px)]"></div>
+<div class="flex items-center justify-between p-3 hover:bg-neutral-soft dark:hover:bg-white/5 rounded-xl transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-rose-gold-light/50 dark:bg-rose-gold/20 flex items-center justify-center text-rose-gold dark:text-rose-gold">
+<span class="material-symbols-outlined text-[20px]">event_busy</span>
+</div>
+<div>
+<h3 class="font-semibold text-sm text-[#0d1b1a] dark:text-white">Cancellations</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Alerts for cancelled slots</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-white/5 mx-3 max-w-[calc(100%-24px)]"></div>
+<div class="flex items-center justify-between p-3 hover:bg-neutral-soft dark:hover:bg-white/5 rounded-xl transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-rose-gold-light/50 dark:bg-rose-gold/20 flex items-center justify-center text-rose-gold dark:text-rose-gold">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+</div>
+<div>
+<h3 class="font-semibold text-sm text-[#0d1b1a] dark:text-white">Reminders</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">15 min before appointment</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<div class="mb-8">
+<h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 pl-1">Communication &amp; System</h4>
+<div class="bg-white dark:bg-[#1a3835] rounded-2xl p-1 shadow-sm border border-gray-100 dark:border-white/5 space-y-1">
+<div class="flex items-center justify-between p-3 hover:bg-neutral-soft dark:hover:bg-white/5 rounded-xl transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+</div>
+<div>
+<h3 class="font-semibold text-sm text-[#0d1b1a] dark:text-white">Client Messages</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Direct messages from clients</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-white/5 mx-3 max-w-[calc(100%-24px)]"></div>
+<div class="flex items-center justify-between p-3 hover:bg-neutral-soft dark:hover:bg-white/5 rounded-xl transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+</div>
+<div>
+<h3 class="font-semibold text-sm text-[#0d1b1a] dark:text-white">Low Inventory</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Alerts when stock is running low</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-white/5 mx-3 max-w-[calc(100%-24px)]"></div>
+<div class="flex items-center justify-between p-3 hover:bg-neutral-soft dark:hover:bg-white/5 rounded-xl transition-colors">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-400">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</div>
+<div>
+<h3 class="font-semibold text-sm text-[#0d1b1a] dark:text-white">Urgent System Alerts</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Critical updates and warnings</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<div class="mb-4">
+<h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 pl-1">Sound &amp; Haptics</h4>
+<div class="bg-white dark:bg-[#1a3835] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/5 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<span class="font-medium text-sm text-[#0d1b1a] dark:text-white">Notification Sound</span>
+<div class="flex items-center gap-2 cursor-pointer group">
+<span class="text-sm text-gray-500 group-hover:text-primary transition-colors">Chime</span>
+<span class="material-symbols-outlined text-gray-400 text-[18px]">chevron_right</span>
+</div>
+</div>
+<div class="h-px w-full bg-gray-100 dark:bg-white/5"></div>
+<div class="flex items-center justify-between">
+<span class="font-medium text-sm text-[#0d1b1a] dark:text-white">Vibrate on Ring</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark pt-12 z-20">
+<button class="w-full h-14 rounded-2xl bg-primary hover:bg-primary-dark text-white font-bold text-lg shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+<span>Save Changes</span>
+</button>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Video Consultation Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0d968b",
+              "background-light": "#f6f8f8",
+              "background-dark": "#102220",
+              "rose-gold": "#e0bfb8",
+              "rose-gold-dark": "#b76e79",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "3xl": "2.5rem", "full": "9999px"},
+            boxShadow: {
+                "glass": "0 8px 32px 0 rgba(31, 38, 135, 0.15)",
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        /* Modern Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .glass-panel-dark {
+            background: rgba(13, 27, 26, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Smooth scrolling for the bottom section */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display h-screen w-full overflow-hidden text-[#0d1b1a] dark:text-white selection:bg-rose-gold/30">
+<!-- Root Mobile Layout Container -->
+<div class="relative h-full w-full flex flex-col group/design-root">
+<!-- 1. MAIN VIDEO VIEWPORT (MediaPlayer Inspiration) -->
+<!-- Occupies top 75% of screen with rounded bottom corners for a layered card effect -->
+<div class="relative flex-1 w-full overflow-hidden rounded-b-[2.5rem] shadow-2xl z-10 bg-gray-900">
+<!-- Main Client Video Feed -->
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 hover:scale-105" data-alt="High definition video feed of a smiling woman with clear skin in a bright room" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB9GzRUzYCmS5UVWPnL-mHfco56NoOGizfR5SHiZiiJrwAJj4zZSLiz2e1C0Pqj7nN6c3HBJTWZqh0zXYNViQjWLr1YRSqSpCyEHvw0OlHbmikuJXQlQIgvtX84CQV_gtwV6f56L7rRDtPV0vy8nEhk5tCoPnC9Q5rErqA8JA0uww766hLFKUHhte-cLEyuAAwtFsMb_aziaj4CibNxSDtY8Rwj7zBSpHKLHEeiiACX80Pu7vqILYHQeLcgnVp4NXi7TkXufIH1CoA6');">
+<!-- Subtle gradients for text legibility without darkening the whole image -->
+<div class="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/60 to-transparent pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
+</div>
+<!-- 2. CONSULTATION HEADER (TopAppBar Inspiration) -->
+<!-- Floating top bar with translucent glass effect -->
+<div class="absolute top-0 left-0 right-0 pt-12 pb-4 px-4 flex items-start justify-between z-20">
+<!-- Client Info Badge -->
+<div class="glass-panel flex items-center gap-3 pr-5 pl-2 py-2 rounded-full text-white shadow-glass">
+<div class="relative shrink-0">
+<div class="size-10 rounded-full bg-cover bg-center border border-white/30" data-alt="Thumbnail profile picture of Sophia R." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDc2Q62_Y_u3-v4RUc7SR2IRnnAaZdgJlh34Inr2tZfK8trJoL84D7Wi8_UkjPCnMAHxXAzq5xeoErXvFQxAJeUqF6mvQmnIvU7jAqDUHqOMjBED7lSIgT56tOsv6ZhNELhoO2LFIcj_db9sn_JZ09UR935WXesloFyBggR8kuVnSVBEcnHzshQwqmzlXEanoO_L5cJ6Zz929hfYyItq1O_e4v5PJyVFABAXyRxlPrHDm1F6Csx1vEANLMcEBtd6chHGGF3idhy0mE1');"></div>
+<!-- Status Indicator -->
+<div class="absolute bottom-0 right-0 size-3 bg-green-400 rounded-full border-2 border-black/20 shadow-sm"></div>
+</div>
+<div class="flex flex-col">
+<h2 class="text-sm font-bold leading-none tracking-tight">Sophia R.</h2>
+<span class="text-[10px] font-medium text-white/80 uppercase tracking-wider mt-1">Botox Follow-up</span>
+</div>
+</div>
+<!-- Timer & Connection Status (Timer Inspiration) -->
+<div class="flex flex-col items-end gap-2">
+<div class="glass-panel px-3 py-1.5 rounded-xl flex items-center gap-2 text-white">
+<div class="size-2 rounded-full bg-rose-500 animate-pulse"></div>
+<!-- Using mono font for timer numbers to prevent jitter -->
+<p class="text-sm font-bold tracking-widest font-mono">12:04</p>
+</div>
+<!-- Connection Quality -->
+<div class="flex items-center gap-1 opacity-80 pr-1">
+<span class="material-symbols-outlined text-white text-[18px]" data-weight="fill">signal_cellular_alt</span>
+</div>
+</div>
+</div>
+<!-- 3. SELF-VIEW PiP -->
+<!-- Draggable-style Picture in Picture -->
+<div class="absolute top-32 right-4 w-28 aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl border border-white/20 z-20 bg-gray-800 ring-1 ring-black/10">
+<div class="w-full h-full bg-cover bg-center" data-alt="Doctor's self view camera showing a professional in a white coat" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDsoCccWvu3v7iRWj4LPg9-jajZEdBWa-9sPCcsEywGxGPKQm_BeCe7LtxGsmetK2RYiwOCoBY0EOeJVUZjaMGPabpnswQgHQ2xzuJW_G467WGb356J7DwyY-CzaB8b76vNmUGthXJ37WmS6h0iDB7vNN1udHQBgrfp8NogmwL4mErKEKCwzX4lovBnLQEXiU6SSqikrYpYhIZ9nkdZRJOZi4e73z8cwSiKH4IgvJ22xdZEzALJDtsEEGmM-XDNC55MPj5Qo7NAWU8-');"></div>
+<!-- PiP Actions -->
+<button class="absolute bottom-2 right-2 size-8 flex items-center justify-center bg-black/40 rounded-full text-white backdrop-blur-sm hover:bg-black/60 transition-colors">
+<span class="material-symbols-outlined text-[18px]">cameraswitch</span>
+</button>
+</div>
+<!-- 4. FLOATING CONTROL DOCK (ToolBar Inspiration) -->
+<!-- Anchored to the bottom of the video viewport -->
+<div class="absolute bottom-6 left-0 right-0 flex justify-center items-center px-4 z-30">
+<div class="glass-panel-dark rounded-full p-2 flex items-center gap-2 shadow-2xl">
+<!-- Mic Toggle -->
+<button class="size-12 flex items-center justify-center rounded-full text-white hover:bg-white/10 active:bg-white/20 transition-all">
+<span class="material-symbols-outlined text-[24px]">mic</span>
+</button>
+<!-- Camera Toggle -->
+<button class="size-12 flex items-center justify-center rounded-full text-white hover:bg-white/10 active:bg-white/20 transition-all">
+<span class="material-symbols-outlined text-[24px]">videocam</span>
+</button>
+<!-- Screen Share -->
+<button class="size-12 flex items-center justify-center rounded-full text-white hover:bg-white/10 active:bg-white/20 transition-all hidden sm:flex">
+<span class="material-symbols-outlined text-[24px]">screen_share</span>
+</button>
+<!-- Chat Trigger with Notification -->
+<button class="size-12 flex items-center justify-center rounded-full text-white hover:bg-white/10 active:bg-white/20 transition-all relative">
+<span class="material-symbols-outlined text-[24px]">chat_bubble_outline</span>
+<span class="absolute top-3 right-3 size-2.5 bg-rose-gold rounded-full border-2 border-[#1a2e2c]"></span>
+</button>
+<div class="w-px h-8 bg-white/10 mx-1"></div>
+<!-- End Call Button (Premium/Critical Action) -->
+<button class="h-12 px-6 flex items-center gap-2 rounded-full bg-red-500/90 text-white font-bold text-sm tracking-wide shadow-lg border border-red-400/50 hover:bg-red-600 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px] fill-1">call_end</span>
+<span>End</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 5. COLLAPSIBLE BOTTOM SHEET / DRAWER (BottomSheetHandle Inspiration) -->
+<!-- Content that peeks from below the video -->
+<div class="flex-shrink-0 h-auto bg-background-light dark:bg-background-dark z-0 relative pt-6 pb-8 px-6 -mt-8 rounded-t-[2.5rem]">
+<!-- Drag Handle -->
+<div class="flex justify-center mb-6 opacity-40">
+<div class="w-12 h-1.5 bg-gray-400 rounded-full dark:bg-gray-600"></div>
+</div>
+<div class="flex flex-col h-full gap-6">
+<!-- Tab Navigation -->
+<div class="flex items-center gap-8 border-b border-gray-200 dark:border-gray-800 pb-1">
+<button class="pb-3 text-primary border-b-2 border-primary font-bold text-base">Notes</button>
+<button class="pb-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 font-medium text-base transition-colors">History</button>
+<button class="pb-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 font-medium text-base transition-colors">Files</button>
+</div>
+<!-- Next Appointment Card -->
+<div class="flex flex-col gap-4">
+<div class="bg-white dark:bg-[#152826] p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800/50 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">calendar_month</span>
+</div>
+<div>
+<h4 class="font-bold text-[#0d1b1a] dark:text-gray-100 text-sm">Next Appointment</h4>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Oct 24, 2023 • 10:00 AM</p>
+</div>
+</div>
+<button class="size-8 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<!-- Quick Note Area -->
+<div class="relative group">
+<label class="sr-only" for="notes">Consultation Notes</label>
+<div class="absolute top-4 left-4 text-gray-400">
+<span class="material-symbols-outlined text-[20px]">edit_note</span>
+</div>
+<textarea class="w-full h-24 pl-12 pr-4 py-4 bg-white dark:bg-[#152826] border-none rounded-2xl text-sm text-[#0d1b1a] dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary/50 resize-none shadow-sm transition-shadow" id="notes" placeholder="Type quick notes here..."></textarea>
+<!-- Send/Save Mini Button -->
+<button class="absolute bottom-3 right-3 size-8 flex items-center justify-center bg-primary text-white rounded-lg shadow-md hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-[18px]">arrow_upward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

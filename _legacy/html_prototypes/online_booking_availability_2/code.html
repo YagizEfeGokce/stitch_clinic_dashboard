@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Online Booking Availability</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d9688",
+                        "primary-dark": "#0a756a",
+                        "background-light": "#f8fcfb",
+                        "background-dark": "#102220",
+                        "rose-gold": "#d4a5a5", 
+                        "rose-gold-light": "#fbeeee",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-neutral-100 text-[#0d1b1a] dark:text-white h-screen w-full flex justify-center overflow-hidden">
+<div class="relative flex h-full w-full max-w-md flex-col bg-background-light dark:bg-background-dark shadow-xl overflow-hidden">
+<!-- Header Section -->
+<div class="flex-none bg-background-light dark:bg-background-dark z-20">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-rose-gold-light/50 dark:bg-rose-gold/20">
+<!-- Profile Image -->
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 border-2 border-white dark:border-background-dark" data-alt="Portrait of a clinic administrator" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAbxaGuc66xqSV4KnCdwFd2i5RwCoAkDbVQ0Ix42TJgb0gVhhN6RX7uRQ6Mem5Py7hU0EJj7I5kLoWIAmrGTYNPQQinVuOQRwcO4tDobyX1Ihb73cJVAfuK5CfnBBnKPWcEO2msbSF5AparaHFE7G_Bpnxlf2d4T9QVvWHgMSDO_6FcfUyBeeE4lFZ-ALP4HIhnIZBA1nGq3SVNlg7mfjavTu0eSYGnjgJ7Z4jfykErkH7UHhfTgGjSDwrLVDTQmjbWvFtopU7DyuJe");'>
+</div>
+</div>
+<h2 class="text-[#0d1b1a] dark:text-white text-lg font-bold leading-tight flex-1 text-center">Availability</h2>
+<div class="flex size-10 items-center justify-end">
+<button class="flex items-center justify-center rounded-full size-10 text-[#0d1b1a] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="absolute top-4 right-4 size-2 rounded-full bg-rose-gold border-2 border-background-light dark:border-background-dark"></span>
+</button>
+</div>
+</div>
+<!-- View Toggle -->
+<div class="px-4 py-2">
+<div class="flex h-10 w-full items-center justify-center rounded-xl bg-[#e7f3f2] dark:bg-[#1a3835] p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#102220] has-[:checked]:shadow-sm text-primary/70 has-[:checked]:text-primary dark:text-primary/60 dark:has-[:checked]:text-primary text-sm font-bold transition-all">
+<span class="truncate">Day View</span>
+<input checked="" class="invisible w-0" name="view-toggle" type="radio" value="Day View"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#102220] has-[:checked]:shadow-sm text-primary/70 has-[:checked]:text-primary dark:text-primary/60 dark:has-[:checked]:text-primary text-sm font-bold transition-all">
+<span class="truncate">Week View</span>
+<input class="invisible w-0" name="view-toggle" type="radio" value="Week View"/>
+</label>
+</div>
+</div>
+<!-- Date Navigation -->
+<div class="flex items-center justify-between px-4 py-2">
+<button class="size-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-[#0d1b1a] dark:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<div class="flex flex-col items-center cursor-pointer">
+<span class="text-xl font-bold text-[#0d1b1a] dark:text-white tracking-tight">Wednesday, Oct 25</span>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400">Today</span>
+</div>
+<button class="size-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-[#0d1b1a] dark:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<!-- Staff Chips (Horizontal Scroll) -->
+<div class="flex gap-3 px-4 pb-4 overflow-x-auto no-scrollbar items-center">
+<div class="flex h-9 shrink-0 cursor-pointer items-center gap-x-2 rounded-full bg-primary text-white pl-1 pr-4 shadow-md shadow-primary/20 transition-transform active:scale-95">
+<div class="bg-white/20 p-1 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+</div>
+<p class="text-xs font-bold">All Staff</p>
+</div>
+<div class="flex h-9 shrink-0 cursor-pointer items-center gap-x-2 rounded-full bg-white dark:bg-[#1a3835] border border-gray-100 dark:border-white/5 pl-1 pr-4 shadow-sm transition-transform active:scale-95">
+<div class="size-7 rounded-full bg-center bg-cover" data-alt="Portrait of Dr. Smith" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCW8k057BfqXhnBdqdVYmTsV2OhVdokipWj29Ns9d7XgfSu5yylEFexWzi6Szf4SVyrY-6bZjLQibl8K54_UXsg-x-LBmHUV1-XIQXJ7OkWn5-LYVudgN81t9XiChY0SxYAhIg_ulXpOUrkjS1vsDQUBa4MIK73AWJov82z52l9jHXsQ9Z3LPMYfhFyunDBLKIrjpAKaaOfrlFoGeHdk8nKFDFKb30IduGDvWtGPu0dzS_Jh4enVjkhV4ATIkfayJZqGFD_1-QPDVv2");'></div>
+<p class="text-[#0d1b1a] dark:text-white text-xs font-semibold">Dr. Smith</p>
+</div>
+<div class="flex h-9 shrink-0 cursor-pointer items-center gap-x-2 rounded-full bg-white dark:bg-[#1a3835] border border-gray-100 dark:border-white/5 pl-1 pr-4 shadow-sm transition-transform active:scale-95">
+<div class="size-7 rounded-full bg-center bg-cover" data-alt="Portrait of Nurse Jessica" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCqEH2KQbO1LEE6Lhl7pWTX-OjBnokst4I7bYtgekKPGiwb1cHMQOZ7pUuPyQEQPjBphC62SIbqiQU_yv3A1gIWUihPMP0XwBj1Uwy9hBd0-YsLyL3nh5doO9TUoOyiH-kyy3tmIWyX-b1CA21efZ6uZZB708eCko4b6AIeK6zyrsKX-cfTJFDhO-bSzEC9UFxBCmIwCUfBOLJT-j5HcEvT7EuADUYVCDb7niyZ5pJbvCkrmsuZ8VWTrDa60QDHCjsCr-0hsQ1Xr8jE");'></div>
+<p class="text-[#0d1b1a] dark:text-white text-xs font-semibold">Nurse Jessica</p>
+</div>
+<div class="flex h-9 shrink-0 cursor-pointer items-center gap-x-2 rounded-full bg-white dark:bg-[#1a3835] border border-gray-100 dark:border-white/5 pl-1 pr-4 shadow-sm transition-transform active:scale-95">
+<div class="size-7 rounded-full bg-center bg-cover" data-alt="Portrait of Esthetician Sarah" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB5ZgKzm8RsTNOD1tqUXrBzfP0gLnhXdTj-aFV0Zlygkf1rSZZcmdOvsLV5KvndsGknzjS5nKRTwfnkcz9ZmOiafNcNfYpYuQ07xaQmo0EAKSv2lSUDeOrL4oJeL71-NMvfm_wWI18L6-7QUYYqvjAmpi1EjSY5DwArvMKJsDVx4kNaf43IyK8fWaEMccOGTJFinqp0LV63_817HrFiNvktH5sHPRH2fmcHpS9FporSOxOTWcGejcxSGwwyD7CBdLD1y1rF4l91dLhm");'></div>
+<p class="text-[#0d1b1a] dark:text-white text-xs font-semibold">Sarah</p>
+</div>
+</div>
+<!-- Separator -->
+<div class="h-px w-full bg-gray-100 dark:bg-white/5"></div>
+</div>
+<!-- Scrollable Timeline Content -->
+<div class="flex-1 overflow-y-auto relative no-scrollbar bg-white dark:bg-[#102220]">
+<!-- Current Time Indicator Line (example position) -->
+<div class="absolute top-[340px] left-[60px] right-0 h-px bg-rose-gold z-10 flex items-center">
+<div class="size-2 rounded-full bg-rose-gold -ml-1"></div>
+</div>
+<!-- Grid Container -->
+<div class="flex flex-col pb-24 pt-4">
+<!-- 09:00 AM Row (Open) -->
+<div class="flex h-24 w-full group">
+<div class="w-[60px] flex justify-center pt-2">
+<span class="text-xs font-medium text-gray-400">9 AM</span>
+</div>
+<div class="flex-1 border-t border-gray-50 dark:border-white/5 pr-4 pl-1 pb-2 pt-2 relative">
+<!-- Slot Card -->
+<div class="h-full w-full rounded-xl border border-dashed border-primary/30 bg-primary/5 dark:bg-primary/10 flex items-center justify-between px-4 cursor-pointer hover:bg-primary/10 transition-colors">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-primary">Open Slot</span>
+<span class="text-xs text-primary/70">60 mins available</span>
+</div>
+<button class="size-8 rounded-full bg-white dark:bg-[#1a3835] text-primary shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 10:00 AM Row (Booked) -->
+<div class="flex h-32 w-full group">
+<div class="w-[60px] flex justify-center pt-2">
+<span class="text-xs font-medium text-gray-400">10 AM</span>
+</div>
+<div class="flex-1 border-t border-gray-50 dark:border-white/5 pr-4 pl-1 pb-2 pt-2">
+<!-- Slot Card -->
+<div class="h-full w-full rounded-xl bg-primary shadow-lg shadow-primary/20 flex flex-col justify-center px-4 relative overflow-hidden cursor-pointer active:scale-[0.99] transition-transform">
+<!-- Rose Gold Accent Strip -->
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-rose-gold"></div>
+<div class="flex justify-between items-start mb-1">
+<span class="text-white font-bold text-sm tracking-wide">Dr. Smith</span>
+<span class="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-medium backdrop-blur-sm">Confirmed</span>
+</div>
+<h3 class="text-white text-base font-bold mb-1">Botox Treatment</h3>
+<div class="flex items-center gap-2 text-white/80 text-xs">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span>10:00 - 11:15 AM</span>
+<span class="w-1 h-1 bg-white/50 rounded-full mx-1"></span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">person</span>
+                                    J. Doe
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- 11:00 AM (Space occupied by previous event) -->
+<!-- The visual representation would naturally flow, but for grid implementation, we skip or use empty space if rigid -->
+<!-- Since 10am event is 1hr 15m, this slot is partially covered visually, but we will list the next slot starting at 11:30 or 12 -->
+<!-- 11:30 AM Row (Gap/Break) -->
+<div class="flex h-16 w-full group">
+<div class="w-[60px] flex justify-center pt-2">
+<!-- Empty or half hour mark -->
+<span class="text-[10px] font-medium text-gray-300 mt-[-10px]">11:15</span>
+</div>
+<div class="flex-1 pr-4 pl-1 pb-2 pt-2">
+<!-- Small 15 min gap -->
+</div>
+</div>
+<!-- 12:00 PM Row (Blocked) -->
+<div class="flex h-24 w-full group">
+<div class="w-[60px] flex justify-center pt-2">
+<span class="text-xs font-medium text-gray-400">12 PM</span>
+</div>
+<div class="flex-1 border-t border-gray-50 dark:border-white/5 pr-4 pl-1 pb-2 pt-2">
+<!-- Blocked Slot -->
+<div class="h-full w-full rounded-xl bg-gray-50 dark:bg-[#152a27] border border-gray-200 dark:border-white/5 flex items-center px-4 cursor-pointer relative overflow-hidden opacity-80">
+<!-- Stripe pattern overlay -->
+<div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style="background-image: repeating-linear-gradient(45deg, #000 0, #000 1px, transparent 0, transparent 50%); background-size: 10px 10px;"></div>
+<div class="z-10 flex items-center gap-3">
+<div class="size-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+</div>
+<div>
+<span class="block text-sm font-bold text-gray-500 dark:text-gray-300">Staff Lunch</span>
+<span class="block text-xs text-gray-400">No bookings allowed</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 01:00 PM Row (Multiple Staff) -->
+<div class="flex h-32 w-full group">
+<div class="w-[60px] flex justify-center pt-2">
+<span class="text-xs font-medium text-gray-400">1 PM</span>
+</div>
+<div class="flex-1 border-t border-gray-50 dark:border-white/5 pr-4 pl-1 pb-2 pt-2 flex gap-2">
+<!-- Col 1 -->
+<div class="h-full flex-1 rounded-xl bg-primary/10 dark:bg-primary/20 border border-primary/20 flex flex-col justify-center px-3 cursor-pointer">
+<div class="flex items-center gap-2 mb-1">
+<div class="size-5 rounded-full bg-center bg-cover" data-alt="Small portrait of Nurse Jessica" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBJMnknWc1CzynGvkr4RXu6OGqa9RUZvxxzjtiiG3IUYITrlivyZ1bSZMWZe4hXE45ph4bCsN1JOPkDwQP3gZvqtczTywcuSeVQ67EmlVtVAblRGfUW2oIgrtdAMqoTm3ctxhV3-qGcfR3DiL46hjhCxVjI6gexRfwxY_AENAWJSIP_5ym5v18oxp2X8w_Uez2wNqi3Xp-AhVgCUFnMsFHKqPnEngOZdaoewC6XcsJDXlBhFcBe7jo8WYY_-PoBxG9nQP2XL2vWWGHZ");'></div>
+<span class="text-[10px] font-bold text-primary dark:text-primary-light">Nurse Jessica</span>
+</div>
+<span class="text-xs font-bold text-primary dark:text-white leading-tight">Hydrafacial</span>
+<span class="text-[10px] text-primary/60 dark:text-gray-400 mt-1">Booked</span>
+</div>
+<!-- Col 2 -->
+<div class="h-full flex-1 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 bg-transparent flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<span class="text-xs font-bold text-gray-400">Sarah</span>
+<span class="text-[10px] text-gray-400 mt-0.5">Available</span>
+</div>
+</div>
+</div>
+<!-- 02:00 PM Row (Empty) -->
+<div class="flex h-24 w-full group">
+<div class="w-[60px] flex justify-center pt-2">
+<span class="text-xs font-medium text-gray-400">2 PM</span>
+</div>
+<div class="flex-1 border-t border-gray-50 dark:border-white/5 pr-4 pl-1 pb-2 pt-2">
+<div class="h-full w-full rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-transparent flex items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<span class="text-sm font-medium text-gray-400 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+                                Add Availability
+                            </span>
+</div>
+</div>
+</div>
+<!-- 03:00 PM Row -->
+<div class="flex h-24 w-full group">
+<div class="w-[60px] flex justify-center pt-2">
+<span class="text-xs font-medium text-gray-400">3 PM</span>
+</div>
+<div class="flex-1 border-t border-gray-50 dark:border-white/5 pr-4 pl-1 pb-2 pt-2">
+<div class="h-full w-full rounded-xl bg-white dark:bg-[#1a3835] border border-gray-100 dark:border-white/5 shadow-sm flex flex-col justify-center px-4 cursor-pointer relative">
+<div class="absolute right-0 top-0 w-16 h-16 bg-gradient-to-bl from-rose-gold/20 to-transparent rounded-bl-full -mr-4 -mt-4"></div>
+<span class="text-xs font-bold text-rose-gold mb-0.5">VIP Request</span>
+<h3 class="text-[#0d1b1a] dark:text-white text-sm font-bold">Consultation: Mrs. Vander</h3>
+<span class="text-xs text-gray-400 mt-1">Pending Confirmation</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button -->
+<div class="absolute bottom-6 right-6 z-30">
+<button class="flex items-center gap-2 h-14 pl-5 pr-6 rounded-full bg-primary text-white shadow-xl shadow-primary/30 hover:bg-primary-dark hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[24px]">edit_calendar</span>
+<span class="font-bold text-base">Modify</span>
+</button>
+</div>
+<!-- Bottom Sheet Hint (Visual) -->
+<div class="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background-light dark:from-background-dark to-transparent pointer-events-none z-20"></div>
+</div>
+</body></html>

@@ -1,0 +1,74 @@
+import { useState, useEffect } from 'react';
+import { getLocalISOString } from '../utils/dateUtils';
+
+export default function CalendarStrip({ selectedDate, onSelectDate }) {
+    const [days, setDays] = useState([]);
+
+    useEffect(() => {
+        // Parse selectedDate (YYYY-MM-DD) or fallback to Today
+        // We want the calendar strip to SHOW the selected date.
+        const baseDate = selectedDate ? new Date(selectedDate) : new Date();
+
+        // Handle potential invalid date
+        const validBaseDate = isNaN(baseDate.getTime()) ? new Date() : baseDate;
+
+        const currentDayOfBase = validBaseDate.getDay(); // 0 (Sun) - 6 (Sat)
+        const weekStart = new Date(validBaseDate);
+        weekStart.setDate(validBaseDate.getDate() - currentDayOfBase); // Go back to Sunday of THAT week
+
+        const today = new Date();
+        const todayStr = getLocalISOString(today);
+
+        const weekDays = [];
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(weekStart);
+            date.setDate(weekStart.getDate() + i);
+
+            // Normalize to YYYY-MM-DD for comparison using Local Time
+            const dateStr = getLocalISOString(date);
+            const todayStr = getLocalISOString(today);
+
+            const isToday = dateStr === todayStr;
+            const isSelected = selectedDate === dateStr;
+            const isPast = dateStr < todayStr;
+
+            weekDays.push({
+                day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                date: date.getDate(),
+                fullDate: dateStr,
+                status: isSelected ? 'active' : isPast ? 'past' : 'future'
+            });
+        }
+        setDays(weekDays);
+    }, [selectedDate]);
+
+    return (
+        <div className="w-full overflow-x-auto hide-scrollbar pb-4 pt-1 px-5">
+            <div className="flex items-center gap-3 min-w-max">
+                {days.map((item, index) => (
+                    <button
+                        key={index}
+                        onClick={() => onSelectDate(item.fullDate)}
+                        className={`flex flex-col items-center justify-center w-[4.5rem] h-20 rounded-[20px] border transition-all active:scale-95
+              ${item.status === 'active'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/30 transform scale-105 border-transparent'
+                                : 'bg-white border-slate-100 hover:border-primary/30'
+                            }
+              ${item.status === 'past' ? 'opacity-60 grayscale' : ''}
+            `}
+                    >
+                        <span className={`text-xs font-semibold mb-1 ${item.status === 'active' ? 'text-white/80' : 'text-slate-400'}`}>
+                            {item.day}
+                        </span>
+                        <span className={`text-lg font-bold ${item.status === 'active' ? 'text-white' : 'text-slate-800'}`}>
+                            {item.date}
+                        </span>
+                        {item.status === 'active' && (
+                            <span className="mt-1 size-1 rounded-full bg-white"></span>
+                        )}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+}

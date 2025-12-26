@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* LIGHT MODE */
+    --color-primary: 13 148 136;
+    /* Teal-600 */
+    --color-primary-dark: 15 118 110;
+    /* Teal-700 */
+    --color-secondary: 240 253 250;
+    /* Teal-50 */
+    --color-background-light: 248 250 252;
+    /* Slate-50 */
+    --color-surface: 255 255 255;
+    --color-text-main: 15 23 42;
+    /* Slate-900 */
+    --color-text-muted: 100 116 139;
+    /* Slate-500 */
+    --color-border: 241 245 249;
+    /* Slate-100 */
+  }
+
+  /* Dark mode removed */
+
+  body {
+    @apply bg-background-light text-slate-800 font-display antialiased selection:bg-primary/20 selection:text-primary transition-colors duration-300;
+  }
+}
+
+/* Hide scrollbar utility */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Loyalty Program Management</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0d968b",
+              "background-light": "#f6f8f8",
+              "background-dark": "#102220",
+              "rosegold": "#E0B0A0",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar hiding */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 font-display transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Top App Bar -->
+<div class="flex items-center px-4 py-3 pb-2 justify-between sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-gray-900 dark:text-gray-100">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Loyalty Program</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-gray-900 dark:text-gray-100">settings</span>
+</button>
+</div>
+</div>
+<!-- Segmented Buttons -->
+<div class="flex px-4 py-2 sticky top-[60px] z-10 bg-background-light dark:bg-background-dark">
+<div class="flex h-12 flex-1 items-center justify-center rounded-xl bg-gray-200/50 dark:bg-gray-800/50 p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-gray-700 has-[:checked]:shadow-sm has-[:checked]:text-primary transition-all duration-200">
+<span class="truncate font-bold text-sm">Overview</span>
+<input checked="" class="invisible w-0 absolute" name="view-toggle" type="radio" value="Overview"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-gray-700 has-[:checked]:shadow-sm has-[:checked]:text-primary text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-200">
+<span class="truncate font-bold text-sm">Clients</span>
+<input class="invisible w-0 absolute" name="view-toggle" type="radio" value="Clients"/>
+</label>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pb-24">
+<!-- Quick Actions -->
+<div class="px-4 py-2 flex gap-3">
+<button class="flex-1 flex items-center justify-center gap-2 bg-primary text-white h-12 rounded-xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>Add Points</span>
+</button>
+<button class="flex-1 flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-rosegold text-rosegold h-12 rounded-xl font-bold shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">redeem</span>
+<span>Redeem</span>
+</button>
+</div>
+<!-- Stats Overview -->
+<div class="flex flex-col gap-4 p-4">
+<div class="grid grid-cols-2 gap-3">
+<div class="flex flex-col gap-1 rounded-2xl p-4 bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary text-[20px]">group</span>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">Members</p>
+</div>
+<p class="text-gray-900 dark:text-white text-2xl font-bold leading-tight">1,240</p>
+<p class="text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +12%
+                        </p>
+</div>
+<div class="flex flex-col gap-1 rounded-2xl p-4 bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary text-[20px]">loyalty</span>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">Redeemed</p>
+</div>
+<p class="text-gray-900 dark:text-white text-2xl font-bold leading-tight">45k <span class="text-sm font-medium text-gray-400">pts</span></p>
+<p class="text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +5%
+                        </p>
+</div>
+</div>
+<!-- Full width stat -->
+<div class="flex items-center justify-between rounded-2xl p-4 bg-primary/5 dark:bg-primary/10 border border-primary/20">
+<div class="flex flex-col">
+<p class="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wider">Avg. Client Spend</p>
+<p class="text-primary text-2xl font-bold leading-tight mt-1">$850.00</p>
+</div>
+<div class="h-10 w-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-primary">payments</span>
+</div>
+</div>
+</div>
+<!-- Tiers Section Title -->
+<div class="px-4 pt-2 flex items-center justify-between">
+<h2 class="text-gray-900 dark:text-white text-lg font-bold">Active Tiers</h2>
+<button class="text-primary text-sm font-bold">Edit Tiers</button>
+</div>
+<!-- Tiers Scroll View -->
+<div class="flex overflow-x-auto no-scrollbar gap-4 px-4 py-4 snap-x">
+<!-- Silver Tier -->
+<div class="min-w-[280px] snap-center rounded-2xl bg-white dark:bg-gray-800 p-4 shadow-md border-l-4 border-gray-300 relative overflow-hidden group">
+<div class="absolute right-0 top-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl">verified</span>
+</div>
+<div class="flex flex-col gap-4 relative z-10">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Entry Level</p>
+<h3 class="text-gray-900 dark:text-white text-xl font-bold mt-1">Silver</h3>
+</div>
+<span class="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-bold px-2 py-1 rounded-md">0 - 1k pts</span>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span class="text-sm text-gray-600 dark:text-gray-300">1 pt per $1 spent</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">check_circle</span>
+<span class="text-sm text-gray-600 dark:text-gray-300">Birthday Treat</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Gold Tier -->
+<div class="min-w-[280px] snap-center rounded-2xl bg-gradient-to-br from-[#FFF8F0] to-white dark:from-gray-800 dark:to-gray-900 p-4 shadow-md border-l-4 border-[#FFD700] relative overflow-hidden">
+<div class="absolute right-0 top-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl text-yellow-600">verified</span>
+</div>
+<div class="flex flex-col gap-4 relative z-10">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-yellow-600/70 text-xs font-bold uppercase tracking-widest">Popular</p>
+<h3 class="text-gray-900 dark:text-white text-xl font-bold mt-1">Gold</h3>
+</div>
+<span class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs font-bold px-2 py-1 rounded-md">1k - 5k pts</span>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-yellow-600 text-sm">check_circle</span>
+<span class="text-sm text-gray-600 dark:text-gray-300">1.5 pts per $1 spent</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-yellow-600 text-sm">check_circle</span>
+<span class="text-sm text-gray-600 dark:text-gray-300">5% Off Products</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Platinum Tier -->
+<div class="min-w-[280px] snap-center rounded-2xl bg-white dark:bg-gray-800 p-4 shadow-md border-l-4 border-rosegold relative overflow-hidden">
+<div class="absolute right-0 top-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-6xl text-rosegold">verified</span>
+</div>
+<div class="flex flex-col gap-4 relative z-10">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-rosegold text-xs font-bold uppercase tracking-widest">Premium</p>
+<h3 class="text-gray-900 dark:text-white text-xl font-bold mt-1">Rose Gold</h3>
+</div>
+<span class="bg-rose-50 dark:bg-rose-900/20 text-rosegold text-xs font-bold px-2 py-1 rounded-md">5k+ pts</span>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-rosegold text-sm">check_circle</span>
+<span class="text-sm text-gray-600 dark:text-gray-300">2 pts per $1 spent</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-rosegold text-sm">check_circle</span>
+<span class="text-sm text-gray-600 dark:text-gray-300">Priority Booking</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Client Activity -->
+<div class="px-4 pt-2 pb-2">
+<h2 class="text-gray-900 dark:text-white text-lg font-bold mb-3">Recent Activity</h2>
+<div class="flex flex-col gap-3">
+<!-- Client Item 1 -->
+<div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+<div class="h-12 w-12 rounded-full bg-cover bg-center shrink-0" data-alt="Portrait of a smiling woman with clear skin" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDBtLOtUjPs3BjDRsHp6bn62MPHUFeXkvivGDFhOTmYe_y9_2s8ve_PmRsjESlUHxG-wDeLmMhYW69AFSH1mnwHu5Od0Yod6FRgI1DUR4NUI3kWl8VCw-GRg8PzGzUmLcFbtoQAlYXvovqxTDWSAwSIKhCoOiwBRABnW0IAXSR9gEjt1Tf8XAA0eaMo7yn5arxICvhCbkGQgaz92hGDsDtFL65DRGE90WICDkfJnV37RG1SWtN8Ab_bPy_yQbM2IZr-KmrYPNZBG7iR');"></div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-0.5">
+<h4 class="text-sm font-bold text-gray-900 dark:text-white truncate">Sarah Jenkins</h4>
+<span class="text-primary font-bold text-sm">+250 pts</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs text-gray-500 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-yellow-400"></span> Gold Member
+                                </span>
+<span class="text-xs text-gray-400">2m ago</span>
+</div>
+</div>
+</div>
+<!-- Client Item 2 -->
+<div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+<div class="h-12 w-12 rounded-full bg-cover bg-center shrink-0" data-alt="Portrait of a man with short hair looking professional" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCyb1X4rnzBbKBk21om30sJz0AccEjFiSa2JdGlDsvvSn4H7ckSP5OBoNkUy-npmxFgaHQMV64d9disD6Fva750RE8KPf3z3XzqfI8mNg95pjfxJJOPeuEDcfTCzccSj-14imSEi1fB83SAZj4vZvBnX4gmDJ_2lhG4VsVTfzC4nTFF5xG2pQkaVGoBNHwt-U33OVekFlvevIZp3OVrLgM9DfqXIQNaf4MLN7LpJKQoxMO9NSc-N1l4PikaWzEbBoTI7yTogvxCrp7v');"></div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-0.5">
+<h4 class="text-sm font-bold text-gray-900 dark:text-white truncate">Michael Chen</h4>
+<span class="text-red-400 font-bold text-sm">-1000 pts</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs text-gray-500 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-gray-300"></span> Silver Member
+                                </span>
+<span class="text-xs text-gray-400">1h ago</span>
+</div>
+</div>
+</div>
+<!-- Client Item 3 -->
+<div class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+<div class="h-12 w-12 rounded-full bg-cover bg-center shrink-0" data-alt="Portrait of a young woman with curly hair" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDs0ks1kscuatXCKqrc--W4ABKk6m-X7E3VvsNZZwgVfG_8-bZvY4y7yf4G25IQHZCRUp-fTTyizkrt3L0eRYqiPTB0jXwQgFEonNs2r6f83ybnYmqL3EjcmX17fziWcCoqGzHu-zKLZKl9ksOAyEKVeJjFHmFpiWOzQGNz_uISzkEUOcwsnW2bYrG-hxfIwAp_wQEc29cAsV6x0-VHvIQlD9SDauhNUdDoPfsn8IHis8ukzBWOEj74UNrByPdMwmKeGrRPYUOxzB-A');"></div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-center mb-0.5">
+<h4 class="text-sm font-bold text-gray-900 dark:text-white truncate">Emma Wilson</h4>
+<span class="text-primary font-bold text-sm">+85 pts</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs text-gray-500 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-rosegold"></span> Rose Gold
+                                </span>
+<span class="text-xs text-gray-400">3h ago</span>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full mt-4 py-3 text-sm text-primary font-bold bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors">
+                    View All Activity
+                </button>
+</div>
+<div class="h-6"></div>
+</div>
+</div>
+</body></html>

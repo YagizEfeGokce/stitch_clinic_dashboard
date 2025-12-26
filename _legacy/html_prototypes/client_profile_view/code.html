@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Client Profile View</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#11d4c4",
+              "background-light": "#f6f8f8",
+              "background-dark": "#102220",
+              "surface-light": "#ffffff",
+              "surface-dark": "#162e2b",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            boxShadow: {
+               'soft': '0 4px 20px -2px rgba(17, 212, 196, 0.1)',
+               'card': '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        /* Hide scrollbar for gallery but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display text-[#0d1b1a] dark:text-gray-100 overflow-x-hidden selection:bg-primary/20">
+<!-- Top App Bar -->
+<nav class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md transition-all duration-200 border-b border-gray-100 dark:border-gray-800">
+<div class="flex items-center justify-between px-4 py-3 max-w-lg mx-auto">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-white">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight text-center">Client Profile</h2>
+<button class="flex h-10 items-center justify-center rounded-full px-2 text-primary font-bold text-base hover:bg-primary/10 transition-colors">
+                Edit
+            </button>
+</div>
+</nav>
+<!-- Main Content Container -->
+<main class="flex flex-col gap-6 px-4 pt-4 pb-24 max-w-lg mx-auto w-full">
+<!-- Profile Header Section -->
+<div class="flex flex-col items-center animate-fade-in">
+<!-- Avatar with Edit Badge -->
+<div class="relative group cursor-pointer mb-4">
+<div class="h-32 w-32 rounded-full bg-cover bg-center border-[4px] border-white dark:border-surface-dark shadow-soft" data-alt="Portrait of a young woman with clear skin smiling gently" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAfxScCJ6OyOrQ87D8Ys3A-FeOT5FVy0qe8W6EpEYiRuo25RxfJirreOA8g4ik7tMLZGbxpOZOo_CoEPOPCAS4JTIdu6kNENwfao0A_YlX1ctMgdf7F8k4ma-_JGgBEWnCSgCRwNDHdln6iuJwSaQwfT4AbmOZD2U3F4Xw7D77VXx8k_7JJupEehdhMdKwg4a0Bm3hXICh8aKHyy5yQpboX7wFne2kAPaRg_uCJ2M28Y0odf5-opIeooch81TNN7nzOEEgL9syQqPjz');"></div>
+<!-- Status Dot (e.g. Online/Active) or Edit Icon -->
+<div class="absolute bottom-1 right-1 flex h-8 w-8 items-center justify-center rounded-full bg-surface-light dark:bg-surface-dark text-primary border-2 border-background-light dark:border-background-dark shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 16px;">photo_camera</span>
+</div>
+</div>
+<!-- Name & Demographics -->
+<div class="text-center mb-5">
+<h1 class="text-[26px] font-extrabold text-[#0d1b1a] dark:text-white tracking-tight">Sophia Williams</h1>
+<p class="mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">34 yrs • Female • File #A-402</p>
+</div>
+<!-- Chips: VIP (Rose Gold) & Medical Alert -->
+<div class="flex flex-wrap justify-center gap-3 mb-6">
+<!-- Rose Gold VIP Badge -->
+<div class="flex items-center gap-1.5 rounded-xl bg-[#fae8e0] px-3 py-1.5 text-[#a86e58] dark:bg-[#3d2b25] dark:text-[#eebcb0] shadow-sm">
+<span class="material-symbols-outlined filled" style="font-size: 18px; font-variation-settings: 'FILL' 1;">diamond</span>
+<span class="text-xs font-bold uppercase tracking-wider">VIP Member</span>
+</div>
+<!-- Warning Chip -->
+<div class="flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-1.5 text-red-600 dark:bg-red-900/20 dark:text-red-300 shadow-sm border border-red-100 dark:border-red-900/30">
+<span class="material-symbols-outlined" style="font-size: 18px;">medical_services</span>
+<span class="text-xs font-bold uppercase tracking-wider">Allergy: Latex</span>
+</div>
+</div>
+<!-- Quick Actions Bar -->
+<div class="grid grid-cols-3 gap-6 w-full px-4">
+<button class="group flex flex-col items-center gap-2">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-surface-light dark:bg-surface-dark shadow-card ring-1 ring-gray-100 dark:ring-gray-800 group-hover:bg-primary group-hover:ring-primary group-hover:scale-110 transition-all duration-300">
+<span class="material-symbols-outlined text-primary group-hover:text-white transition-colors" style="font-size: 24px;">call</span>
+</div>
+<span class="text-xs font-semibold text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors">Call</span>
+</button>
+<button class="group flex flex-col items-center gap-2">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-surface-light dark:bg-surface-dark shadow-card ring-1 ring-gray-100 dark:ring-gray-800 group-hover:bg-primary group-hover:ring-primary group-hover:scale-110 transition-all duration-300">
+<span class="material-symbols-outlined text-primary group-hover:text-white transition-colors" style="font-size: 24px;">chat_bubble</span>
+</div>
+<span class="text-xs font-semibold text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors">Message</span>
+</button>
+<button class="group flex flex-col items-center gap-2">
+<div class="flex h-12 w-12 items-center justify-center rounded-full bg-surface-light dark:bg-surface-dark shadow-card ring-1 ring-gray-100 dark:ring-gray-800 group-hover:bg-primary group-hover:ring-primary group-hover:scale-110 transition-all duration-300">
+<span class="material-symbols-outlined text-primary group-hover:text-white transition-colors" style="font-size: 24px;">mail</span>
+</div>
+<span class="text-xs font-semibold text-gray-600 dark:text-gray-400 group-hover:text-primary transition-colors">Email</span>
+</button>
+</div>
+</div>
+<!-- Sticky Tabs -->
+<div class="sticky top-[60px] z-40 bg-background-light dark:bg-background-dark pt-2 -mx-4 px-4">
+<div class="flex w-full border-b border-gray-200 dark:border-gray-800">
+<a class="flex flex-1 flex-col items-center pb-3 relative text-primary" href="#">
+<span class="text-sm font-bold tracking-wide">Overview</span>
+<span class="absolute bottom-0 h-[3px] w-full rounded-t-full bg-primary shadow-[0_-2px_6px_rgba(17,212,196,0.4)]"></span>
+</a>
+<a class="flex flex-1 flex-col items-center pb-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" href="#">
+<span class="text-sm font-bold tracking-wide">History</span>
+</a>
+<a class="flex flex-1 flex-col items-center pb-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" href="#">
+<span class="text-sm font-bold tracking-wide">Notes</span>
+</a>
+<a class="flex flex-1 flex-col items-center pb-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors" href="#">
+<span class="text-sm font-bold tracking-wide">Gallery</span>
+</a>
+</div>
+</div>
+<!-- Tab Content -->
+<!-- Upcoming Section -->
+<section class="flex flex-col gap-3">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-lg font-bold text-[#0d1b1a] dark:text-white">Next Appointment</h3>
+<button class="text-xs font-bold text-primary hover:text-primary/80">View Calendar</button>
+</div>
+<div class="group relative overflow-hidden rounded-2xl bg-surface-light dark:bg-surface-dark p-4 shadow-card hover:shadow-soft transition-all duration-300 border border-transparent hover:border-primary/20">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary"></div>
+<div class="flex items-start gap-4 pl-2">
+<!-- Date Box -->
+<div class="flex flex-col items-center justify-center rounded-xl bg-background-light dark:bg-background-dark p-2 min-w-[64px] shadow-inner">
+<span class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider">Oct</span>
+<span class="text-2xl font-extrabold text-[#0d1b1a] dark:text-white leading-none mt-0.5">24</span>
+</div>
+<!-- Details -->
+<div class="flex-1 min-w-0">
+<h4 class="text-base font-bold text-[#0d1b1a] dark:text-white truncate">HydraFacial Deluxe</h4>
+<div class="mt-1 flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="font-medium">10:00 AM (60 min)</span>
+</div>
+<!-- Doctor -->
+<div class="mt-3 flex items-center gap-2">
+<div class="h-6 w-6 rounded-full bg-gray-200 bg-cover bg-center ring-2 ring-white dark:ring-surface-dark" data-alt="Small headshot of Dr. Sarah" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBD6KnRddBg7qaFTD8A8dQc5xFxaRuwpej4If_OSQ4-Czi-nlJj2M-FuIqsC2cNDMPSrTBKd3C2gliSpyvP3K8rD1kLPLphe5AXNy-0WBNHNEUWBTCNsz990hM_Nbji_dqgr4j_GHMzcxsUzpxdW7c3gKo_i4yqyuuVlbS554FqA6DNzBPDPapzT2iwli47i6mkE9OSlKtgKKTyNmjfiBTRoYElkCcUG4g8vXOphP1itrWbH6H4moko4Tryj0gax4qu9y9-fVTlAAk6');"></div>
+<span class="text-xs font-semibold text-gray-600 dark:text-gray-300">Dr. Sarah Jenning</span>
+</div>
+</div>
+<!-- More options -->
+<button class="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_vert</span>
+</button>
+</div>
+</div>
+</section>
+<!-- History Section -->
+<section class="flex flex-col gap-3">
+<h3 class="text-lg font-bold text-[#0d1b1a] dark:text-white px-1">Recent Treatments</h3>
+<div class="flex flex-col gap-3">
+<!-- Treatment Card 1 -->
+<div class="flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined" style="font-size: 24px;">spa</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-bold text-[#0d1b1a] dark:text-white truncate">Botox Injection</h4>
+<span class="text-xs font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md">$450</span>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">Sep 12 • Forehead &amp; Crow's feet</p>
+<p class="text-[10px] font-medium text-primary mt-1">Dr. Michael Chen</p>
+</div>
+</div>
+<!-- Treatment Card 2 -->
+<div class="flex items-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-500">
+<span class="material-symbols-outlined" style="font-size: 24px;">dermatology</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h4 class="text-sm font-bold text-[#0d1b1a] dark:text-white truncate">Chemical Peel</h4>
+<span class="text-xs font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md">$275</span>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">Aug 05 • Level 2 Resurfacing</p>
+<p class="text-[10px] font-medium text-primary mt-1">Esthetician Lisa Ray</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Gallery Preview Section -->
+<section class="flex flex-col gap-3">
+<div class="flex items-center justify-between px-1">
+<h3 class="text-lg font-bold text-[#0d1b1a] dark:text-white">Treatment Progress</h3>
+<button class="text-xs font-bold text-primary hover:text-primary/80">See all photos</button>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<!-- Before Photo -->
+<div class="relative group aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800">
+<img alt="Face before treatment" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Close up of face skin before aesthetic treatment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJroOb0xEyc6AMmNmydIEEGucbjSpxKTAumj1AXV2xKb65hW7YAjixlZMyPQcr-rXQf3KDmL1p3kHm7AZFYPCkQw14chpCSYGubFO3moChSe_GslEVxsUcxViH0RhV6gMmXG0NxX6BInpInPBx4mEteVvkK3ypy3sf6frRwhzahu_FRwfwJLeYacAwlcXt2fBDyUXw2fGlOusZAac0Z_XMfnLNJe5kMUqiETiHGYAmrrwCFDmuwmi4mrr61E-il_uPbxM9vXZApPf5"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
+<div class="absolute bottom-3 left-3">
+<span class="inline-block rounded-lg bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase text-white backdrop-blur-md border border-white/20">Before</span>
+<p class="mt-1 text-[10px] text-white/80 font-medium">Sep 12, 2023</p>
+</div>
+</div>
+<!-- After Photo -->
+<div class="relative group aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100 dark:bg-gray-800 ring-2 ring-primary/20">
+<img alt="Face after treatment" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="Close up of glowing face skin after aesthetic treatment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBloCpezeiYZkrHro56hbJxr5boLvfcqiArHpDYsODdWxclmapwV3LKU2Qks_B2rJnSlr5OjfkaIdTeLbRbkNFoWY4ts1PoZ6ib2T0V-zSIyJ_zITP08F3l4N6l6uj1iF2eLY7cLULkXrpZwGmRzrIPGxFTCgzpKP0DbRCzjOPLVBEVLGNPwQphkMnPKdzy-nRxIWMqSR5ATml6vkvk7omT_IwHaZt4xpU4v3ZkJISdd0XXiCxZa_BD9iPKAqnxkR5xF-9LL4ax9SxN"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
+<div class="absolute bottom-3 left-3">
+<span class="inline-block rounded-lg bg-primary px-2.5 py-1 text-[10px] font-bold uppercase text-white shadow-lg">After</span>
+<p class="mt-1 text-[10px] text-white/80 font-medium">Oct 12, 2023</p>
+</div>
+<!-- Selection Checkmark -->
+<div class="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 14px;">check</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button -->
+<div class="fixed bottom-6 right-6 z-50">
+<button class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/40 transition-transform hover:scale-110 active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 28px;">add</span>
+</button>
+</div>
+</body></html>

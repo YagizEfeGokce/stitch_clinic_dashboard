@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>New Appointment: Summary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#11d4c4", // Bright Teal for buttons/highlights
+                        "primary-dark": "#0d988c", // Darker teal for interaction
+                        "accent": "#bfa094", // Rose gold-ish for subtle premium feel
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#102220",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a3330",
+                        "text-main": "#0d1b1a",
+                        "text-secondary": "#4c9a93",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px" },
+                    boxShadow: {
+                        "soft": "0 4px 20px -2px rgba(17, 212, 196, 0.1)",
+                        "card": "0 2px 8px rgba(0, 0, 0, 0.04)",
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main antialiased selection:bg-primary selection:text-white">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Top App Bar -->
+<header class="flex items-center justify-between bg-background-light dark:bg-background-dark p-4 sticky top-0 z-10 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full active:bg-gray-200 dark:active:bg-surface-dark transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-text-main dark:text-white">arrow_back</span>
+</div>
+<h2 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-tight">Summary</h2>
+<div class="flex size-10 shrink-0 items-center justify-center">
+<!-- Placeholder for balance -->
+</div>
+</header>
+<!-- Success Hero Section -->
+<div class="flex flex-col items-center px-6 pt-4 pb-8">
+<div class="mb-6 flex size-20 items-center justify-center rounded-full bg-primary/10 text-primary animate-pulse">
+<span class="material-symbols-outlined icon-filled text-5xl">check_circle</span>
+</div>
+<h1 class="text-2xl font-bold text-text-main dark:text-white text-center mb-2">Booking Confirmed!</h1>
+<p class="text-text-secondary dark:text-gray-400 text-center max-w-[280px] text-sm font-medium">
+                The appointment has been successfully scheduled. A confirmation email has been sent.
+            </p>
+</div>
+<!-- Main Content Area -->
+<div class="flex flex-col gap-5 px-4">
+<!-- Client Card -->
+<div class="flex items-center gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-card border border-white dark:border-gray-800">
+<div class="size-14 shrink-0 rounded-full bg-cover bg-center border-2 border-background-light dark:border-background-dark shadow-sm" data-alt="Portrait of client Sarah Jenkins" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDIcIb9bJyFbFU1yQbihwve-YFQ2jTtiZ4ueSS9bUzdM5oA2xA6ENxJPyuVmnUZDtUIq8QhpzZlpncqDWjSxpQKZUgYzXq7BIWDNaDJmi37uDSR1Z8YLmkoqRgpjEalfiV78BEd_bQIEiQB21gKWn2B9ltlxIAa7Nrt7_uybBx2Kqggv1nUAudSSySrLuGeMG1jmOUaIUWtGQEvBawiDtKGpR9MFnXVkgSUBqy0PQFpLE3mn8w-3vcid83Jn5ZBNPQEE45tHfAlm7Gj");'></div>
+<div class="flex flex-col gap-0.5">
+<span class="text-xs font-bold uppercase tracking-wider text-text-secondary">Client</span>
+<p class="text-lg font-bold text-text-main dark:text-white leading-tight">Sarah Jenkins</p>
+<div class="flex items-center gap-1 text-text-secondary dark:text-gray-400 text-sm">
+<span class="material-symbols-outlined text-[16px]">call</span>
+<span>(555) 123-4567</span>
+</div>
+</div>
+</div>
+<!-- Appointment Details & Cost -->
+<div class="flex flex-col rounded-2xl bg-surface-light dark:bg-surface-dark shadow-card overflow-hidden">
+<div class="p-5 border-b border-gray-100 dark:border-gray-800">
+<h3 class="text-sm font-bold uppercase tracking-wider text-text-secondary mb-4">Appointment Details</h3>
+<!-- Grid for Date/Time/Provider -->
+<div class="grid grid-cols-2 gap-y-6 gap-x-4">
+<div class="flex flex-col gap-1">
+<span class="flex items-center gap-1.5 text-xs text-text-secondary dark:text-gray-500 font-medium">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span> Date
+                            </span>
+<p class="text-text-main dark:text-white font-semibold text-sm">Fri, Oct 24</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="flex items-center gap-1.5 text-xs text-text-secondary dark:text-gray-500 font-medium">
+<span class="material-symbols-outlined text-[16px]">schedule</span> Time
+                            </span>
+<p class="text-text-main dark:text-white font-semibold text-sm">10:00 AM</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="flex items-center gap-1.5 text-xs text-text-secondary dark:text-gray-500 font-medium">
+<span class="material-symbols-outlined text-[16px]">stethoscope</span> Provider
+                            </span>
+<p class="text-text-main dark:text-white font-semibold text-sm">Dr. Sarah Bennett</p>
+</div>
+<div class="flex flex-col gap-1">
+<span class="flex items-center gap-1.5 text-xs text-text-secondary dark:text-gray-500 font-medium">
+<span class="material-symbols-outlined text-[16px]">meeting_room</span> Room
+                            </span>
+<p class="text-text-main dark:text-white font-semibold text-sm">Suite 3</p>
+</div>
+</div>
+</div>
+<!-- Services List -->
+<div class="p-5 bg-gray-50/50 dark:bg-gray-800/30">
+<h3 class="text-sm font-bold uppercase tracking-wider text-text-secondary mb-3">Services</h3>
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-sm font-semibold text-text-main dark:text-white">Hydrafacial Deluxe</p>
+<p class="text-xs text-text-secondary dark:text-gray-500">45 mins</p>
+</div>
+<p class="text-sm font-medium text-text-main dark:text-white">$150.00</p>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="text-sm font-semibold text-text-main dark:text-white">Botox - 20 Units</p>
+<p class="text-xs text-text-secondary dark:text-gray-500">Injectable</p>
+</div>
+<p class="text-sm font-medium text-text-main dark:text-white">$240.00</p>
+</div>
+</div>
+<!-- Divider -->
+<div class="my-4 h-px bg-gray-200 dark:bg-gray-700 border-dashed"></div>
+<!-- Total -->
+<div class="flex justify-between items-center">
+<p class="text-base font-bold text-text-main dark:text-white">Total Amount</p>
+<p class="text-xl font-extrabold text-primary">$390.00</p>
+</div>
+</div>
+</div>
+<!-- Notes Section -->
+<div class="rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-card border border-white dark:border-gray-800">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-text-secondary text-[18px]">notes</span>
+<h3 class="text-sm font-bold uppercase tracking-wider text-text-secondary">Special Requests</h3>
+</div>
+<p class="text-sm text-text-main dark:text-gray-300 italic leading-relaxed">
+                    "Client prefers a warm room temperature and has sensitive skin around the eyes."
+                </p>
+</div>
+<!-- Safe spacing for bottom bar -->
+<div class="h-4"></div>
+</div>
+<!-- Sticky Bottom Bar -->
+<div class="fixed bottom-0 left-0 right-0 z-50 p-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-gray-200 dark:border-gray-800 flex flex-col gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+<button class="flex w-full items-center justify-center gap-2 rounded-full bg-primary hover:bg-primary-dark transition-colors px-6 py-4 shadow-soft group">
+<span class="text-base font-bold text-white tracking-wide">Done</span>
+<span class="material-symbols-outlined text-white group-hover:translate-x-1 transition-transform text-sm">arrow_forward</span>
+</button>
+<button class="flex w-full items-center justify-center gap-2 py-2">
+<span class="text-sm font-semibold text-text-secondary hover:text-text-main dark:text-gray-400 dark:hover:text-white transition-colors">Add to Calendar</span>
+</button>
+</div>
+</div>
+</body></html>

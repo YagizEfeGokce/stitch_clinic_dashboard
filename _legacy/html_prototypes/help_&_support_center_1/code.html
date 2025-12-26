@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d968b",
+                        "primary-dark": "#0a7a70",
+                        "accent-rose": "#dcbfad", 
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#102220",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#162e2b",
+                        "status-green": "#d1fae5",
+                        "status-green-text": "#065f46",
+                        "status-blue": "#dbeafe",
+                        "status-blue-text": "#1e40af",
+                        "status-orange": "#ffedd5",
+                        "status-orange-text": "#9a3412",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px" },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(13, 150, 139, 0.08)',
+                        'soft-hover': '0 8px 30px -4px rgba(13, 150, 139, 0.12)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>.scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }.scrollbar-hide {
+            -ms-overflow-style: none;scrollbar-width: none;}
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display transition-colors duration-200 antialiased">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-12">
+<header class="sticky top-0 z-50 flex items-center justify-between px-4 py-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md transition-all duration-300">
+<button class="flex items-center justify-center p-2.5 rounded-xl hover:bg-slate-200/50 dark:hover:bg-white/10 transition-colors group">
+<span class="material-symbols-outlined text-slate-800 dark:text-white text-[24px]">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Audit Trail</h1>
+<button class="relative flex items-center justify-center p-2.5 rounded-xl hover:bg-slate-200/50 dark:hover:bg-white/10 transition-colors text-primary">
+<span class="material-symbols-outlined text-[24px]">ios_share</span>
+</button>
+</header>
+<section class="px-6 pt-2 pb-6 flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="text-2xl font-extrabold text-slate-900 dark:text-white leading-tight">
+                    Activity Log
+                </h2>
+<div class="text-xs font-semibold px-3 py-1 bg-white dark:bg-surface-dark rounded-full border border-slate-200 dark:border-slate-700 text-slate-500 shadow-sm">
+                    Last 30 Days
+                </div>
+</div>
+<div class="flex overflow-x-auto pb-2 gap-3 scrollbar-hide -mx-6 px-6">
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white shadow-soft shadow-primary/20 whitespace-nowrap transition-transform active:scale-95 text-sm font-semibold">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                    Date Range
+                </button>
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-sm whitespace-nowrap active:bg-slate-50 dark:active:bg-slate-800 transition-colors text-sm font-semibold">
+<span class="material-symbols-outlined text-[18px]">person</span>
+                    User
+                </button>
+<button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-sm whitespace-nowrap active:bg-slate-50 dark:active:bg-slate-800 transition-colors text-sm font-semibold">
+<span class="material-symbols-outlined text-[18px]">category</span>
+                    Type
+                </button>
+<div class="w-2 shrink-0"></div> 
+</div>
+<div class="relative w-full group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none transition-colors duration-300 group-focus-within:text-primary text-slate-400">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="block w-full py-3.5 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-800 rounded-xl shadow-soft focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-300" placeholder="Search by client, action or detail..." type="text"/>
+</div>
+</section>
+<section class="px-6 flex flex-col gap-6 relative">
+<div class="absolute left-[39px] top-4 bottom-0 w-px bg-slate-200 dark:bg-slate-800"></div>
+<div class="relative z-10">
+<div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-500 mb-4 ml-8">
+                    Today, Oct 24
+                </div>
+<div class="flex flex-col gap-4">
+<div class="group relative flex gap-4">
+<div class="relative z-10 mt-1 flex-shrink-0">
+<div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20 border-2 border-background-light dark:border-background-dark">
+<span class="material-symbols-outlined text-white text-[20px]">calendar_add_on</span>
+</div>
+</div>
+<div class="flex-grow bg-white dark:bg-surface-dark p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-soft-hover transition-all duration-300">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-primary tracking-wide uppercase">Appointment</span>
+<span class="text-xs text-slate-400 font-medium">10:42 AM</span>
+</div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Created Appointment</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+<span class="font-semibold text-slate-700 dark:text-slate-200">Dr. Sarah Smith</span> scheduled <span class="font-semibold text-slate-700 dark:text-slate-200">Botox Treatment</span> for client <span class="italic">Emma Watson</span>.
+                            </p>
+</div>
+</div>
+<div class="group relative flex gap-4">
+<div class="relative z-10 mt-1 flex-shrink-0">
+<div class="h-10 w-10 rounded-full bg-accent-rose flex items-center justify-center shadow-lg shadow-accent-rose/20 border-2 border-background-light dark:border-background-dark">
+<span class="material-symbols-outlined text-white text-[20px]">edit</span>
+</div>
+</div>
+<div class="flex-grow bg-white dark:bg-surface-dark p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-soft-hover transition-all duration-300">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-accent-rose tracking-wide uppercase">Client Profile</span>
+<span class="text-xs text-slate-400 font-medium">09:15 AM</span>
+</div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Updated Client Notes</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+<span class="font-semibold text-slate-700 dark:text-slate-200">Nurse Jessica</span> added allergy information to <span class="italic">Sophie Turner's</span> profile.
+                            </p>
+<div class="mt-3 flex items-center gap-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-status-orange text-status-orange-text">
+                                    High Priority
+                                </span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="relative z-10 mt-2">
+<div class="inline-flex items-center justify-center px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-500 mb-4 ml-8">
+                    Yesterday, Oct 23
+                </div>
+<div class="flex flex-col gap-4">
+<div class="group relative flex gap-4">
+<div class="relative z-10 mt-1 flex-shrink-0">
+<div class="h-10 w-10 rounded-full bg-slate-800 dark:bg-slate-600 flex items-center justify-center shadow-sm border-2 border-background-light dark:border-background-dark">
+<span class="material-symbols-outlined text-white text-[20px]">receipt_long</span>
+</div>
+</div>
+<div class="flex-grow bg-white dark:bg-surface-dark p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-soft-hover transition-all duration-300">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-slate-500 tracking-wide uppercase">Billing</span>
+<span class="text-xs text-slate-400 font-medium">04:30 PM</span>
+</div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white">Invoice Generated</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+                                System auto-generated invoice #INV-2024-001 for <span class="italic">Hydrafacial Deluxe</span>.
+                            </p>
+<div class="mt-3 px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-100 dark:border-slate-700 flex items-center justify-between">
+<span class="text-xs font-medium text-slate-600 dark:text-slate-300">Amount</span>
+<span class="text-sm font-bold text-slate-900 dark:text-white">$250.00</span>
+</div>
+</div>
+</div>
+<div class="group relative flex gap-4">
+<div class="relative z-10 mt-1 flex-shrink-0">
+<div class="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shadow-sm border-2 border-background-light dark:border-background-dark">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-300 text-[20px]">lock_open</span>
+</div>
+</div>
+<div class="flex-grow bg-white dark:bg-surface-dark p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-soft-hover transition-all duration-300">
+<div class="flex justify-between items-start mb-1">
+<span class="text-xs font-bold text-slate-500 tracking-wide uppercase">Security</span>
+<span class="text-xs text-slate-400 font-medium">08:00 AM</span>
+</div>
+<h3 class="text-base font-bold text-slate-900 dark:text-white">User Login</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+<span class="font-semibold text-slate-700 dark:text-slate-200">Dr. Sarah Smith</span> logged in from IP 192.168.1.1.
+                            </p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative z-10 py-4 text-center">
+<button class="text-sm font-bold text-primary hover:text-primary-dark transition-colors flex items-center justify-center gap-1 mx-auto">
+                    Load older activity
+                    <span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+</div>
+</section>
+</div>
+
+</body></html>

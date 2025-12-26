@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Product Inventory Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0fbdbd",
+                        "primary-dark": "#0a8a8a",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#102222",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1A2C2C",
+                        "rose-gold": "#E0A899", // Premium accent
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 0 0 1px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.04)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.icon-light {
+            font-variation-settings: 'FILL' 0, 'wght' 300;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen pb-24 relative overflow-x-hidden">
+<!-- Top Header -->
+<header class="sticky top-0 z-30 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50">
+<div class="px-5 pt-14 pb-4 flex items-center justify-between">
+<div>
+<h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Inventory</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">Medical Spa &amp; Beauty</p>
+</div>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-rose-gold text-white shadow-lg hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-size: 24px;">add</span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="px-5 pb-4">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">search</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-3 rounded-xl border-none bg-white dark:bg-surface-dark shadow-sm text-sm font-medium placeholder-slate-400 focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all" placeholder="Search by name, SKU, or brand..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer">
+<span class="material-symbols-outlined text-slate-400" style="font-size: 20px;">tune</span>
+</div>
+</div>
+</div>
+</header>
+<main class="flex flex-col gap-6 pt-4">
+<!-- Stats Overview -->
+<div class="px-5">
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2 snap-x">
+<!-- Stat Card 1 -->
+<div class="snap-center min-w-[160px] flex-1 bg-white dark:bg-surface-dark p-4 rounded-2xl shadow-card border border-slate-100 dark:border-slate-800/50 flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 18px;">inventory_2</span>
+</div>
+<span class="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded-full">+12%</span>
+</div>
+<div>
+<p class="text-2xl font-bold text-slate-900 dark:text-white">142</p>
+<p class="text-xs font-medium text-slate-500">Total Products</p>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="snap-center min-w-[160px] flex-1 bg-white dark:bg-surface-dark p-4 rounded-2xl shadow-card border border-rose-gold/20 dark:border-rose-gold/10 flex flex-col gap-3 relative overflow-hidden">
+<div class="absolute right-0 top-0 w-12 h-12 bg-rose-gold/5 rounded-bl-3xl"></div>
+<div class="flex items-center justify-between relative z-10">
+<div class="w-8 h-8 rounded-full bg-rose-gold/10 flex items-center justify-center text-rose-gold">
+<span class="material-symbols-outlined" style="font-size: 18px;">warning</span>
+</div>
+<span class="text-xs font-bold text-rose-gold bg-rose-gold/10 px-2 py-0.5 rounded-full">Alert</span>
+</div>
+<div class="relative z-10">
+<p class="text-2xl font-bold text-slate-900 dark:text-white">5</p>
+<p class="text-xs font-medium text-slate-500">Low Stock</p>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="snap-center min-w-[160px] flex-1 bg-white dark:bg-surface-dark p-4 rounded-2xl shadow-card border border-slate-100 dark:border-slate-800/50 flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+<span class="material-symbols-outlined" style="font-size: 18px;">attach_money</span>
+</div>
+</div>
+<div>
+<p class="text-2xl font-bold text-slate-900 dark:text-white">$12.4k</p>
+<p class="text-xs font-medium text-slate-500">Value in Hand</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 px-5 overflow-x-auto hide-scrollbar">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-primary text-white px-5 shadow-sm shadow-primary/30 transition-colors">
+<span class="text-sm font-semibold">All Items</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 px-5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="text-sm font-medium">Low Stock</span>
+<span class="flex h-5 w-5 items-center justify-center rounded-full bg-rose-gold/20 text-[10px] font-bold text-rose-gold">5</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 px-5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="text-sm font-medium">Out of Stock</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 px-5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="text-sm font-medium">New Arrivals</span>
+</button>
+</div>
+<!-- Product List -->
+<div class="flex flex-col gap-4 px-5 pb-8">
+<h2 class="text-lg font-bold text-slate-900 dark:text-white">Products List</h2>
+<!-- Product Card 1: Normal -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-card border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+<div class="flex gap-4">
+<div class="h-16 w-16 shrink-0 rounded-xl bg-slate-50 dark:bg-slate-800 overflow-hidden relative">
+<img alt="Bottle of luxury face serum on a clean background" class="h-full w-full object-cover" data-alt="Luxury serum bottle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQvDB7WXIqnBtR5slJpH1ehpXg7DdR7EbU2CLXBPZ5lbyUyhCHGv_Ztj9gTofIFZhqtZtd54f5VY5e8e1YI9l-IFd1A3YhPD6rSEZNb9UCMEjwhhy_ywCasaXD_mnbTFb5UpNe1V8ONwnm-_lHA_MG2xSqLlYHHTj66iLkkIwj-lsyZvpdyKbkcIauuLFZhS6ntn0ImNcFPsdDE0PwTqjJiVOqEnxFzbCA3xKDMf3wI2AHzlvs1xZXjSqCtb9qAilUH0NNSufF8uvv"/>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight">Vitamin C Serum</h3>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_horiz</span>
+</button>
+</div>
+<p class="text-xs text-slate-500 mt-1">SkinMedica • SKU: VC-200</p>
+<div class="mt-2 flex items-center gap-2">
+<span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/20 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 ring-1 ring-inset ring-green-600/20">In Stock</span>
+</div>
+</div>
+</div>
+<!-- Action Row -->
+<div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+<div class="text-sm font-medium text-slate-500">Current Stock</div>
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">remove</span>
+</button>
+<span class="text-base font-bold text-slate-900 dark:text-white w-6 text-center">42</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white shadow-sm shadow-primary/30 hover:bg-primary-dark transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 2: Low Stock -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-card border-l-4 border-rose-gold flex flex-col gap-4 relative overflow-hidden">
+<!-- Subtle background warning gradient -->
+<div class="absolute inset-0 bg-rose-gold/5 pointer-events-none"></div>
+<div class="flex gap-4 relative z-10">
+<div class="h-16 w-16 shrink-0 rounded-xl bg-slate-50 dark:bg-slate-800 overflow-hidden">
+<img alt="Cosmetic cream jar packaging" class="h-full w-full object-cover" data-alt="Cream jar cosmetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJZEWCglF5fozCLksUcfDUbfQVoCs1l1k30xGBRwzXP9xFkYiKtfylWK0zUT27GXsT975oWCcOfT65X3-zzmpgK2By5btzkNM1y89HETkzB59_RtYhySIxNjVfjeB8npB8M7Dj2J8TidaYSjL57HYz0fGBP-rELtV0eVKehCZZwqolyI0XOjOfmrxPdyWpW8FVwJOsU9kp_58M-tNDt66PfWbPeBZqaYZrZxTyn4Uc83eZ5NN0yue263-wQKb6qA8x3Ij5Vq_dScgs"/>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight">HA Rejuvenating Filler</h3>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_horiz</span>
+</button>
+</div>
+<p class="text-xs text-slate-500 mt-1">Juvederm • SKU: HA-550</p>
+<div class="mt-2 flex items-center gap-2">
+<span class="inline-flex items-center rounded-md bg-rose-gold/10 px-2 py-1 text-xs font-bold text-rose-gold ring-1 ring-inset ring-rose-gold/30">Low Stock</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-rose-gold/20 pt-3 relative z-10">
+<div class="text-sm font-medium text-rose-gold">Reorder Level: 5</div>
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 shadow-sm border border-slate-200 dark:border-slate-700">
+<span class="material-symbols-outlined" style="font-size: 18px;">remove</span>
+</button>
+<span class="text-base font-bold text-rose-gold w-6 text-center">3</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-gold text-white shadow-sm shadow-rose-gold/30 hover:brightness-110 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 3: Normal -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-card border border-slate-100 dark:border-slate-800 flex flex-col gap-4">
+<div class="flex gap-4">
+<div class="h-16 w-16 shrink-0 rounded-xl bg-slate-50 dark:bg-slate-800 overflow-hidden">
+<img alt="Luxury skincare dropper bottle minimalist style" class="h-full w-full object-cover" data-alt="Dropper bottle minimalist" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2RgHYgeWLYP2W5UGERJ9XixOmW1RUw8i5_EDarV62p6wjNNcmVlQQTZw4xvTUEPEfgGJOU37yOzp84jxykCOE4WKuSXqbSnhiP2Rw3AZaQ9jfYnfq4cjJn_yBWsLGpawKlA-i9I5kR1--3coyay-7noMnWkbSiyNEfkzDH_x1PeXUo752oDQvB2P3Df6hKylVoWtY8d5R-cHyKJSiIwAR-6IST9FyZsDkgVZH87rgiWVxA_ElOrhKAaKCjIE6AGi0bc0qnzgDdt0u"/>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight">Retinol Complex 0.5</h3>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_horiz</span>
+</button>
+</div>
+<p class="text-xs text-slate-500 mt-1">SkinMedica • SKU: RC-050</p>
+<div class="mt-2 flex items-center gap-2">
+<span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/20 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 ring-1 ring-inset ring-green-600/20">In Stock</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+<div class="text-sm font-medium text-slate-500">Current Stock</div>
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">remove</span>
+</button>
+<span class="text-base font-bold text-slate-900 dark:text-white w-6 text-center">18</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white shadow-sm shadow-primary/30 hover:bg-primary-dark transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Product Card 4: Out of Stock -->
+<div class="bg-white dark:bg-surface-dark rounded-2xl p-4 shadow-card border border-slate-100 dark:border-slate-800 flex flex-col gap-4 opacity-80">
+<div class="flex gap-4">
+<div class="h-16 w-16 shrink-0 rounded-xl bg-slate-50 dark:bg-slate-800 overflow-hidden relative grayscale">
+<img alt="White cosmetic tube on white background" class="h-full w-full object-cover opacity-70" data-alt="Cosmetic tube white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1L2PX2Za7PAM3isBNA1X6zxn7YGa2fMvDeosNc2xcoyvF4FZipZlY4pQgcEAwJIQOfFBp59liYS5Y0TE_FWRWbAJaPT7vTGubExHibg-YaLwW78QTnXL-pHGTGUsDfLudcBCtDRM_ladR3hWweJOwZMVgWMB_HLyj8OqgFe_UtZOtQM1-SgQljpQA73JBd_WMswbXDaPmg2-rR2LQ5-Re_qxh7BnCSCYL4aMt8_0rSOP_78BaHCAwumtH5UpKmGWiUBkaECj1nJZE"/>
+</div>
+<div class="flex flex-1 flex-col justify-center">
+<div class="flex justify-between items-start">
+<h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight">Daily SPF 50+</h3>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_horiz</span>
+</button>
+</div>
+<p class="text-xs text-slate-500 mt-1">EltaMD • SKU: SPF-500</p>
+<div class="mt-2 flex items-center gap-2">
+<span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-slate-700/50 px-2 py-1 text-xs font-bold text-slate-500 ring-1 ring-inset ring-slate-500/20">Out of Stock</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3">
+<div class="text-sm font-medium text-slate-400">Reorder Level: 10</div>
+<div class="flex items-center gap-3">
+<button class="text-sm font-semibold text-primary hover:underline">Restock Now</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 w-full bg-white/95 dark:bg-surface-dark/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 pb-safe pt-2 px-6 z-40">
+<div class="flex justify-between items-center h-16">
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary w-16" href="#">
+<span class="material-symbols-outlined icon-light" style="font-size: 24px;">grid_view</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary w-16" href="#">
+<span class="material-symbols-outlined icon-light" style="font-size: 24px;">calendar_month</span>
+<span class="text-[10px] font-medium">Schedule</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary w-16 relative" href="#">
+<!-- Active Indicator -->
+<div class="absolute -top-2 w-8 h-1 bg-primary rounded-full shadow-[0_0_10px_rgba(15,189,189,0.5)]"></div>
+<span class="material-symbols-outlined" style="font-size: 24px; font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="text-[10px] font-bold">Stock</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary w-16" href="#">
+<span class="material-symbols-outlined icon-light" style="font-size: 24px;">groups</span>
+<span class="text-[10px] font-medium">Patients</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400 hover:text-primary w-16" href="#">
+<span class="material-symbols-outlined icon-light" style="font-size: 24px;">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</div>
+<!-- Safe area spacing for iOS home indicator -->
+<div class="h-5 w-full"></div>
+</nav>
+<!-- Floating Action Button for Mobile Quick Add (Alternative to header button) -->
+<!-- Ideally header button is enough, but this is common in inventory apps. Kept hidden as per header design preference. -->
+</body></html>
