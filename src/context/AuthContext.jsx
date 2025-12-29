@@ -119,7 +119,7 @@ export default function AuthProvider({ children }) {
         };
     }, []);
 
-    const withTimeout = (promise, ms = 10000) => {
+    const withTimeout = (promise, ms = 30000) => {
         const timeout = new Promise((_, reject) =>
             setTimeout(() => reject(new Error(`Request timed out after ${ms}ms`)), ms)
         );
