@@ -11,9 +11,9 @@ export default function NotFound() {
                 </div>
 
                 <div className="space-y-2">
-                    <h1 className="text-2xl font-bold text-slate-900">Page Not Found</h1>
+                    <h1 className="text-2xl font-bold text-slate-900">Sayfa Bulunamadı</h1>
                     <p className="text-slate-500">
-                        The page you are looking for doesn't exist or has been moved.
+                        Aradığınız sayfa mevcut değil veya taşınmış olabilir.
                     </p>
                 </div>
 
@@ -22,14 +22,14 @@ export default function NotFound() {
                         onClick={() => navigate('/schedule')}
                         className="w-full py-3 px-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark shadow-sm transition-colors"
                     >
-                        Go to Dashboard
+                        Panele Git
                     </button>
 
                     <button
                         onClick={() => navigate(-1)}
                         className="w-full py-3 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors"
                     >
-                        Go Back
+                        Geri Dön
                     </button>
                 </div>
             </div>

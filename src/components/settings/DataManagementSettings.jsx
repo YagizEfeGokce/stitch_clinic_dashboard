@@ -35,25 +35,25 @@ export default function DataManagementSettings() {
             if (error) throw error;
 
             // Convert to CSV
-            const header = ['ID', 'Date', 'Time', 'Status', 'Service', 'Client Name', 'Client Phone', 'Staff', 'Notes'];
+            const header = ['ID', 'Tarih', 'Saat', 'Durum', 'Hizmet', 'Müşteri Adı', 'Müşteri Tel', 'Personel', 'Notlar'];
             const rows = data.map(row => [
                 row.id,
                 row.date,
                 row.time,
                 row.status,
                 row.service_name,
-                row.clients ? `${row.clients.first_name} ${row.clients.last_name}` : 'Unknown',
+                row.clients ? `${row.clients.first_name} ${row.clients.last_name}` : 'Bilinmeyen',
                 row.clients?.phone || '',
-                row.profiles?.full_name || 'Unassigned',
+                row.profiles?.full_name || 'Atanmamış',
                 (row.notes || '').replace(/,/g, ' ') // Simple CSV escape
             ]);
 
             const csvContent = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
-            downloadCSV(csvContent, `appointments_export_${new Date().toISOString().split('T')[0]}.csv`);
-            toast.success('Appointments exported successfully');
+            downloadCSV(csvContent, `randevu_export_${new Date().toISOString().split('T')[0]}.csv`);
+            toast.success('Randevular başarıyla dışa aktarıldı');
         } catch (err) {
             console.error('Export Error:', err);
-            toast.error('Failed to export appointments');
+            toast.error('Randevular dışa aktarılamadı');
         } finally {
             setLoadingApt(false);
         }
@@ -69,7 +69,7 @@ export default function DataManagementSettings() {
 
             if (error) throw error;
 
-            const header = ['ID', 'First Name', 'Last Name', 'Phone', 'Email', 'Created At'];
+            const header = ['ID', 'Ad', 'Soyad', 'Telefon', 'E-posta', 'Oluşturulma Tarihi'];
             const rows = data.map(row => [
                 row.id,
                 row.first_name,
@@ -80,11 +80,11 @@ export default function DataManagementSettings() {
             ]);
 
             const csvContent = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
-            downloadCSV(csvContent, `clients_export_${new Date().toISOString().split('T')[0]}.csv`);
-            toast.success('Clients exported successfully');
+            downloadCSV(csvContent, `musteri_export_${new Date().toISOString().split('T')[0]}.csv`);
+            toast.success('Müşteriler başarıyla dışa aktarıldı');
         } catch (err) {
             console.error('Export Error:', err);
-            toast.error('Failed to export clients');
+            toast.error('Müşteriler dışa aktarılamadı');
         } finally {
             setLoadingClient(false);
         }
@@ -92,7 +92,7 @@ export default function DataManagementSettings() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <h3 className="text-slate-900 text-xl font-bold leading-tight mb-4">Data Management</h3>
+            <h3 className="text-slate-900 text-xl font-bold leading-tight mb-4">Veri Yönetimi</h3>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-6">
 
@@ -101,8 +101,8 @@ export default function DataManagementSettings() {
                         <span className="material-symbols-outlined text-2xl">download</span>
                     </div>
                     <div className="flex-1">
-                        <h4 className="text-slate-900 font-bold mb-1">Export Data</h4>
-                        <p className="text-sm text-slate-500 mb-4">Download your clinic data in CSV format for backup or external analysis.</p>
+                        <h4 className="text-slate-900 font-bold mb-1">Verileri Dışa Aktar</h4>
+                        <p className="text-sm text-slate-500 mb-4">Yedekleme veya analiz için klinik verilerinizi CSV formatında indirin.</p>
 
                         <div className="flex flex-wrap gap-3">
                             <button
@@ -111,7 +111,7 @@ export default function DataManagementSettings() {
                                 className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm"
                             >
                                 {loadingApt ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : <span className="material-symbols-outlined text-[18px]">calendar_month</span>}
-                                Export Appointments
+                                Randevuları İndir
                             </button>
                             <button
                                 onClick={exportClients}
@@ -119,7 +119,7 @@ export default function DataManagementSettings() {
                                 className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm"
                             >
                                 {loadingClient ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : <span className="material-symbols-outlined text-[18px]">group</span>}
-                                Export Clients
+                                Müşterileri İndir
                             </button>
                         </div>
                     </div>
@@ -132,10 +132,10 @@ export default function DataManagementSettings() {
                         <span className="material-symbols-outlined text-2xl">delete_forever</span>
                     </div>
                     <div className="flex-1">
-                        <h4 className="text-slate-900 font-bold mb-1">Danger Zone</h4>
-                        <p className="text-sm text-slate-500 mb-4">Irreversible actions found here.</p>
+                        <h4 className="text-slate-900 font-bold mb-1">Tehlikeli Bölge</h4>
+                        <p className="text-sm text-slate-500 mb-4">Geri alınamaz işlemler.</p>
                         <button disabled className="px-4 py-2 rounded-lg bg-red-50 text-red-400 font-bold text-sm cursor-not-allowed">
-                            Reset Account Data
+                            Hesap Verilerini Sıfırla
                         </button>
                     </div>
                 </div>

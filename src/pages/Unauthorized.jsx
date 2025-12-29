@@ -13,9 +13,9 @@ export default function Unauthorized() {
                 </div>
 
                 <div className="space-y-2">
-                    <h1 className="text-2xl font-bold text-slate-900">Access Denied</h1>
+                    <h1 className="text-2xl font-bold text-slate-900">Erişim Reddedildi</h1>
                     <p className="text-slate-500">
-                        You do not have permission to view this page. Please contact your administrator if you believe this is a mistake.
+                        Bu sayfayı görüntüleme izniniz yok. Bir hata olduğunu düşünüyorsanız yöneticinizle iletişime geçin.
                     </p>
                 </div>
 
@@ -24,7 +24,7 @@ export default function Unauthorized() {
                         onClick={() => navigate('/schedule')}
                         className="w-full py-3 px-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark shadow-sm transition-colors"
                     >
-                        Go to Dashboard
+                        Panele Git
                     </button>
 
                     <button
@@ -34,14 +34,14 @@ export default function Unauthorized() {
                         }}
                         className="w-full py-3 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors"
                     >
-                        Sign Out
+                        Çıkış Yap
                     </button>
 
                     <button
                         onClick={() => navigate(-1)}
                         className="block w-full text-center text-sm font-bold text-slate-400 hover:text-slate-600 hover:underline"
                     >
-                        Go Back
+                        Geri Dön
                     </button>
                 </div>
             </div>

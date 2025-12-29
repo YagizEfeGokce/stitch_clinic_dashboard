@@ -10,8 +10,8 @@ export default function ServiceList({ services, onEdit, onDelete }) {
                 <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 text-slate-300">
                     <span className="material-symbols-outlined text-3xl">medical_services</span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">No Services Found</h3>
-                <p className="text-slate-500 mt-1 max-w-xs mx-auto">Add your first treatment to get started.</p>
+                <h3 className="text-lg font-bold text-slate-900">Hizmet Bulunamadı</h3>
+                <p className="text-slate-500 mt-1 max-w-xs mx-auto">Başlamak için ilk tedaviyi ekleyin.</p>
             </div>
         );
     }
@@ -48,16 +48,16 @@ export default function ServiceList({ services, onEdit, onDelete }) {
                     </div>
 
                     <p className="text-slate-500 text-sm mb-4 line-clamp-2 h-10">
-                        {service.description || 'No description provided.'}
+                        {service.description || 'Açıklama girilmedi.'}
                     </p>
 
                     <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                         <div className="flex items-center gap-1.5 text-slate-500">
                             <span className="material-symbols-outlined text-[18px]">schedule</span>
-                            <span className="text-sm font-semibold">{service.duration_min} min</span>
+                            <span className="text-sm font-semibold">{service.duration_min} dk</span>
                         </div>
                         <div className="text-lg font-bold text-slate-900">
-                            ${service.price}
+                            ₺{service.price}
                         </div>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 import StaffModal from './StaffModal';
@@ -18,11 +18,7 @@ export default function StaffList({ searchTerm }) {
     const [staffToDelete, setStaffToDelete] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
 
-    useEffect(() => {
-        fetchStaff();
-    }, []);
-
-    const fetchStaff = async () => {
+    const fetchStaff = useCallback(async () => {
         try {
             setLoading(true);
             const { data, error } = await supabase
@@ -34,11 +30,15 @@ export default function StaffList({ searchTerm }) {
             setStaff(data || []);
         } catch (error) {
             console.error('Error fetching staff:', error);
-            toast.error('Could not load staff list');
+            toast.error('Personel listesi yüklenemedi');
         } finally {
             setLoading(false);
         }
-    };
+    }, [toast]);
+
+    useEffect(() => {
+        fetchStaff();
+    }, [fetchStaff]);
 
     const handleEdit = (member) => {
         setSelectedStaff(member);
@@ -62,23 +62,34 @@ export default function StaffList({ searchTerm }) {
 
             if (error) throw error;
 
-            toast.success('Staff member removed');
+            toast.success('Personel silindi');
             fetchStaff();
             setIsDeleteModalOpen(false);
             setStaffToDelete(null);
         } catch (error) {
             console.error('Error removing staff:', error);
-            toast.error('Failed to remove staff. You may not have permission.');
+            toast.error('Personel silinemedi. Yetkiniz olmayabilir.');
         } finally {
             setDeleteLoading(false);
         }
     };
 
+    const formatRole = (role) => {
+        if (!role) return 'Personel';
+        const map = {
+            'doctor': 'Doktor',
+            'admin': 'Yönetici',
+            'receptionist': 'Resepsiyonist',
+            'staff': 'Personel'
+        };
+        return map[role.toLowerCase()] || role.replace('_', ' ');
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-end">
-                <h3 className="text-slate-900 text-xl font-bold leading-tight">Clinic Staff</h3>
-                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-md">{staff.length} Active</span>
+                <h3 className="text-slate-900 text-xl font-bold leading-tight">Klinik Personeli</h3>
+                <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-md">{staff.length} Aktif</span>
             </div>
 
             {loading ? (
@@ -100,12 +111,12 @@ export default function StaffList({ searchTerm }) {
                                         {member.avatar_url ? (
                                             <img src={member.avatar_url} alt={member.full_name} className="w-full h-full object-cover" />
                                         ) : (
-                                            (member.full_name || 'U')[0].toUpperCase()
+                                            (member.full_name || 'K')[0].toUpperCase()
                                         )}
                                     </div>
                                     <div>
-                                        <h4 className="text-slate-900 font-bold text-base">{member.full_name || 'Unnamed User'}</h4>
-                                        <p className="text-slate-500 text-sm capitalize">{member.role?.replace('_', ' ') || 'Staff'}</p>
+                                        <h4 className="text-slate-900 font-bold text-base">{member.full_name || 'İsimsiz Kullanıcı'}</h4>
+                                        <p className="text-slate-500 text-sm capitalize">{formatRole(member.role)}</p>
                                     </div>
                                 </div>
 
@@ -113,14 +124,14 @@ export default function StaffList({ searchTerm }) {
                                     <button
                                         onClick={() => handleEdit(member)}
                                         className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
-                                        title="Edit Role"
+                                        title="Rolü Düzenle"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">edit</span>
                                     </button>
                                     <button
                                         onClick={() => handleRemoveClick(member)}
                                         className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                        title="Remove Staff"
+                                        title="Personeli Sil"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">delete</span>
                                     </button>
@@ -129,7 +140,7 @@ export default function StaffList({ searchTerm }) {
 
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-green-50 text-green-700 ring-green-600/20">
-                                    Active
+                                    Aktif
                                 </span>
                                 <span className="text-xs text-slate-400">{member.email}</span>
                             </div>
@@ -145,7 +156,7 @@ export default function StaffList({ searchTerm }) {
                     className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-6 py-3 shadow-lg shadow-slate-900/20 flex items-center gap-2 transition-transform active:scale-95 mx-auto w-full justify-center"
                 >
                     <span className="material-symbols-outlined">person_add</span>
-                    <span className="font-bold">Invite New Staff</span>
+                    <span className="font-bold">Yeni Personel Davet Et</span>
                 </button>
             </div>
 
@@ -166,9 +177,9 @@ export default function StaffList({ searchTerm }) {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                title="Remove Staff Member"
-                message={`Are you sure you want to remove ${staffToDelete?.full_name}? This action cannot be undone.`}
-                confirmText="Remove"
+                title="Personeli Sil"
+                message={`${staffToDelete?.full_name} isimli personeli silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+                confirmText="Sil"
                 type="danger"
                 loading={deleteLoading}
             />

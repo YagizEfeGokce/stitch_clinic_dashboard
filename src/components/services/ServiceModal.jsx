@@ -94,7 +94,7 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                    <h2 className="text-lg font-bold text-slate-900">{service ? 'Edit Service' : 'Add New Service'}</h2>
+                    <h2 className="text-lg font-bold text-slate-900">{service ? 'Hizmeti Düzenle' : 'Yeni Hizmet Ekle'}</h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -102,20 +102,20 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Service Name</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Hizmet Adı</label>
                         <input
                             type="text"
                             required
                             value={formData.name}
                             onChange={e => setFormData({ ...formData, name: e.target.value })}
                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                            placeholder="e.g. Chemical Peel"
+                            placeholder="örn. Kimyasal Peeling"
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Duration (min)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Süre (dk)</label>
                             <input
                                 type="number"
                                 min="1"
@@ -127,7 +127,7 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Price ($)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Fiyat (₺)</label>
                             <input
                                 type="number"
                                 min="0"
@@ -142,13 +142,13 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Description (Optional)</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Açıklama (Opsiyonel)</label>
                         <textarea
                             rows="2"
                             value={formData.description}
                             onChange={e => setFormData({ ...formData, description: e.target.value })}
                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                            placeholder="Brief description of the treatment..."
+                            placeholder="Tedavi hakkında kısa bilgi..."
                         ></textarea>
                     </div>
 
@@ -158,7 +158,7 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
                             onClick={onClose}
                             className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors"
                         >
-                            Cancel
+                            İptal
                         </button>
                         <button
                             type="submit"
@@ -166,7 +166,7 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
                             className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {loading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
-                            {service ? 'Save Changes' : 'Add Service'}
+                            {service ? 'Değişiklikleri Kaydet' : 'Hizmeti Ekle'}
                         </button>
                     </div>
                 </form>

@@ -29,8 +29,8 @@ export default function StaffAvailability({ staffList, appointments }) {
     return (
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             <div className="mb-6">
-                <h3 className="font-bold text-slate-900 text-lg">Staff Availability</h3>
-                <p className="text-xs text-slate-500">Resource utilization this month</p>
+                <h3 className="font-bold text-slate-900 text-lg">Personel Müsaitliği</h3>
+                <p className="text-xs text-slate-500">Bu ayın kaynak kullanımı</p>
             </div>
 
             <div className="space-y-5">
@@ -43,28 +43,28 @@ export default function StaffAvailability({ staffList, appointments }) {
                                         <img src={staff.avatar_url} alt={staff.full_name} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-slate-200 text-xs font-bold text-slate-500">
-                                            {staff.full_name?.charAt(0) || 'S'}
+                                            {staff.full_name?.charAt(0) || 'P'}
                                         </div>
                                     )}
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold text-slate-900">{staff.full_name}</p>
-                                    <p className="text-[10px] text-slate-500 font-medium">{staff.role || 'Staff'}</p>
+                                    <p className="text-[10px] text-slate-500 font-medium">{staff.role || 'Personel'}</p>
                                 </div>
                             </div>
                             <div className="text-right">
                                 <span className={`text-sm font-bold ${staff.percentage > 85 ? 'text-red-500' : 'text-slate-900'}`}>
                                     {staff.percentage}%
                                 </span>
-                                <p className="text-[10px] text-slate-400 font-medium">{staff.bookedHours}/160 hrs</p>
+                                <p className="text-[10px] text-slate-400 font-medium">{staff.bookedHours}/160 sa</p>
                             </div>
                         </div>
                         {/* Progress Bar */}
                         <div className="h-2.5 w-full bg-slate-50 rounded-full overflow-hidden">
                             <div
                                 className={`h-full rounded-full transition-all duration-1000 ${staff.percentage > 85 ? 'bg-red-500' :
-                                        staff.percentage > 50 ? 'bg-primary' :
-                                            'bg-emerald-400'
+                                    staff.percentage > 50 ? 'bg-primary' :
+                                        'bg-emerald-400'
                                     }`}
                                 style={{ width: `${staff.percentage}%` }}
                             ></div>
@@ -75,7 +75,7 @@ export default function StaffAvailability({ staffList, appointments }) {
                 {metrics.length === 0 && (
                     <div className="text-center py-8 text-slate-400">
                         <span className="material-symbols-outlined text-3xl mb-2 opacity-50">person_off</span>
-                        <p className="text-sm">No staff metrics available</p>
+                        <p className="text-sm">Personel metriği bulunamadı</p>
                     </div>
                 )}
             </div>

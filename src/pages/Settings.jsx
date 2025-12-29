@@ -70,11 +70,11 @@ export default function Settings() {
     const handlePasswordUpdate = async (e) => {
         e.preventDefault();
         if (passwords.new !== passwords.confirm) {
-            toast.error("Passwords don't match");
+            toast.error("Şifreler eşleşmiyor");
             return;
         }
         if (passwords.new.length < 6) {
-            toast.error("Password must be at least 6 characters");
+            toast.error("Şifre en az 6 karakter olmalı");
             return;
         }
 
@@ -82,14 +82,23 @@ export default function Settings() {
         try {
             const { error } = await supabase.auth.updateUser({ password: passwords.new });
             if (error) throw error;
-            toast.success("Password updated successfully");
+            toast.success("Şifre başarıyla güncellendi");
             setPasswords({ new: '', confirm: '' });
         } catch (error) {
             console.error('Error updating password:', error);
-            toast.error("Failed to update password");
+            toast.error("Şifre güncellenemedi");
         } finally {
             setPassLoading(false);
         }
+    };
+
+    // Tab Mapping
+    const tabLabels = {
+        'General': 'Genel',
+        'Team': 'Ekip',
+        'Data': 'Veri',
+        'Logs': 'Kayıtlar',
+        'Security': 'Güvenlik'
     };
 
     return (
@@ -97,7 +106,7 @@ export default function Settings() {
             {/* Header */}
             <header className="sticky top-0 z-30 flex items-center bg-background-light/95 backdrop-blur-sm p-4 pb-2 justify-between border-b border-slate-100 transition-colors duration-300">
                 <div className="w-10"></div> {/* Spacer for alignment */}
-                <h2 className="text-slate-900 text-lg font-bold leading-tight tracking-tight flex-1 text-center">Settings</h2>
+                <h2 className="text-slate-900 text-lg font-bold leading-tight tracking-tight flex-1 text-center">Ayarlar</h2>
                 <div className="w-10"></div>
             </header>
 
@@ -111,7 +120,16 @@ export default function Settings() {
                     </div>
                     <div className="flex flex-col justify-center flex-1">
                         <p className="text-slate-900 text-lg font-bold leading-tight">{profile?.full_name || 'Dr. User'}</p>
-                        <p className="text-primary text-sm font-medium leading-normal capitalize">{profile?.role?.replace('_', ' ') || 'Medical Director'}</p>
+                        <p className="text-primary text-sm font-medium leading-normal capitalize">
+                            {(() => {
+                                const r = profile?.role?.toLowerCase();
+                                if (r === 'admin' || r === 'owner') return 'Yönetici';
+                                if (r === 'doctor') return 'Doktor';
+                                if (r === 'staff') return 'Personel';
+                                if (r === 'receptionist') return 'Resepsiyonist';
+                                return r?.replace('_', ' ') || 'Klinik Yöneticisi';
+                            })()}
+                        </p>
                         <p className="text-slate-500 text-xs mt-1">{user?.email}</p>
                     </div>
                     <button
@@ -134,7 +152,7 @@ export default function Settings() {
                                 }`}
                         >
                             <span className={`text-sm font-bold leading-normal whitespace-nowrap ${activeTab === tab ? 'text-primary' : 'text-slate-500'
-                                }`}>{tab}</span>
+                                }`}>{tabLabels[tab] || tab}</span>
                         </button>
                     ))}
                 </div>
@@ -148,7 +166,7 @@ export default function Settings() {
                                 <div className="flex items-center justify-center pl-4 text-primary">
                                     <span className="material-symbols-outlined text-[20px]">search</span>
                                 </div>
-                                <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-transparent border-none text-slate-900 placeholder:text-slate-400 px-3 text-base focus:ring-0 h-full" placeholder="Search staff members..." />
+                                <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-transparent border-none text-slate-900 placeholder:text-slate-400 px-3 text-base focus:ring-0 h-full" placeholder="Personel ara..." />
                             </div>
                         </div>
                         <StaffList searchTerm={searchTerm} />
@@ -162,10 +180,10 @@ export default function Settings() {
                 {activeTab === 'Security' && (
                     <div className="space-y-6 animate-in fade-in duration-500">
                         <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 space-y-4">
-                            <h3 className="text-slate-900 text-lg font-bold leading-tight">Change Password</h3>
+                            <h3 className="text-slate-900 text-lg font-bold leading-tight">Şifre Değiştir</h3>
                             <form onSubmit={handlePasswordUpdate} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-1">New Password</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Yeni Şifre</label>
                                     <input
                                         type="password"
                                         required
@@ -177,7 +195,7 @@ export default function Settings() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-1">Confirm Password</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-1">Şifreyi Onayla</label>
                                     <input
                                         type="password"
                                         required
@@ -193,15 +211,15 @@ export default function Settings() {
                                     disabled={passLoading}
                                     className="w-full py-3 rounded-xl bg-slate-900 text-white font-bold shadow-lg shadow-slate-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
                                 >
-                                    {passLoading ? 'Updating...' : 'Update Password'}
+                                    {passLoading ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
                                 </button>
                             </form>
                         </div>
 
                         <div className="bg-red-50 rounded-xl border border-red-100 p-5 flex items-center justify-between">
                             <div>
-                                <h3 className="text-red-900 text-lg font-bold leading-tight">Sign Out</h3>
-                                <p className="text-red-600/80 text-sm mt-1">End your current session.</p>
+                                <h3 className="text-red-900 text-lg font-bold leading-tight">Çıkış Yap</h3>
+                                <p className="text-red-600/80 text-sm mt-1">Mevcut oturumu sonlandır.</p>
                             </div>
                             <button
                                 onClick={async () => {
@@ -211,7 +229,7 @@ export default function Settings() {
                                 }}
                                 className="px-6 py-2 bg-white border border-red-200 text-red-600 font-bold rounded-xl shadow-sm hover:bg-red-50 transition-colors"
                             >
-                                Sign Out
+                                Çıkış Yap
                             </button>
                         </div>
                     </div>

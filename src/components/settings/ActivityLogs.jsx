@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { format } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 export default function ActivityLogs() {
     const [logs, setLogs] = useState([]);
@@ -56,7 +57,7 @@ export default function ActivityLogs() {
 
     const filteredLogs = logs.filter(log =>
         log.action?.toLowerCase().includes(search.toLowerCase()) ||
-        (log.profiles?.full_name || 'Unknown').toLowerCase().includes(search.toLowerCase())
+        (log.profiles?.full_name || 'Bilinmeyen').toLowerCase().includes(search.toLowerCase())
     );
 
     const formatDetails = (log) => {
@@ -64,36 +65,35 @@ export default function ActivityLogs() {
             const details = typeof log.details === 'string' ? JSON.parse(log.details) : log.details;
             if (!details) return '-';
 
-            if (log.action === 'Created Appointment') {
-                return `Appt: ${details.time} on ${details.date}`;
+            if (log.action === 'Created Appointment' || log.action === 'Randevu Oluşturuldu') {
+                return `Randevu: ${details.date} - ${details.time}`;
             }
-            if (log.action === 'Rescheduled Appointment') {
-                return `Moved to ${details.new_time} (${details.date})`;
+            if (log.action === 'Rescheduled Appointment' || log.action === 'Randevu Tarihi Değiştirildi') {
+                return `Taşındı: ${details.date}, ${details.new_time}`;
             }
-            if (log.action === 'Removed Logo') return 'Logo deleted';
+            if (log.action === 'Removed Logo') return 'Logo silindi';
             else if (log.action === 'Updated Branding Settings') {
-                return `Updated branding colors/settings`;
+                return `Marka ayarları güncellendi`;
             } else if (log.action === 'Created Inventory Item') {
-                return `Added product: ${details.item_name || 'Item'}`;
+                return `Ürün eklendi: ${details.item_name || 'Ürün'}`;
             } else if (log.action === 'Updated Inventory Item') {
-                const changes = Array.isArray(details.changes) ? details.changes.join(', ') : 'details';
-                return `Updated product ${details.item_name || ''}: ${changes}`;
+                return `Ürün güncellendi: ${details.item_name || ''}`;
             } else if (log.action === 'Deleted Inventory Item') {
-                return `Deleted product: ${details.item_name || details.item_id}`;
+                return `Ürün silindi: ${details.item_name || details.item_id}`;
             } else if (log.action === 'Created Client') {
-                return `Added client: ${details.client_name || 'Client'}`;
+                return `Müşteri eklendi: ${details.client_name || 'Müşteri'}`;
             } else if (log.action === 'Updated Client') {
-                const changes = Array.isArray(details.changes) ? details.changes.join(', ') : 'details';
-                return `Updated client ${details.client_name || ''}: ${changes}`;
+                return `Müşteri güncellendi: ${details.client_name || ''}`;
             } else if (log.action === 'Deleted Client') {
-                return `Deleted client: ${details.client_name || details.client_id}`;
+                return `Müşteri silindi: ${details.client_name || details.client_id}`;
             } else if (log.action === 'Created Service') {
-                return `Added service: ${details.service_name || 'Service'}`;
+                return `Hizmet eklendi: ${details.service_name || 'Hizmet'}`;
             } else if (log.action === 'Updated Service') {
-                const changes = Array.isArray(details.changes) ? details.changes.join(', ') : 'details';
-                return `Updated service ${details.service_name || ''}: ${changes}`;
+                return `Hizmet güncellendi: ${details.service_name || ''}`;
             } else if (log.action === 'Deleted Service') {
-                return `Deleted service: ${details.service_name || details.service_id}`;
+                return `Hizmet silindi: ${details.service_name || details.service_id}`;
+            } else if (log.action === 'Manual Test Log') {
+                return `Manuel Test Kaydı`;
             }
 
             return JSON.stringify(details);
@@ -106,8 +106,8 @@ export default function ActivityLogs() {
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex justify-between items-center mb-4">
                 <div className="space-y-1">
-                    <h3 className="text-slate-900 text-xl font-bold leading-tight">Activity Logs</h3>
-                    <p className="text-slate-500 text-sm">Audit trail of recent system actions.</p>
+                    <h3 className="text-slate-900 text-xl font-bold leading-tight">Aktivite Kayıtları</h3>
+                    <p className="text-slate-500 text-sm">Son sistem işlemlerinin denetim izi.</p>
                 </div>
                 <button onClick={fetchLogs} className="text-primary hover:bg-primary/5 p-2 rounded-lg transition-colors">
                     <span className="material-symbols-outlined">refresh</span>
@@ -118,7 +118,7 @@ export default function ActivityLogs() {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">search</span>
                 <input
                     type="text"
-                    placeholder="Search logs..."
+                    placeholder="Kayıt ara..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -130,34 +130,52 @@ export default function ActivityLogs() {
                     <table className="w-full text-left text-sm">
                         <thead className="bg-slate-50 border-b border-slate-100">
                             <tr>
-                                <th className="p-4 font-bold text-slate-700">Time</th>
-                                <th className="p-4 font-bold text-slate-700">User</th>
-                                <th className="p-4 font-bold text-slate-700">Action</th>
-                                <th className="p-4 font-bold text-slate-700">Details</th>
+                                <th className="p-4 font-bold text-slate-700">Zaman</th>
+                                <th className="p-4 font-bold text-slate-700">Kullanıcı</th>
+                                <th className="p-4 font-bold text-slate-700">İşlem</th>
+                                <th className="p-4 font-bold text-slate-700">Detaylar</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="4" className="p-8 text-center text-slate-500">Loading logs...</td>
+                                    <td colSpan="4" className="p-8 text-center text-slate-500">Kayıtlar yükleniyor...</td>
                                 </tr>
                             ) : filteredLogs.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="p-8 text-center text-slate-500">No logs found.</td>
+                                    <td colSpan="4" className="p-8 text-center text-slate-500">Kayıt bulunamadı.</td>
                                 </tr>
                             ) : (
                                 filteredLogs.map((log) => (
                                     <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="p-4 whitespace-nowrap text-slate-500">
-                                            {format(new Date(log.created_at), 'MMM d, HH:mm')}
+                                            {format(new Date(log.created_at), 'd MMM, HH:mm', { locale: tr })}
                                         </td>
                                         <td className="p-4">
-                                            <div className="font-bold text-slate-900">{log.profiles?.full_name || 'Unknown'}</div>
-                                            <div className="text-xs text-slate-400 capitalize">{log.profiles?.role || 'User'}</div>
+                                            <div className="font-bold text-slate-900">{log.profiles?.full_name || 'Bilinmeyen'}</div>
+                                            <div className="text-xs text-slate-400 capitalize">{log.profiles?.role || 'Kullanıcı'}</div>
                                         </td>
                                         <td className="p-4">
                                             <span className="inline-block px-2 py-1 rounded bg-slate-100 text-slate-700 font-bold text-xs">
-                                                {log.action}
+                                                {(() => {
+                                                    const map = {
+                                                        'Created Appointment': 'Randevu Oluşturuldu',
+                                                        'Rescheduled Appointment': 'Randevu Değiştirildi',
+                                                        'Updated Client': 'Müşteri Güncellendi',
+                                                        'Created Client': 'Müşteri Eklendi',
+                                                        'Deleted Client': 'Müşteri Silindi',
+                                                        'Manual Test Log': 'Manuel Test',
+                                                        'Updated Branding Settings': 'Marka Ayarları',
+                                                        'Created Inventory Item': 'Ürün Eklendi',
+                                                        'Updated Inventory Item': 'Ürün Güncellendi',
+                                                        'Deleted Inventory Item': 'Ürün Silindi',
+                                                        'Created Service': 'Hizmet Eklendi',
+                                                        'Updated Service': 'Hizmet Güncellendi',
+                                                        'Deleted Service': 'Hizmet Silindi',
+                                                        'Removed Logo': 'Logo Silindi'
+                                                    };
+                                                    return map[log.action] || log.action;
+                                                })()}
                                             </span>
                                         </td>
                                         <td className="p-4 text-slate-500 font-mono text-xs truncate max-w-xs">

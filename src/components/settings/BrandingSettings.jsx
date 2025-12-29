@@ -46,9 +46,6 @@ export default function BrandingSettings() {
         }
     }, [clinic]);
 
-    // Removed fetchSettings as we rely on Context now. 
-    // If we need strict sync, we can re-fetch profile/clinic.
-
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
@@ -62,7 +59,7 @@ export default function BrandingSettings() {
     const handleSave = async () => {
         try {
             if (!clinic?.id) {
-                toast.error("No clinic found for this user.");
+                toast.error("Kullanıcıya ait klinik bulunamadı.");
                 return;
             }
 
@@ -89,12 +86,11 @@ export default function BrandingSettings() {
                     logoUrl = publicUrl;
                 } catch (uploadError) {
                     console.error('Logo upload error:', uploadError);
-                    toast.error('Failed to upload logo.');
+                    toast.error('Logo yüklenemedi.');
                 }
             }
 
             // 2. Prepare Payload for 'clinics' table
-            // We map flat state back to JSONB structure
             const brandingConfig = {
                 logo_url: logoUrl,
                 primary_color: settings.primary_color,
@@ -112,9 +108,9 @@ export default function BrandingSettings() {
             };
 
             const payload = {
-                id: clinic.id, // Mandatory for update logic if we use upsert, or just match ID
+                id: clinic.id,
                 name: settings.clinic_name,
-                branding_config: brandingConfig, // Supabase handles JSONB
+                branding_config: brandingConfig,
                 settings_config: settingsConfig,
                 updated_at: new Date().toISOString()
             };
@@ -128,7 +124,7 @@ export default function BrandingSettings() {
 
             if (error) throw error;
 
-            toast.success('Settings saved!');
+            toast.success('Ayarlar kaydedildi!');
             setLogoFile(null);
 
             if (data) {
@@ -144,15 +140,25 @@ export default function BrandingSettings() {
             }
         } catch (error) {
             console.error('Error saving settings:', error);
-            toast.error('Failed to save settings: ' + error.message);
+            toast.error('Ayarlar kaydedilemedi: ' + error.message);
         } finally {
             setLoading(false);
         }
     };
 
+    const dayMapping = {
+        'Monday': 'Pzt',
+        'Tuesday': 'Sal',
+        'Wednesday': 'Çar',
+        'Thursday': 'Per',
+        'Friday': 'Cum',
+        'Saturday': 'Cmt',
+        'Sunday': 'Paz'
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <h3 className="text-slate-900 text-xl font-bold leading-tight mb-4">Clinic Branding & Info</h3>
+            <h3 className="text-slate-900 text-xl font-bold leading-tight mb-4">Klinik Marka & Bilgileri</h3>
 
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-8">
 
@@ -171,7 +177,7 @@ export default function BrandingSettings() {
                             ) : (
                                 <div className="text-center p-4">
                                     <span className="material-symbols-outlined text-3xl text-slate-300 mb-1">add_a_photo</span>
-                                    <p className="text-xs text-slate-400 font-bold">Upload Logo</p>
+                                    <p className="text-xs text-slate-400 font-bold">Logo Yükle</p>
                                 </div>
                             )}
 
@@ -191,7 +197,7 @@ export default function BrandingSettings() {
                                 onClick={() => fileInputRef.current?.click()}
                                 className="text-xs font-bold text-primary hover:underline"
                             >
-                                Change Logo
+                                Logoyu Değiştir
                             </button>
                             {(logoFile || settings.logo_url) && (
                                 <button
@@ -203,7 +209,7 @@ export default function BrandingSettings() {
                                     }}
                                     className="text-[10px] font-semibold text-rose-500 hover:text-rose-600 hover:underline"
                                 >
-                                    Remove Logo
+                                    Logoyu Kaldır
                                 </button>
                             )}
                         </div>
@@ -212,90 +218,27 @@ export default function BrandingSettings() {
                     {/* Basic Info */}
                     <div className="flex-1 space-y-4 w-full">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Clinic Name</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Klinik Adı</label>
                             <input
                                 type="text"
                                 value={settings.clinic_name}
                                 onChange={(e) => setSettings({ ...settings, clinic_name: e.target.value })}
                                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium bg-white"
-                                placeholder="e.g. Velara Clinic"
+                                placeholder="örn: Dermdesk Klinik"
                             />
                         </div>
 
                     </div>
                 </div>
-
-                <div className="h-px bg-slate-100 w-full"></div>
-
-                {/* Contact Information */}
-                {/* Contact Information (Hidden per user request)
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
-                        <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">call</span>
-                            <input
-                                type="tel"
-                                value={settings.phone || ''}
-                                onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-                                className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                placeholder="+1 234 567 890"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
-                        <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">mail</span>
-                            <input
-                                type="email"
-                                value={settings.email || ''}
-                                onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                                className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                placeholder="contact@clinic.com"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="md:col-span-2">
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Full Address</label>
-                        <div className="relative">
-                            <span className="absolute left-4 top-3 material-symbols-outlined text-slate-400 text-lg">location_on</span>
-                            <textarea
-                                value={settings.address || ''}
-                                onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-                                rows="2"
-                                className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium resize-none"
-                                placeholder="123 Medical Center, Suite 100, City, Country"
-                            ></textarea>
-                        </div>
-                    </div>
-
-                    <div className="md:col-span-2">
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Website URL <span className="text-slate-400 font-normal">(Optional)</span></label>
-                        <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">language</span>
-                            <input
-                                type="url"
-                                value={settings.website || ''}
-                                onChange={(e) => setSettings({ ...settings, website: e.target.value })}
-                                className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                placeholder="https://www.yourclinic.com"
-                            />
-                        </div>
-                    </div>
-                </div>
-                */}
 
                 <div className="h-px bg-slate-100 w-full"></div>
 
                 {/* Working Hours Section */}
                 <div className="space-y-4">
-                    <label className="text-sm font-bold text-slate-900">Working Hours</label>
+                    <label className="text-sm font-bold text-slate-900">Çalışma Saatleri</label>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-semibold text-slate-500 mb-1">Start Time</label>
+                            <label className="block text-xs font-semibold text-slate-500 mb-1">Başlangıç</label>
                             <input
                                 type="time"
                                 value={settings.working_start_hour || '09:00'}
@@ -304,7 +247,7 @@ export default function BrandingSettings() {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-slate-500 mb-1">End Time</label>
+                            <label className="block text-xs font-semibold text-slate-500 mb-1">Bitiş</label>
                             <input
                                 type="time"
                                 value={settings.working_end_hour || '18:00'}
@@ -315,7 +258,7 @@ export default function BrandingSettings() {
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-2">Working Days</label>
+                        <label className="block text-xs font-semibold text-slate-500 mb-2">Çalışma Günleri</label>
                         <div className="flex flex-wrap gap-2">
                             {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
                                 <button
@@ -332,7 +275,7 @@ export default function BrandingSettings() {
                                         : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
                                         }`}
                                 >
-                                    {day.slice(0, 3)}
+                                    {dayMapping[day]}
                                 </button>
                             ))}
                         </div>
@@ -346,11 +289,9 @@ export default function BrandingSettings() {
                         className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl shadow-lg shadow-slate-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                     >
                         {loading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
-                        Save Changes
+                        Değişiklikleri Kaydet
                     </button>
                 </div>
-
-                {/* Developer Zone (Demo Data) - ONLY FOR ADMINS */}
 
             </div>
         </div>

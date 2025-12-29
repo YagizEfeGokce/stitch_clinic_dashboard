@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 
 const CATEGORIES = {
-    Income: ['Treatment', 'Product Sales', 'Consultation', 'Other Income'],
-    Expense: ['Rent', 'Salaries', 'Supplies', 'Marketing', 'Utilities', 'Software', 'Other Expense']
+    Income: ['Tedavi', 'Ürün Satışı', 'Muayene', 'Diğer Gelir'],
+    Expense: ['Kira', 'Maaşlar', 'Malzemeler', 'Pazarlama', 'Faturalar', 'Yazılım', 'Diğer Gider']
 };
 
-const PAYMENT_METHODS = ['Cash', 'Credit Card', 'Bank Transfer', 'Insurance'];
+const PAYMENT_METHODS = ['Nakit', 'Kredi Kartı', 'Havale/EFT', 'Sigorta'];
 
 export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
     const [loading, setLoading] = useState(false);
@@ -14,9 +14,9 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
         type: 'Expense',
         amount: '',
         description: '',
-        category: 'Supplies',
+        category: 'Malzemeler',
         date: new Date().toISOString().split('T')[0],
-        payment_method: 'Credit Card'
+        payment_method: 'Kredi Kartı'
     });
 
     // Reset body scroll when modal opens/closes
@@ -71,16 +71,16 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                 type: 'Expense',
                 amount: '',
                 description: '',
-                category: 'Supplies',
+                category: 'Malzemeler',
                 date: new Date().toISOString().split('T')[0],
-                payment_method: 'Credit Card'
+                payment_method: 'Kredi Kartı'
             });
 
             onSuccess();
             onClose();
         } catch (error) {
             console.error('Error adding transaction:', error);
-            alert('Failed to add transaction');
+            alert('İşlem eklenemedi');
         } finally {
             setLoading(false);
         }
@@ -100,7 +100,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
             <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all animate-in zoom-in-95 duration-200">
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-bold text-slate-900">New Transaction</h3>
+                        <h3 className="text-xl font-bold text-slate-900">Yeni İşlem</h3>
                         <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
                             <span className="material-symbols-outlined">close</span>
                         </button>
@@ -119,7 +119,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                             >
                                 <span className="flex items-center justify-center gap-2">
                                     <span className="material-symbols-outlined text-[18px]">trending_up</span>
-                                    Income
+                                    Gelir
                                 </span>
                             </button>
                             <button
@@ -132,16 +132,16 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                             >
                                 <span className="flex items-center justify-center gap-2">
                                     <span className="material-symbols-outlined text-[18px]">trending_down</span>
-                                    Expense
+                                    Gider
                                 </span>
                             </button>
                         </div>
 
                         {/* Amount */}
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Amount ($)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Miktar (₺)</label>
                             <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₺</span>
                                 <input
                                     type="number"
                                     name="amount"
@@ -158,14 +158,14 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
 
                         {/* Description */}
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Description</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Açıklama</label>
                             <input
                                 type="text"
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
                                 required
-                                placeholder="e.g. Office Rent, Botox Supply"
+                                placeholder="örn. Ofis Kirası, Botox Malzemesi"
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-medium text-slate-900"
                             />
                         </div>
@@ -173,7 +173,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                         {/* Category & Date Row */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Category</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Kategori</label>
                                 <select
                                     name="category"
                                     value={formData.category}
@@ -186,7 +186,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Date</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-1">Tarih</label>
                                 <input
                                     type="date"
                                     name="date"
@@ -200,7 +200,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
 
                         {/* Payment Method */}
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Payment Method</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Ödeme Yöntemi</label>
                             <div className="flex flex-wrap gap-2">
                                 {PAYMENT_METHODS.map(method => (
                                     <button
@@ -225,7 +225,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                             className="w-full mt-4 bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
                         >
                             {loading && <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>}
-                            {formData.type === 'Income' ? 'Add Income' : 'Add Expense'}
+                            {formData.type === 'Income' ? 'Gelir Ekle' : 'Gider Ekle'}
                         </button>
                     </form>
                 </div>

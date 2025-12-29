@@ -56,14 +56,14 @@ export default function InviteStaffModal({ isOpen, onClose }) {
                 ]);
                 if (profileError) console.error('Profile update error:', profileError);
 
-                toast.success(`Account created for ${formData.fullName}`);
+                toast.success(`${formData.fullName} için hesap oluşturuldu`);
                 onClose();
                 setFormData({ email: '', password: '', fullName: '', role: 'staff' });
             }
 
         } catch (error) {
             console.error('Error creating staff:', error);
-            toast.error(error.message || 'Failed to create account');
+            toast.error(error.message || 'Hesap oluşturulamadı');
         } finally {
             setLoading(false);
         }
@@ -75,7 +75,7 @@ export default function InviteStaffModal({ isOpen, onClose }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
                 <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                    <h3 className="font-bold text-slate-900">Create Staff Account</h3>
+                    <h3 className="font-bold text-slate-900">Personel Hesabı Oluştur</h3>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -84,15 +84,15 @@ export default function InviteStaffModal({ isOpen, onClose }) {
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-sm text-amber-800 flex gap-2">
                         <span className="material-symbols-outlined text-lg shrink-0">warning</span>
-                        <p>This will create a new login. Share these credentials securely with the staff member.</p>
+                        <p>Bu işlem yeni bir giriş hesabı oluşturacaktır. Lütfen bu bilgileri personel ile güvenli bir şekilde paylaşın.</p>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Full Name</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Ad Soyad</label>
                         <input
                             type="text"
                             required
-                            placeholder="Dr. John Doe"
+                            placeholder="Dr. Ahmet Yılmaz"
                             value={formData.fullName}
                             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-bold text-slate-900 placeholder:font-normal"
@@ -100,11 +100,11 @@ export default function InviteStaffModal({ isOpen, onClose }) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Email Address</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">E-posta Adresi</label>
                         <input
                             type="email"
                             required
-                            placeholder="doc@clinic.com"
+                            placeholder="doktor@klinik.com"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-bold text-slate-900 placeholder:font-normal"
@@ -112,11 +112,11 @@ export default function InviteStaffModal({ isOpen, onClose }) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Şifre</label>
                         <input
                             type="password"
                             required
-                            placeholder="Min. 6 characters"
+                            placeholder="En az 6 karakter"
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-bold text-slate-900 placeholder:font-normal"
@@ -124,15 +124,15 @@ export default function InviteStaffModal({ isOpen, onClose }) {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Role</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Rol</label>
                         <select
                             value={formData.role}
                             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-bold text-slate-900 bg-white"
                         >
-                            <option value="admin">Admin</option>
-                            <option value="doctor">Doctor</option>
-                            <option value="staff">Staff</option>
+                            <option value="admin">Yönetici</option>
+                            <option value="doctor">Doktor</option>
+                            <option value="staff">Personel</option>
                         </select>
                     </div>
 
@@ -142,7 +142,7 @@ export default function InviteStaffModal({ isOpen, onClose }) {
                             onClick={onClose}
                             className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors"
                         >
-                            Cancel
+                            İptal
                         </button>
                         <button
                             type="submit"
@@ -152,12 +152,12 @@ export default function InviteStaffModal({ isOpen, onClose }) {
                             {loading ? (
                                 <>
                                     <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
-                                    Creating...
+                                    Oluşturuluyor...
                                 </>
                             ) : (
                                 <>
                                     <span className="material-symbols-outlined text-lg">person_add</span>
-                                    Create Account
+                                    Hesap Oluştur
                                 </>
                             )}
                         </button>

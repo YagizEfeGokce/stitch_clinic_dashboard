@@ -26,13 +26,13 @@ export default function RevenueChart({ transactions = [] }) {
         <div className="flex flex-col gap-4 p-5 bg-white rounded-2xl shadow-card border border-slate-100 h-full">
             <div className="flex items-start justify-between">
                 <div>
-                    <h3 className="text-base font-bold text-slate-900">Revenue Trends</h3>
-                    <p className="text-xs text-slate-500">Income over time</p>
+                    <h3 className="text-base font-bold text-slate-900">Gelir Trendleri</h3>
+                    <p className="text-xs text-slate-500">Zaman içindeki gelir</p>
                 </div>
             </div>
 
             <div className="flex items-end gap-2">
-                <h2 className="text-3xl font-bold text-slate-900">${totalRevenue.toLocaleString()}</h2>
+                <h2 className="text-3xl font-bold text-slate-900">₺{totalRevenue.toLocaleString('tr-TR')}</h2>
             </div>
 
             <div className="w-full h-[200px] mt-2">
@@ -57,15 +57,15 @@ export default function RevenueChart({ transactions = [] }) {
                                 tickLine={false}
                                 tick={{ fill: '#64748B', fontSize: 11 }}
                                 tickFormatter={(value) => {
-                                    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
-                                    if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`;
-                                    return `$${value}`;
+                                    if (value >= 1000000) return `₺${(value / 1000000).toFixed(1)}M`;
+                                    if (value >= 1000) return `₺${(value / 1000).toFixed(0)}k`;
+                                    return `₺${value}`;
                                 }}
                             />
                             <Tooltip
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 cursor={{ stroke: '#0D9488', strokeWidth: 1, strokeDasharray: '4 4' }}
-                                formatter={(value) => [`$${value.toLocaleString()}`, 'Revenue']}
+                                formatter={(value) => [`₺${value.toLocaleString('tr-TR')}`, 'Gelir']}
                             />
                             <Area
                                 type="monotone"
@@ -79,7 +79,7 @@ export default function RevenueChart({ transactions = [] }) {
                     </ResponsiveContainer>
                 ) : (
                     <div className="h-full flex items-center justify-center text-slate-400 text-sm">
-                        No income data specific to graph
+                        Grafik için yeterli gelir verisi yok
                     </div>
                 )}
             </div>

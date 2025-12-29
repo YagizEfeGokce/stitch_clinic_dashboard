@@ -129,9 +129,9 @@ export default function Home() {
         const today = new Date().toISOString().split('T')[0];
         const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
-        if (dateStr === today) return 'Today';
-        if (dateStr === tomorrow) return 'Tomorrow';
-        return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        if (dateStr === today) return 'Bugün';
+        if (dateStr === tomorrow) return 'Yarın';
+        return new Date(dateStr).toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' });
     };
 
     if (loading) {
@@ -149,9 +149,9 @@ export default function Home() {
                 <div className="flex justify-between items-start">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                            Good Morning, {displayName} 👋
+                            Günaydın, {displayName} 👋
                         </h1>
-                        <p className="text-slate-500 font-medium">Here's what's happening at Velara Clinic today.</p>
+                        <p className="text-slate-500 font-medium">Bugün Dermdesk Klinik'te neler oluyor...</p>
                     </div>
                 </div>
             </header>
@@ -166,7 +166,7 @@ export default function Home() {
                         <span className="material-symbols-outlined">calendar_today</span>
                     </div>
                     <span className="text-3xl font-bold text-slate-900">{stats.appointmentsToday}</span>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Appointments Today</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Bugünkü Randevular</span>
                 </div>
 
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center group hover:scale-[1.02] transition-transform">
@@ -174,7 +174,7 @@ export default function Home() {
                         <span className="material-symbols-outlined">group</span>
                     </div>
                     <span className="text-3xl font-bold text-slate-900">{stats.activeClients}</span>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Active Patients</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Aktif Hastalar</span>
                 </div>
 
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center group hover:scale-[1.02] transition-transform col-span-2 md:col-span-1">
@@ -182,7 +182,7 @@ export default function Home() {
                         <span className="material-symbols-outlined">trending_up</span>
                     </div>
                     <span className="text-3xl font-bold text-slate-900">{stats.occupancyRate}%</span>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Occupancy Rate</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Doluluk Oranı</span>
                 </div>
             </div>
 
@@ -193,8 +193,8 @@ export default function Home() {
                         <span className="material-symbols-outlined text-xl">calendar_add_on</span>
                     </div>
                     <div>
-                        <span className="block text-sm font-bold text-slate-900">View Schedule</span>
-                        <span className="block text-[10px] text-slate-500">Manage appointments</span>
+                        <span className="block text-sm font-bold text-slate-900">Takvimi Gör</span>
+                        <span className="block text-[10px] text-slate-500">Randevuları yönet</span>
                     </div>
                 </Link>
                 <Link to="/clients" className="flex items-center gap-3 px-5 py-3 bg-white border border-slate-100 rounded-xl shadow-sm min-w-max hover:bg-slate-50 transition-colors">
@@ -202,8 +202,8 @@ export default function Home() {
                         <span className="material-symbols-outlined text-xl">person_add</span>
                     </div>
                     <div>
-                        <span className="block text-sm font-bold text-slate-900">New Patient</span>
-                        <span className="block text-[10px] text-slate-500">Register profile</span>
+                        <span className="block text-sm font-bold text-slate-900">Yeni Hasta</span>
+                        <span className="block text-[10px] text-slate-500">Profil kaydı oluştur</span>
                     </div>
                 </Link>
                 <Link to="/finance" className="flex items-center gap-3 px-5 py-3 bg-white border border-slate-100 rounded-xl shadow-sm min-w-max hover:bg-slate-50 transition-colors">
@@ -211,8 +211,8 @@ export default function Home() {
                         <span className="material-symbols-outlined text-xl">payments</span>
                     </div>
                     <div>
-                        <span className="block text-sm font-bold text-slate-900">Record Payment</span>
-                        <span className="block text-[10px] text-slate-500">Add transaction</span>
+                        <span className="block text-sm font-bold text-slate-900">Ödeme Kaydet</span>
+                        <span className="block text-[10px] text-slate-500">İşlem ekle</span>
                     </div>
                 </Link>
             </div>
@@ -220,13 +220,13 @@ export default function Home() {
             {/* Upcoming Section */}
             <div>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-slate-900">Up Next</h2>
-                    <Link to="/schedule" className="text-sm font-bold text-primary hover:text-primary-dark">View Schedule</Link>
+                    <h2 className="text-xl font-bold text-slate-900">Sırada</h2>
+                    <Link to="/schedule" className="text-sm font-bold text-primary hover:text-primary-dark">Takvimi Gör</Link>
                 </div>
 
                 {upcomingAppointments.length === 0 ? (
                     <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                        <p className="text-slate-500">No upcoming appointments.</p>
+                        <p className="text-slate-500">Yaklaşan randevu yok.</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
@@ -242,15 +242,20 @@ export default function Home() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h4 className="font-bold text-slate-900 truncate group-hover:text-primary transition-colors">
-                                        {apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Unknown Client'}
+                                        {apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Bilinmeyen Müşteri'}
                                     </h4>
-                                    <p className="text-sm text-slate-500 truncate">{apt.services?.name || 'Consultation'}</p>
+                                    <p className="text-sm text-slate-500 truncate">{apt.services?.name || 'Konsültasyon'}</p>
                                 </div>
                                 <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase ${apt.status === 'Confirmed' ? 'bg-indigo-50 text-indigo-700' :
                                     apt.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' :
                                         'bg-slate-100 text-slate-600'
                                     }`}>
-                                    {apt.status}
+                                    {apt.status === 'Confirmed' ? 'Onaylandı' :
+                                        apt.status === 'Completed' ? 'Tamamlandı' :
+                                            apt.status === 'Cancelled' ? 'İptal' :
+                                                apt.status === 'Scheduled' ? 'Planlandı' :
+                                                    apt.status === 'Pending' ? 'Bekliyor' :
+                                                        apt.status}
                                 </div>
                             </Link>
                         ))}

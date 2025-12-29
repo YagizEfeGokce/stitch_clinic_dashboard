@@ -89,18 +89,18 @@ export default function Clients() {
 
             if (error) throw error;
 
-            await logActivity('Deleted Client', {
+            await logActivity('Müşteri Silindi', {
                 client_name: `${clientToDelete.first_name} ${clientToDelete.last_name}`,
                 client_id: clientToDelete.id
             });
 
-            success('Client deleted successfully');
+            success('Müşteri başarıyla silindi');
             fetchClients();
             setIsDeleteModalOpen(false);
             setClientToDelete(null);
         } catch (error) {
             console.error('Error deleting client:', error);
-            showError('Failed to delete client');
+            showError('Müşteri silinemedi');
         } finally {
             setDeleteLoading(false);
         }
@@ -176,15 +176,15 @@ export default function Clients() {
             {/* Header */}
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Clients</h1>
-                    <p className="text-slate-500 mt-1">Manage your patient database</p>
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Müşteriler</h1>
+                    <p className="text-slate-500 mt-1">Hasta veritabanınızı yönetin</p>
                 </div>
                 <button
                     onClick={handleOpenAddModal}
                     className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-slate-900/20 hover:scale-105 transition-transform active:scale-95"
                 >
                     <span className="material-symbols-outlined">person_add</span>
-                    <span>Add New Client</span>
+                    <span>Yeni Hasta Ekle</span>
                 </button>
             </header>
 
@@ -195,7 +195,7 @@ export default function Clients() {
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
                     <input
                         type="text"
-                        placeholder="Search by name, email, or phone..."
+                        placeholder="İsim, e-posta veya telefon ile ara..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-12 pr-4 py-3.5 rounded-xl border-none bg-white shadow-sm ring-1 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-800 placeholder:text-slate-400 transition-all font-medium"
@@ -204,18 +204,21 @@ export default function Clients() {
 
                 {/* Status Tabs */}
                 <div className="flex bg-white p-1 rounded-xl shadow-sm ring-1 ring-slate-100 overflow-x-auto">
-                    {['All', 'Active', 'Lead', 'Inactive'].map(status => (
-                        <button
-                            key={status}
-                            onClick={() => setStatusFilter(status)}
-                            className={`px-4 py-2.5 text-sm font-bold rounded-lg transition-all whitespace-nowrap ${statusFilter === status
-                                ? 'bg-primary/10 text-primary'
-                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-                                }`}
-                        >
-                            {status}
-                        </button>
-                    ))}
+                    {['Tümü', 'Aktif', 'Potansiyel', 'Pasif'].map((statusLabel, index) => {
+                        const statusKey = ['All', 'Active', 'Lead', 'Inactive'][index];
+                        return (
+                            <button
+                                key={statusKey}
+                                onClick={() => setStatusFilter(statusKey)}
+                                className={`px-4 py-2.5 text-sm font-bold rounded-lg transition-all whitespace-nowrap ${statusFilter === statusKey
+                                    ? 'bg-primary/10 text-primary'
+                                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {statusLabel}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -225,7 +228,7 @@ export default function Clients() {
                 </div>
             ) : (
                 <>
-                    {loading && <div className="text-center text-xs text-slate-400 py-1 animate-pulse">Checking for updates...</div>}
+                    {loading && <div className="text-center text-xs text-slate-400 py-1 animate-pulse">Güncellemeler kontrol ediliyor...</div>}
                     <ClientList
                         clients={filteredClients}
                         onEdit={handleEdit}
@@ -250,9 +253,9 @@ export default function Clients() {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                title="Delete Client"
-                message={`Are you sure you want to delete ${clientToDelete?.first_name} ${clientToDelete?.last_name}? This will remove all their appointments and data.`}
-                confirmText="Delete"
+                title="Müşteriyi Sil"
+                message={`${clientToDelete?.first_name} ${clientToDelete?.last_name} adlı müşteriyi silmek istediğinize emin misiniz? Bu işlem, müşteriye ait tüm randevuları ve verileri silecektir.`}
+                confirmText="Sil"
                 type="danger"
                 loading={deleteLoading}
             />

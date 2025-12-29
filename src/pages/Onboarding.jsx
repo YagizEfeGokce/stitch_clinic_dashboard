@@ -93,19 +93,19 @@ export default function Onboarding() {
                     </div>
 
                     <h1 className="text-2xl font-bold text-center text-slate-900 mb-2">
-                        Welcome, {existingName || 'Doctor'}
+                        Hoş Geldiniz, {existingName || 'Doktor'}
                     </h1>
-                    <p className="text-center text-slate-500 mb-8">Let's set up your clinic workspace.</p>
+                    <p className="text-center text-slate-500 mb-8">Klinik çalışma alanınızı kuralım.</p>
 
                     <form onSubmit={handleComplete} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-bold text-slate-900 mb-1.5">Clinic Name</label>
+                            <label className="block text-sm font-bold text-slate-900 mb-1.5">Klinik Adı</label>
                             <input
                                 type="text"
                                 required
                                 value={clinicName}
                                 onChange={(e) => setClinicName(e.target.value)}
-                                placeholder="e.g. Aura Aesthetics"
+                                placeholder="örn. Aura Estetik"
                                 className="w-full px-5 py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-semibold outline-none"
                             />
                         </div>
@@ -115,7 +115,7 @@ export default function Onboarding() {
                             disabled={loading}
                             className="w-full py-4 rounded-xl bg-slate-900 text-white font-bold text-lg shadow-lg shadow-slate-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                         >
-                            {loading ? 'Setting up...' : 'Get Started'}
+                            {loading ? 'Kuruluyor...' : 'Başlayın'}
                             {!loading && <span className="material-symbols-outlined">arrow_forward</span>}
                         </button>
                     </form>

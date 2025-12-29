@@ -37,8 +37,8 @@ export default function TransactionTable({ transactions, onRefresh }) {
                 <div className="size-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4 text-slate-300">
                     <span className="material-symbols-outlined text-3xl">receipt_long</span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">No Transactions</h3>
-                <p className="text-slate-500 text-sm mt-1">Add your first income or expense to get started.</p>
+                <h3 className="text-lg font-bold text-slate-900">İşlem Bulunamadı</h3>
+                <p className="text-slate-500 text-sm mt-1">Başlamak için ilk gelir veya giderinizi ekleyin.</p>
             </div>
         );
     }
@@ -47,18 +47,18 @@ export default function TransactionTable({ transactions, onRefresh }) {
         <>
             <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
                 <div className="p-5 border-b border-slate-100 flex justify-between items-center">
-                    <h3 className="font-bold text-slate-900 text-lg">Recent Transactions</h3>
-                    <button className="text-primary text-sm font-bold hover:underline">View All</button>
+                    <h3 className="font-bold text-slate-900 text-lg">Son İşlemler</h3>
+                    <button className="text-primary text-sm font-bold hover:underline">Tümünü Gör</button>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-slate-50/50 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
                             <tr>
-                                <th className="px-5 py-3 first:pl-6">Transaction</th>
-                                <th className="px-5 py-3">Category</th>
-                                <th className="px-5 py-3">Date</th>
-                                <th className="px-5 py-3">Amount</th>
-                                <th className="px-5 py-3 text-right first:pr-6">Action</th>
+                                <th className="px-5 py-3 first:pl-6">İşlem</th>
+                                <th className="px-5 py-3">Kategori</th>
+                                <th className="px-5 py-3">Tarih</th>
+                                <th className="px-5 py-3">Miktar</th>
+                                <th className="px-5 py-3 text-right first:pr-6">İşlem</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50 text-slate-600 font-medium">
@@ -84,11 +84,11 @@ export default function TransactionTable({ transactions, onRefresh }) {
                                         </span>
                                     </td>
                                     <td className="px-5 py-4 text-slate-500">
-                                        {new Date(t.date).toLocaleDateString()}
+                                        {new Date(t.date).toLocaleDateString('tr-TR')}
                                     </td>
                                     <td className={`px-5 py-4 font-bold text-[15px] ${t.type === 'income' ? 'text-green-600' : 'text-slate-900'
                                         }`}>
-                                        {t.type === 'income' ? '+' : '-'}${parseFloat(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                        {t.type === 'income' ? '+' : '-'}₺{parseFloat(t.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                     </td>
                                     <td className="px-5 py-4 text-right first:pr-6">
                                         <button
@@ -115,22 +115,22 @@ export default function TransactionTable({ transactions, onRefresh }) {
                         <div className="mx-auto w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mb-4">
                             <span className="material-symbols-outlined text-2xl">delete</span>
                         </div>
-                        <h3 className="text-center text-lg font-bold text-slate-900 mb-2">Delete Transaction?</h3>
+                        <h3 className="text-center text-lg font-bold text-slate-900 mb-2">İşlemi Sil?</h3>
                         <p className="text-center text-slate-500 text-sm mb-6">
-                            This action cannot be undone. Are you sure you want to remove this transaction?
+                            Bu işlem geri alınamaz. Bu işlemi silmek istediğinizden emin misiniz?
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setConfirmDeleteId(null)}
                                 className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors"
                             >
-                                Cancel
+                                İptal
                             </button>
                             <button
                                 onClick={confirmDelete}
                                 className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 shadow-lg shadow-red-500/20 transition-colors"
                             >
-                                Delete
+                                Sil
                             </button>
                         </div>
                     </div>

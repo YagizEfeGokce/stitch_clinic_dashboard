@@ -68,7 +68,7 @@ export default function QuickAppointmentModal({
             const selectedDateTime = new Date(`${formData.date}T${formData.time}`);
             const now = new Date();
             if (selectedDateTime < now) {
-                showError('Cannot schedule appointments in the past.');
+                showError('Geçmiş tarihe randevu verilemez.');
                 setLoading(false);
                 return;
             }
@@ -77,20 +77,20 @@ export default function QuickAppointmentModal({
             const { data: { user } } = await supabase.auth.getUser();
             const targetStaffId = formData.staff_id || user?.id;
 
-            if (!targetStaffId) throw new Error('No staff member assigned.');
+            if (!targetStaffId) throw new Error('Personel atanmadı.');
 
             // Validation 2: Clinic & Staff Working Hours
             // Skip this if ignoring conflicts (maybe? or keep it strict? Strict for now, usually shifts are strict)
             const availabilityCheck = await checkWorkingHours(formData.date, formData.time, targetStaffId);
             if (!availabilityCheck.valid) {
-                showError(availabilityCheck.message);
+                showError(availabilityCheck.message); // This might come from lib, ensure lib is translated or translate here if generic
                 setLoading(false);
                 return;
             }
 
             // Find selected service
             const selectedService = services.find(s => s.id === formData.service_id);
-            if (!selectedService) throw new Error('Service not found');
+            if (!selectedService) throw new Error('Hizmet bulunamadı');
 
             // Validation 3: Conflict Check (Overlapping Appointments)
             if (!ignoreConflict) {
@@ -118,7 +118,7 @@ export default function QuickAppointmentModal({
                     });
 
                     if (hasConflict) {
-                        showError('Time slot occupied! Click "Force Schedule" to proceed anyway.');
+                        showError('Zaman dilimi dolu! Devam etmek için "Zorla Planla"ya tıklayın.');
                         setIgnoreConflict(true);
                         setLoading(false);
                         return;
@@ -143,7 +143,7 @@ export default function QuickAppointmentModal({
 
             if (insertError) throw insertError;
 
-            success('Appointment scheduled successfully');
+            success('Randevu başarıyla planlandı');
 
             // Log Activity
             await logActivity('Created Appointment', {
@@ -158,7 +158,7 @@ export default function QuickAppointmentModal({
             onClose();
         } catch (err) {
             console.error('Error creating appointment:', err);
-            showError('Failed to create appointment');
+            showError('Randevu oluşturulamadı');
         } finally {
             setLoading(false);
         }
@@ -170,7 +170,7 @@ export default function QuickAppointmentModal({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                    <h2 className="text-lg font-bold text-slate-900">New Appointment</h2>
+                    <h2 className="text-lg font-bold text-slate-900">Yeni Randevu</h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -180,17 +180,17 @@ export default function QuickAppointmentModal({
                     {/* Staff Selection (Admin/Doctor Only) */}
                     {canAssignStaff && (
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Assign to Staff</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Personele Ata</label>
                             <select
                                 required
                                 value={formData.staff_id}
                                 onChange={e => setFormData({ ...formData, staff_id: e.target.value })}
                                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium bg-white"
                             >
-                                <option value="" disabled>Select Staff Member</option>
+                                <option value="" disabled>Personel Seç</option>
                                 {staffList.map(member => (
                                     <option key={member.id} value={member.id}>
-                                        {member.full_name || 'Unnamed Staff'}
+                                        {member.full_name || 'İsimsiz Personel'}
                                     </option>
                                 ))}
                             </select>
@@ -199,14 +199,14 @@ export default function QuickAppointmentModal({
 
                     {/* Client Selection */}
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Client</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Hasta</label>
                         <select
                             required
                             value={formData.client_id}
                             onChange={e => setFormData({ ...formData, client_id: e.target.value })}
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium bg-white"
                         >
-                            <option value="" disabled>Select Client</option>
+                            <option value="" disabled>Hasta Seç</option>
                             {clients.map(client => (
                                 <option key={client.id} value={client.id}>
                                     {client.first_name} {client.last_name} {client.phone ? `(${client.phone})` : ''}
@@ -217,17 +217,17 @@ export default function QuickAppointmentModal({
 
                     {/* Service Selection */}
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Service</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Hizmet</label>
                         <select
                             required
                             value={formData.service_id}
                             onChange={e => setFormData({ ...formData, service_id: e.target.value })}
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium bg-white"
                         >
-                            <option value="" disabled>Select Service</option>
+                            <option value="" disabled>Hizmet Seç</option>
                             {services.map(service => (
                                 <option key={service.id} value={service.id}>
-                                    {service.name} ({service.duration_min} min) - ${service.price}
+                                    {service.name} ({service.duration_min} dk) - {service.price}₺
                                 </option>
                             ))}
                         </select>
@@ -235,7 +235,7 @@ export default function QuickAppointmentModal({
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Date</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Tarih</label>
                             <input
                                 type="date"
                                 required
@@ -245,7 +245,7 @@ export default function QuickAppointmentModal({
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Time</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Saat</label>
                             <input
                                 type="time"
                                 required
@@ -257,13 +257,13 @@ export default function QuickAppointmentModal({
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Notes <span className="text-slate-400 font-normal">(Optional)</span></label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Notlar <span className="text-slate-400 font-normal">(İsteğe Bağlı)</span></label>
                         <textarea
                             rows="2"
                             value={formData.notes}
                             onChange={e => setFormData({ ...formData, notes: e.target.value })}
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium resize-none"
-                            placeholder="Special requests, allergies, etc."
+                            placeholder="Özel istekler, alerjiler vb."
                         ></textarea>
                     </div>
 
@@ -273,7 +273,7 @@ export default function QuickAppointmentModal({
                             onClick={onClose}
                             className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors"
                         >
-                            Cancel
+                            İptal
                         </button>
                         <button
                             type="submit"
@@ -284,7 +284,7 @@ export default function QuickAppointmentModal({
                                 }`}
                         >
                             {loading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
-                            {ignoreConflict ? 'Force Schedule' : 'Schedule'}
+                            {ignoreConflict ? 'Zorla Planla' : 'Planla'}
                         </button>
                     </div>
                 </form>

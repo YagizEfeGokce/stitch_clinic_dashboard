@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { getLocalISOString } from '../utils/dateUtils';
 
 export default function CalendarStrip({ selectedDate, onSelectDate }) {
-    const [days, setDays] = useState([]);
-
-    useEffect(() => {
+    const days = useMemo(() => {
         // Parse selectedDate (YYYY-MM-DD) or fallback to Today
         // We want the calendar strip to SHOW the selected date.
         const baseDate = selectedDate ? new Date(selectedDate) : new Date();
@@ -13,8 +11,13 @@ export default function CalendarStrip({ selectedDate, onSelectDate }) {
         const validBaseDate = isNaN(baseDate.getTime()) ? new Date() : baseDate;
 
         const currentDayOfBase = validBaseDate.getDay(); // 0 (Sun) - 6 (Sat)
+
+        // Adjust for Monday start (Turkey standard)
+        // If Sunday (0), go back 6 days. If Monday (1), go back 0.
+        const diff = currentDayOfBase === 0 ? 6 : currentDayOfBase - 1;
+
         const weekStart = new Date(validBaseDate);
-        weekStart.setDate(validBaseDate.getDate() - currentDayOfBase); // Go back to Sunday of THAT week
+        weekStart.setDate(validBaseDate.getDate() - diff);
 
         const today = new Date();
         const todayStr = getLocalISOString(today);
@@ -26,20 +29,18 @@ export default function CalendarStrip({ selectedDate, onSelectDate }) {
 
             // Normalize to YYYY-MM-DD for comparison using Local Time
             const dateStr = getLocalISOString(date);
-            const todayStr = getLocalISOString(today);
 
-            const isToday = dateStr === todayStr;
             const isSelected = selectedDate === dateStr;
             const isPast = dateStr < todayStr;
 
             weekDays.push({
-                day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                day: date.toLocaleDateString('tr-TR', { weekday: 'short' }),
                 date: date.getDate(),
                 fullDate: dateStr,
                 status: isSelected ? 'active' : isPast ? 'past' : 'future'
             });
         }
-        setDays(weekDays);
+        return weekDays;
     }, [selectedDate]);
 
     return (

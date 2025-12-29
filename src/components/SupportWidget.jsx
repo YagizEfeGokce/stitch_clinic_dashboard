@@ -7,7 +7,7 @@ export default function SupportWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
     const [messages, setMessages] = useState([
-        { id: 1, text: '👋 Hi! How can we help you today?', isBot: true }
+        { id: 1, text: '👋 Merhaba! Bugün size nasıl yardımcı olabiliriz?', isBot: true }
     ]);
     const scrollRef = useRef(null);
 
@@ -40,7 +40,7 @@ export default function SupportWidget() {
 
             setMessages(prev => [...prev, {
                 id: Date.now() + 1,
-                text: 'Thanks for reaching out! Our support team has received your message and will get back to you shortly.',
+                text: 'Ulaştığınız için teşekkürler! Destek ekibimiz mesajınızı aldı, en kısa sürede dönüş yapacağız.',
                 isBot: true
             }]);
         }, 1000);
@@ -55,10 +55,10 @@ export default function SupportWidget() {
                         <div className="flex items-center gap-2">
                             <span className="material-symbols-outlined">smart_toy</span>
                             <div>
-                                <div className="font-bold text-sm">Velara Assistant</div>
+                                <div className="font-bold text-sm">Dermdesk Asistan</div>
                                 <div className="text-[10px] text-slate-300 flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                                    Online
+                                    Çevrimiçi
                                 </div>
                             </div>
                         </div>
@@ -87,7 +87,7 @@ export default function SupportWidget() {
                             type="text"
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Type a message..."
+                            placeholder="Mesaj yazın..."
                             className="flex-1 text-sm px-3 py-2 bg-slate-50 border-none rounded-lg focus:outline-none focus:ring-1 focus:ring-primary/20"
                             autoFocus
                         />

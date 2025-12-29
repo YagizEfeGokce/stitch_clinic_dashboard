@@ -27,8 +27,8 @@ const ActionCenter = () => {
                 newActions.push({
                     id: 'pending-apts',
                     icon: 'calendar_clock',
-                    title: `${pendingApts.count} Pending Appointments`,
-                    subtitle: 'Needs confirmation',
+                    title: `${pendingApts.count} Bekleyen Randevu`,
+                    subtitle: 'Onay gerekiyor',
                     color: 'text-amber-600',
                     bg: 'bg-amber-50',
                     path: '/schedule'
@@ -39,8 +39,8 @@ const ActionCenter = () => {
                 newActions.push({
                     id: 'low-stock',
                     icon: 'inventory_2',
-                    title: `${lowStock.count} Low Stock Items`,
-                    subtitle: 'Reorder required',
+                    title: `${lowStock.count} Düşük Stoklu Ürün`,
+                    subtitle: 'Sipariş gerekli',
                     color: 'text-rose-600',
                     bg: 'bg-rose-50',
                     path: '/inventory?filter=Low%20Stock'
@@ -60,7 +60,7 @@ const ActionCenter = () => {
 
     return (
         <div className="mb-6 animate-in slide-in-from-top-4 duration-500">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">Action Needed</h3>
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">Eylem Gerekiyor</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {actions.map(action => (
                     <button

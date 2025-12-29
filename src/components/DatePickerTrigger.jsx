@@ -31,7 +31,7 @@ export default function DatePickerTrigger({ onSelectDate, selectedDate }) {
                         : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'}`}
             >
                 <span className="material-symbols-outlined text-[20px] transition-colors">calendar_month</span>
-                <span>Select Date</span>
+                <span>Tarih Seç</span>
             </button>
 
             {isOpen && (

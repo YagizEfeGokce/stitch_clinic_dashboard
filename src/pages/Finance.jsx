@@ -129,15 +129,15 @@ export default function Finance() {
             <div className="flex flex-col gap-1 mb-6">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Financial Overview</h1>
-                        <p className="text-sm text-slate-500">Here's your clinic's financial update.</p>
+                        <h1 className="text-2xl font-bold text-slate-900">Finansal Genel Bakış</h1>
+                        <p className="text-sm text-slate-500">Kliniğinizin finansal durumu.</p>
                     </div>
                     <button
                         onClick={() => setIsAddModalOpen(true)}
                         className="hidden md:flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
                     >
                         <span className="material-symbols-outlined text-[20px]">add</span>
-                        Add Transaction
+                        Gelir/Gider Ekle
                     </button>
                 </div>
             </div>
@@ -145,30 +145,36 @@ export default function Finance() {
             {/* Filter & Month Selection - RELATIVE for Positioning */}
             <div className="flex flex-wrap items-center gap-3 mb-6 relative">
                 <div className="flex bg-white p-1 rounded-xl shadow-sm ring-1 ring-slate-100">
-                    {['All Time', 'This Month', 'Custom Month'].map((f) => (
-                        <button
-                            key={f}
-                            onClick={() => {
-                                setFilter(f);
-                                if (f === 'This Month') {
-                                    const now = new Date();
-                                    setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
-                                    setIsPickerOpen(false);
-                                }
-                                if (f === 'Custom Month') {
-                                    setIsPickerOpen(!isPickerOpen);
-                                } else {
-                                    setIsPickerOpen(false);
-                                }
-                            }}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === f
-                                ? 'bg-slate-900 text-white shadow-md'
-                                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-                                }`}
-                        >
-                            {f}
-                        </button>
-                    ))}
+                    {['Tüm Zamanlar', 'Bu Ay', 'Özel Ay'].map((f, index) => {
+                        // Map localized label back to logic key for state if needed, or better yet, use logic keys separately from labels.
+                        // For simplicity, let's keep logic keys english but display turkish.
+                        // Wait, 'f' is used for setFilter. So I should map display map.
+                        const logicKey = ['All Time', 'This Month', 'Custom Month'][index];
+                        return (
+                            <button
+                                key={logicKey}
+                                onClick={() => {
+                                    setFilter(logicKey);
+                                    if (logicKey === 'This Month') {
+                                        const now = new Date();
+                                        setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
+                                        setIsPickerOpen(false);
+                                    }
+                                    if (logicKey === 'Custom Month') {
+                                        setIsPickerOpen(!isPickerOpen);
+                                    } else {
+                                        setIsPickerOpen(false);
+                                    }
+                                }}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === logicKey
+                                    ? 'bg-slate-900 text-white shadow-md'
+                                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                                    }`}
+                            >
+                                {f}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {/* Custom Month Picker */}
@@ -190,7 +196,7 @@ export default function Finance() {
                         className="text-sm font-bold text-slate-500 flex items-center gap-2 animate-in fade-in cursor-pointer hover:text-primary transition-colors"
                     >
                         <span className="material-symbols-outlined text-[18px]">calendar_month</span>
-                        {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        {new Date(selectedMonth + '-01').toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
                     </div>
                 )}
             </div>
@@ -203,36 +209,40 @@ export default function Finance() {
                 >
                     <div className="snap-center shrink-0 w-[240px]">
                         <KPICard
-                            title="Total Revenue"
-                            amount={`$${totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+                            title="Toplam Gelir"
+                            amount={`₺${totalRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
                             percentage={filter === 'This Month' ? formatPct(revPct) : ""}
+                            period={filter === 'This Month' ? "geçen aya göre" : ""}
                             icon="payments"
                             color="primary"
                         />
                     </div>
                     <div className="snap-center shrink-0 w-[240px]">
                         <KPICard
-                            title="Net Profit"
-                            amount={`$${netProfit.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+                            title="Net Kâr"
+                            amount={`₺${netProfit.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
                             percentage={filter === 'This Month' ? formatPct(profitPct) : ""}
+                            period={filter === 'This Month' ? "geçen aya göre" : ""}
                             icon="savings"
                             color={netProfit >= 0 ? "blue" : "red"}
                         />
                     </div>
                     <div className="snap-center shrink-0 w-[240px]">
                         <KPICard
-                            title="Total Expense"
-                            amount={`$${totalExpense.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+                            title="Toplam Gider"
+                            amount={`₺${totalExpense.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
                             percentage={filter === 'This Month' ? formatPct(expPct) : ""}
+                            period={filter === 'This Month' ? "geçen aya göre" : ""}
                             icon="trending_down"
                             color="red"
                         />
                     </div>
                     <div className="snap-center shrink-0 w-[240px]">
                         <KPICard
-                            title="Avg. Ticket"
-                            amount={`$${avgTicket.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+                            title="Ort. İşlem"
+                            amount={`₺${avgTicket.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
                             percentage={filter === 'This Month' ? formatPct(avgPct) : ""}
+                            period={filter === 'This Month' ? "geçen aya göre" : ""}
                             icon="sell"
                             color="purple"
                         />

@@ -71,14 +71,14 @@ export default function Login() {
                             <span className="material-symbols-outlined text-4xl">spa</span>
                         </div>
                         <h1 className="text-4xl font-black text-white tracking-tight mb-4">
-                            Velara <span className="text-primary-300">CRM</span>
+                            Dermdesk <span className="text-primary-300">CRM</span>
                         </h1>
                         <p className="text-slate-300 text-lg max-w-md leading-relaxed">
-                            Manage your aesthetics clinic with precision. Clients, appointments, and inventory—all in one premium dashboard.
+                            Estetik kliniğinizi hassasiyetle yönetin. Müşteriler, randevular ve envanter—hepsi tek bir premium panelde.
                         </p>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-slate-400 font-medium">
-                        <span>&copy; 2025 Velara</span>
+                        <span>&copy; 2025 Dermdesk</span>
                     </div>
                 </div>
             </div>
@@ -93,10 +93,10 @@ export default function Login() {
                         </div>
 
                         <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                            {isSignUp ? 'Create Account' : 'Welcome Back'}
+                            {isSignUp ? 'Hesap Oluştur' : 'Hoş Geldiniz'}
                         </h2>
                         <p className="text-slate-500 font-medium mt-2">
-                            {isSignUp ? 'Start your premium trial.' : 'Please enter your details to sign in.'}
+                            {isSignUp ? 'Premium denemenizi başlatın.' : 'Giriş yapmak için bilgilerinizi girin.'}
                         </p>
                     </div>
 
@@ -110,7 +110,7 @@ export default function Login() {
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {isSignUp && (
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Full Name</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Ad Soyad</label>
                                 <div className="relative">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-[20px]">person</span>
                                     <input
@@ -119,14 +119,14 @@ export default function Login() {
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
                                         className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-slate-900 placeholder:font-medium placeholder:text-slate-400"
-                                        placeholder="Dr. Sarah Smith"
+                                        placeholder="Dr. Ahmet Yılmaz"
                                     />
                                 </div>
                             </div>
                         )}
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Email Address</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">E-posta Adresi</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-[20px]">mail</span>
                                 <input
@@ -135,13 +135,13 @@ export default function Login() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-slate-900 placeholder:font-medium placeholder:text-slate-400"
-                                    placeholder="doctor@velara.com"
+                                    placeholder="doktor@dermdesk.com"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Password</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Şifre</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-[20px]">lock</span>
                                 <input
@@ -163,23 +163,23 @@ export default function Login() {
                             {loading ? (
                                 <>
                                     <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>
-                                    <span>Processing...</span>
+                                    <span>İşleniyor...</span>
                                 </>
                             ) : (
-                                <span>{isSignUp ? 'Create Account' : 'Sign In'}</span>
+                                <span>{isSignUp ? 'Hesap Oluştur' : 'Giriş Yap'}</span>
                             )}
                         </button>
                     </form>
 
                     <div className="mt-8 pt-8 border-t border-slate-100 text-center">
                         <p className="text-slate-500 font-medium mb-3">
-                            {isSignUp ? 'Already have an account?' : "Don't have an account?"}
+                            {isSignUp ? 'Zaten hesabınız var mı?' : "Hesabınız yok mu?"}
                         </p>
                         <button
                             onClick={() => setIsSignUp(!isSignUp)}
                             className="text-primary font-bold hover:text-primary-dark hover:underline decoration-2 underline-offset-4 transition-all"
                         >
-                            {isSignUp ? 'Sign in to existing account' : 'Create new account'}
+                            {isSignUp ? 'Mevcut hesaba giriş yap' : 'Yeni hesap oluştur'}
                         </button>
                     </div>
                 </div>

@@ -12,5 +12,5 @@ export const getLocalISOString = (date = new Date()) => {
  * Returns a readable date string (e.g., "Today, Dec 24")
  */
 export const getReadableDate = (date = new Date()) => {
-    return `Today, ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    return `Bugün, ${date.toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' })}`;
 };

@@ -67,11 +67,11 @@ export default function ClientGallery({ clientId }) {
 
             if (dbError) throw dbError;
 
-            success('Photo uploaded successfully');
+            success('Fotoğraf başarıyla yüklendi');
             fetchPhotos();
         } catch (error) {
             console.error('Error uploading photo:', error);
-            showError('Failed to upload photo');
+            showError('Fotoğraf yüklenemedi');
         } finally {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -97,11 +97,11 @@ export default function ClientGallery({ clientId }) {
 
             if (dbError) throw dbError;
 
-            success('Photo deleted successfully');
+            success('Fotoğraf başarıyla silindi');
             fetchPhotos();
         } catch (error) {
             console.error('Error deleting photo:', error);
-            showError('Failed to delete photo');
+            showError('Fotoğraf silinemedi');
         } finally {
             setImageToDelete(null);
         }
@@ -110,7 +110,7 @@ export default function ClientGallery({ clientId }) {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h3 className="text-lg font-bold text-slate-900">Photo Gallery</h3>
+                <h3 className="text-lg font-bold text-slate-900">Fotoğraf Galerisi</h3>
 
                 <div>
                     <input
@@ -130,7 +130,7 @@ export default function ClientGallery({ clientId }) {
                         ) : (
                             <span className="material-symbols-outlined text-[20px]">cloud_upload</span>
                         )}
-                        <span>Upload Photo</span>
+                        <span>Fotoğraf Yükle</span>
                     </button>
                 </div>
             </div>
@@ -144,7 +144,7 @@ export default function ClientGallery({ clientId }) {
                     <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-300">
                         <span className="material-symbols-outlined text-3xl">collections</span>
                     </div>
-                    <p className="text-slate-500 font-medium">No photos yet.</p>
+                    <p className="text-slate-500 font-medium">Henüz fotoğraf yok.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -161,14 +161,14 @@ export default function ClientGallery({ clientId }) {
                                 <button
                                     onClick={() => setSelectedImage(photo)}
                                     className="size-10 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-white hover:text-slate-900 backdrop-blur-md transition-all transform hover:scale-110"
-                                    title="View Fullscreen"
+                                    title="Tam Ekran Görüntüle"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">open_in_full</span>
                                 </button>
                                 <button
                                     onClick={() => setImageToDelete(photo)}
                                     className="size-10 flex items-center justify-center rounded-full bg-white/20 text-white hover:bg-red-500 hover:text-white backdrop-blur-md transition-all transform hover:scale-110"
-                                    title="Delete Photo"
+                                    title="Fotoğrafı Sil"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">delete</span>
                                 </button>
@@ -197,21 +197,21 @@ export default function ClientGallery({ clientId }) {
                             <div className="size-12 rounded-full bg-red-100 flex items-center justify-center mb-4 text-red-600">
                                 <span className="material-symbols-outlined text-2xl">delete</span>
                             </div>
-                            <h3 className="text-lg font-bold text-slate-900 mb-1">Delete Photo?</h3>
-                            <p className="text-slate-500 text-sm mb-6">This action cannot be undone. The photo will be permanently removed.</p>
+                            <h3 className="text-lg font-bold text-slate-900 mb-1">Fotoğrafı Sil?</h3>
+                            <p className="text-slate-500 text-sm mb-6">Bu işlem geri alınamaz. Fotoğraf kalıcı olarak silinecektir.</p>
 
                             <div className="flex gap-3 w-full">
                                 <button
                                     onClick={() => setImageToDelete(null)}
                                     className="flex-1 py-2.5 rounded-xl text-slate-700 font-bold hover:bg-slate-50 transition-colors"
                                 >
-                                    Cancel
+                                    İptal
                                 </button>
                                 <button
                                     onClick={confirmDelete}
                                     className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
                                 >
-                                    Delete
+                                    Sil
                                 </button>
                             </div>
                         </div>

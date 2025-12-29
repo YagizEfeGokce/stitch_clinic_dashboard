@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { formatCurrency } from '../utils/formatUtils';
 
 export default function ClientList({ clients, onEdit, onDelete }) {
     const navigate = useNavigate();
@@ -25,8 +26,8 @@ export default function ClientList({ clients, onEdit, onDelete }) {
                 <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 text-slate-300">
                     <span className="material-symbols-outlined text-3xl">group_off</span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">No Clients Found</h3>
-                <p className="text-slate-500 mt-1 max-w-xs mx-auto">Try adjusting your search or add a new client to get started.</p>
+                <h3 className="text-lg font-bold text-slate-900">Müşteri Bulunamadı</h3>
+                <p className="text-slate-500 mt-1 max-w-xs mx-auto">Aramanızı değiştirin veya başlamak için yeni bir müşteri ekleyin.</p>
             </div>
         );
     }
@@ -39,7 +40,7 @@ export default function ClientList({ clients, onEdit, onDelete }) {
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
                     <input
                         type="text"
-                        placeholder="Search clients by name, email, or phone..."
+                        placeholder="İsim, e-posta veya telefon ile ara..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-bold text-sm text-slate-700 placeholder:font-normal"
@@ -50,17 +51,17 @@ export default function ClientList({ clients, onEdit, onDelete }) {
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="px-4 py-3 rounded-xl border border-slate-200 bg-white focus:border-primary outline-none font-bold text-sm text-slate-700 cursor-pointer min-w-[150px]"
                 >
-                    <option value="All">All Statuses</option>
-                    <option value="Active">Active</option>
-                    <option value="Lead">Lead</option>
-                    <option value="Inactive">Inactive</option>
+                    <option value="All">Tüm Durumlar</option>
+                    <option value="Active">Aktif</option>
+                    <option value="Lead">Potansiyel</option>
+                    <option value="Inactive">Pasif</option>
                 </select>
             </div>
 
             <div className="flex flex-col bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                 {filteredClients.length === 0 ? (
                     <div className="p-8 text-center text-slate-500">
-                        No clients found matching your filters.
+                        Filtrelerinizle eşleşen müşteri bulunamadı.
                     </div>
                 ) : (
                     filteredClients.map((client) => (
@@ -83,7 +84,7 @@ export default function ClientList({ clients, onEdit, onDelete }) {
                                 </div>
                                 <div>
                                     <h3 className="text-base font-bold text-slate-900 group-hover:text-primary transition-colors">
-                                        {client.first_name || 'Unknown'} {client.last_name || 'Client'}
+                                        {client.first_name || 'Bilinmeyen'} {client.last_name || 'Müşteri'}
                                     </h3>
                                     <p className="text-sm text-slate-500 font-medium">{client.email || client.phone}</p>
                                 </div>
@@ -92,12 +93,12 @@ export default function ClientList({ clients, onEdit, onDelete }) {
                             {/* Meta Info (Desktop) */}
                             <div className="hidden md:flex items-center gap-8 text-sm text-slate-500">
                                 <div className="flex flex-col items-end">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Last Visit</span>
-                                    <span className="font-semibold text-slate-700">{client.last_visit ? new Date(client.last_visit).toLocaleDateString() : 'Never'}</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Son Ziyaret</span>
+                                    <span className="font-semibold text-slate-700">{client.last_visit ? new Date(client.last_visit).toLocaleDateString('tr-TR') : 'Hiç yok'}</span>
                                 </div>
                                 <div className="flex flex-col items-end w-24">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Spend</span>
-                                    <span className="font-bold text-slate-900">${client.total_spend || '0.00'}</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Toplam Harcama</span>
+                                    <span className="font-bold text-slate-900">{formatCurrency(client.total_spend || 0)}</span>
                                 </div>
                             </div>
 
@@ -110,7 +111,7 @@ export default function ClientList({ clients, onEdit, onDelete }) {
                                             onEdit(client);
                                         }}
                                         className="size-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
-                                        title="Edit Client"
+                                        title="Müşteriyi Düzenle"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">edit</span>
                                     </button>
@@ -120,7 +121,7 @@ export default function ClientList({ clients, onEdit, onDelete }) {
                                             onDelete(client.id);
                                         }}
                                         className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
-                                        title="Delete Client"
+                                        title="Müşteriyi Sil"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">delete</span>
                                     </button>

@@ -125,10 +125,10 @@ export default function ClientProfile() {
 
             setNewNote('');
             fetchNotes(); // Refresh list
-            success('Note added');
+            success('Not eklendi');
         } catch (error) {
             console.error('Error adding note:', error);
-            showError('Failed to add note');
+            showError('Not eklenemedi');
         } finally {
             setAddingNote(false);
         }
@@ -152,10 +152,10 @@ export default function ClientProfile() {
             fetchNotes(); // Refresh to get updated content and order if changed
             setEditingNoteId(null);
             setEditContent('');
-            success('Note updated');
+            success('Not güncellendi');
         } catch (error) {
             console.error('Error updating note:', error);
-            showError('Failed to update note');
+            showError('Not güncellenemedi');
         }
     };
 
@@ -175,12 +175,12 @@ export default function ClientProfile() {
 
             if (error) throw error;
             fetchNotes();
-            success('Note deleted');
+            success('Not silindi');
             setIsDeleteModalOpen(false);
             setNoteToDeleteId(null);
         } catch (error) {
             console.error('Error deleting note:', error);
-            showError('Failed to delete note');
+            showError('Not silinemedi');
         } finally {
             setDeleteLoading(false);
         }
@@ -218,12 +218,12 @@ export default function ClientProfile() {
                 <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors">
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
-                <h1 className="text-lg font-bold text-slate-900">Client Profile</h1>
+                <h1 className="text-lg font-bold text-slate-900">Müşteri Profili</h1>
                 <div className="ml-auto flex items-center gap-1">
                     <button
                         onClick={() => { fetchData(); fetchNotes(); }}
                         className="p-2 rounded-full hover:bg-slate-100 text-slate-500"
-                        title="Refresh data"
+                        title="Verileri yenile"
                     >
                         <span className="material-symbols-outlined">refresh</span>
                     </button>
@@ -253,22 +253,22 @@ export default function ClientProfile() {
                         <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide ${client.status === 'Active' ? 'bg-green-100 text-green-700' :
                             client.status === 'Lead' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
                             }`}>
-                            {client.status}
+                            {client.status === 'Active' ? 'Aktif' : client.status === 'Lead' ? 'Potansiyel' : 'Pasif'}
                         </span>
-                        <span className="text-slate-500 text-sm">Joined {new Date(client.created_at).toLocaleDateString()}</span>
+                        <span className="text-slate-500 text-sm">Katılım {new Date(client.created_at).toLocaleDateString('tr-TR')}</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 w-full mt-6">
                         {client.phone && (
                             <a href={`tel:${client.phone}`} className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-50 text-slate-700 font-semibold hover:bg-slate-100 transition-colors">
                                 <span className="material-symbols-outlined text-[18px]">call</span>
-                                Call
+                                Ara
                             </a>
                         )}
                         {client.email && (
                             <a href={`mailto:${client.email}`} className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-50 text-slate-700 font-semibold hover:bg-slate-100 transition-colors">
                                 <span className="material-symbols-outlined text-[18px]">mail</span>
-                                Email
+                                E-posta
                             </a>
                         )}
                     </div>
@@ -283,7 +283,7 @@ export default function ClientProfile() {
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
-                        Overview
+                        Genel Bakış
                     </button>
                     <button
                         onClick={() => setActiveTab('History')}
@@ -292,7 +292,7 @@ export default function ClientProfile() {
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
-                        History
+                        Geçmiş
                     </button>
                     <button
                         onClick={() => setActiveTab('Gallery')}
@@ -301,7 +301,7 @@ export default function ClientProfile() {
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
-                        Gallery
+                        Galeri
                     </button>
                 </div>
 
@@ -313,15 +313,15 @@ export default function ClientProfile() {
                             <div className="grid grid-cols-3 gap-3">
                                 <div className="p-4 rounded-2xl bg-white border border-slate-100 flex flex-col items-center">
                                     <span className="text-2xl font-bold text-slate-900">{totalVisits}</span>
-                                    <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Visits</span>
+                                    <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Ziyaretler</span>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-white border border-slate-100 flex flex-col items-center">
                                     <span className="text-2xl font-bold text-slate-900">{appointments.length}</span>
-                                    <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Booked</span>
+                                    <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Randevular</span>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-white border border-slate-100 flex flex-col items-center">
-                                    <span className="text-2xl font-bold text-primary">${totalSpent.toLocaleString()}</span>
-                                    <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Value</span>
+                                    <span className="text-2xl font-bold text-primary">₺{totalSpent.toLocaleString('tr-TR')}</span>
+                                    <span className="text-[10px] text-slate-500 font-bold uppercase mt-1">Değer</span>
                                 </div>
                             </div>
 
@@ -330,32 +330,43 @@ export default function ClientProfile() {
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                                         <span className="material-symbols-outlined text-slate-400">calendar_month</span>
-                                        Recent Appointments
+                                        Son Randevular
                                     </h3>
                                     {appointments.length > 0 && (
-                                        <button onClick={() => setActiveTab('History')} className="text-sm font-bold text-primary">View All</button>
+                                        <button onClick={() => setActiveTab('History')} className="text-sm font-bold text-primary">Tümünü Gör</button>
                                     )}
                                 </div>
 
                                 {appointments.length === 0 ? (
                                     <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                        <p className="text-slate-900 font-bold mb-1">No visits yet</p>
+                                        <p className="text-slate-900 font-bold mb-1">Henüz ziyaret yok</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
                                         {appointments.slice(0, 3).map(appt => (
                                             <div key={appt.id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between">
                                                 <div>
-                                                    <h4 className="font-bold text-slate-900">{appt.services?.name || 'Appointment'}</h4>
+                                                    <h4 className="font-bold text-slate-900">{appt.services?.name || 'Randevu'}</h4>
                                                     <p className="text-xs text-slate-500 font-bold mt-1">
-                                                        {new Date(appt.date).toLocaleDateString()}
+                                                        {new Date(appt.date).toLocaleDateString('tr-TR')}
                                                     </p>
                                                 </div>
                                                 <div className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wide ${appt.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                                                    appt.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
-                                                        'bg-slate-100 text-slate-600'
+                                                    ['Confirmed', 'Scheduled'].includes(appt.status) ? 'bg-blue-100 text-blue-700' :
+                                                        appt.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                                                            'bg-slate-100 text-slate-600'
                                                     }`}>
-                                                    {appt.status}
+                                                    {(() => {
+                                                        const map = {
+                                                            'Scheduled': 'Planlandı',
+                                                            'Completed': 'Tamamlandı',
+                                                            'Cancelled': 'İptal Edildi',
+                                                            'Pending': 'Bekliyor',
+                                                            'Confirmed': 'Onaylandı',
+                                                            'NoShow': 'Gelmedi'
+                                                        };
+                                                        return map[appt.status] || appt.status;
+                                                    })()}
                                                 </div>
                                             </div>
                                         ))}
@@ -368,7 +379,7 @@ export default function ClientProfile() {
                                 <div className="flex justify-between items-center mb-3">
                                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                                         <span className="material-symbols-outlined text-slate-400">description</span>
-                                        Clinical Notes
+                                        Klinik Notları
                                     </h3>
                                 </div>
 
@@ -378,7 +389,7 @@ export default function ClientProfile() {
                                         <textarea
                                             value={newNote}
                                             onChange={(e) => setNewNote(e.target.value)}
-                                            placeholder="Write a note..."
+                                            placeholder="Not yazın..."
                                             className="w-full pl-4 pr-12 py-3 bg-white rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-sm font-medium resize-none min-h-[80px]"
                                         />
                                         <button
@@ -395,7 +406,7 @@ export default function ClientProfile() {
                                 <div className="space-y-3">
                                     {notes.length === 0 ? (
                                         <div className="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-center">
-                                            <p className="text-slate-400 text-sm font-medium">No notes added yet.</p>
+                                            <p className="text-slate-400 text-sm font-medium">Henüz not eklenmedi.</p>
                                         </div>
                                     ) : (
                                         notes.map(note => (
@@ -416,13 +427,13 @@ export default function ClientProfile() {
                                                                 }}
                                                                 className="text-xs font-bold text-slate-500 hover:text-slate-700 px-3 py-1.5"
                                                             >
-                                                                Cancel
+                                                                İptal
                                                             </button>
                                                             <button
                                                                 onClick={saveEditedNote}
                                                                 className="text-xs font-bold bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primary-dark"
                                                             >
-                                                                Save
+                                                                Kaydet
                                                             </button>
                                                         </div>
                                                     </div>
@@ -434,14 +445,14 @@ export default function ClientProfile() {
                                                                 <button
                                                                     onClick={() => startEditingNote(note)}
                                                                     className="p-1 text-slate-300 hover:text-primary transition-colors"
-                                                                    title="Edit Note"
+                                                                    title="Düzenle"
                                                                 >
                                                                     <span className="material-symbols-outlined text-[18px]">edit</span>
                                                                 </button>
                                                                 <button
                                                                     onClick={() => handleDeleteNoteClick(note.id)}
                                                                     className="p-1 text-slate-300 hover:text-red-500 transition-colors"
-                                                                    title="Delete Note"
+                                                                    title="Sil"
                                                                 >
                                                                     <span className="material-symbols-outlined text-[18px]">delete</span>
                                                                 </button>
@@ -483,9 +494,9 @@ export default function ClientProfile() {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDeleteNote}
-                title="Delete Note"
-                message="Are you sure you want to delete this specific note? This action cannot be undone."
-                confirmText="Delete"
+                title="Notu Sil"
+                message="Bu notu silmek istediğinize emin misiniz? Bu işlem geri alınamaz."
+                confirmText="Sil"
                 type="danger"
                 loading={deleteLoading}
             />

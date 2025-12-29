@@ -68,12 +68,12 @@ export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }
 
             if (updateError) throw updateError;
 
-            toast.success('Profile updated successfully');
+            toast.success('Profil başarıyla güncellendi');
             onSuccess();
             onClose();
         } catch (error) {
             console.error('Error updating profile:', error);
-            toast.error('Failed to update profile');
+            toast.error('Profil güncellenemedi');
         } finally {
             setLoading(false);
         }
@@ -85,7 +85,7 @@ export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transition-colors duration-300">
                 <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                    <h3 className="font-bold text-slate-900 dark:text-white">Edit Profile</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white">Profili Düzenle</h3>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -100,7 +100,7 @@ export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }
                                     <img src={URL.createObjectURL(avatarFile)} alt="Preview" className="w-full h-full object-cover" />
                                 ) : (
                                     <img
-                                        src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${fullName || 'User'}&background=random`}
+                                        src={profile?.avatar_url || `https://ui-avatars.com/api/?name=${fullName || 'Kullanıcı'}&background=random`}
                                         alt="Current"
                                         className="w-full h-full object-cover"
                                     />
@@ -122,13 +122,13 @@ export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }
                             onClick={() => fileInputRef.current?.click()}
                             className="text-sm font-bold text-primary hover:text-primary-dark"
                         >
-                            Change Photo
+                            Fotoğrafı Değiştir
                         </button>
                     </div>
 
                     {/* Name Input */}
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Ad Soyad</label>
                         <input
                             type="text"
                             required
@@ -144,14 +144,14 @@ export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }
                             onClick={onClose}
                             className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
-                            Cancel
+                            İptal
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
                             className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:bg-primary-dark transition-colors disabled:opacity-50"
                         >
-                            {loading ? 'Saving...' : 'Save Changes'}
+                            {loading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
                         </button>
                     </div>
                 </form>

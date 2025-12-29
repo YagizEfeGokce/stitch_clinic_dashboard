@@ -108,8 +108,8 @@ export default function Services() {
             {/* Header */}
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Services</h1>
-                    <p className="text-slate-500 mt-1">Manage treatments and pricing</p>
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Hizmetler</h1>
+                    <p className="text-slate-500 mt-1">Tedavileri ve fiyatlandırmayı yönet</p>
                 </div>
                 {!isStaff && (
                     <button
@@ -117,7 +117,7 @@ export default function Services() {
                         className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-slate-900/20 hover:scale-105 transition-transform active:scale-95"
                     >
                         <span className="material-symbols-outlined">add</span>
-                        <span>Add Service</span>
+                        <span>Hizmet Ekle</span>
                     </button>
                 )}
             </header>
@@ -127,7 +127,7 @@ export default function Services() {
                 <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
                 <input
                     type="text"
-                    placeholder="Search services..."
+                    placeholder="Hizmet ara..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-12 pr-4 py-4 rounded-xl border-none bg-white shadow-sm ring-1 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-800 placeholder:text-slate-400 transition-all font-medium"
@@ -160,9 +160,9 @@ export default function Services() {
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                title="Delete Service"
-                message={`Are you sure you want to delete "${serviceToDelete?.name}"? This action cannot be undone.`}
-                confirmText="Delete"
+                title="Hizmeti Sil"
+                message={`"${serviceToDelete?.name}" hizmetini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+                confirmText="Sil"
                 type="danger"
                 loading={deleteLoading}
             />

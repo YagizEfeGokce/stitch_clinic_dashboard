@@ -12,7 +12,7 @@ export default function ClientGrowthChart({ clients }) {
         } else {
             acc.push({
                 date: key,
-                displayDate: date.toLocaleDateString('en-US', { month: 'short' }),
+                displayDate: date.toLocaleDateString('tr-TR', { month: 'short' }),
                 newClients: 1
             });
         }
@@ -23,15 +23,15 @@ export default function ClientGrowthChart({ clients }) {
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
             <div className="mb-6 flex justify-between items-end">
                 <div>
-                    <h3 className="font-bold text-slate-900 text-lg">Client Growth</h3>
-                    <p className="text-xs text-slate-500">New client acquisition trend</p>
+                    <h3 className="font-bold text-slate-900 text-lg">Müşteri Büyümesi</h3>
+                    <p className="text-xs text-slate-500">Yeni müşteri kazanım trendi</p>
                 </div>
                 {data.length > 0 && (
                     <div className="text-right">
                         <span className="text-2xl font-bold text-slate-900">{data[data.length - 1].newClients}</span>
                         <p className="text-xs text-green-500 font-bold flex items-center justify-end gap-1">
                             <span className="material-symbols-outlined text-[14px]">trending_up</span>
-                            Last Month
+                            Geçen Ay
                         </p>
                     </div>
                 )}

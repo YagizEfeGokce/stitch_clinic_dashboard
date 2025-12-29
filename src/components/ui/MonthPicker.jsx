@@ -5,8 +5,8 @@ export default function MonthPicker({ selectedMonth, onChange, onClose }) {
     const pickerRef = useRef(null);
 
     const months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
+        'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
     ];
 
     // Close on click outside
@@ -58,8 +58,8 @@ export default function MonthPicker({ selectedMonth, onChange, onClose }) {
                             key={m}
                             onClick={() => handleMonthSelect(index)}
                             className={`h-10 rounded-xl text-xs font-bold transition-all ${isSelected
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                                 }`}
                         >
                             {m.slice(0, 3)}
@@ -79,7 +79,7 @@ export default function MonthPicker({ selectedMonth, onChange, onClose }) {
                     }}
                     className="text-xs font-bold text-primary hover:text-primary-dark transition-colors"
                 >
-                    Current Month
+                    Bulunduğumuz Ay
                 </button>
             </div>
         </div>

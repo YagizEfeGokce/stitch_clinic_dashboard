@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import ClientGallery from './ClientGallery';
@@ -6,6 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import { logActivity } from '../../lib/logger';
 import { useAuth } from '../../context/AuthContext';
 import { compressImage, uploadImage } from '../../lib/storage-utils';
+import { formatPhoneNumber } from '../../utils/formatUtils';
 
 export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
     const { profile } = useAuth();
@@ -41,7 +41,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                     first_name: client.first_name || '',
                     last_name: client.last_name || '',
                     email: client.email || '',
-                    phone: client.phone || '',
+                    phone: formatPhoneNumber(client.phone || ''),
                     status: client.status || 'Active',
                     image_url: client.image_url || '',
                     note: ''
@@ -75,9 +75,14 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                 setSelectedFile(file);
             } catch (err) {
                 console.error("File selection error", err);
-                showError("Failed to select image");
+                showError("Resim seçilemedi");
             }
         }
+    };
+
+    const handlePhoneChange = (e) => {
+        const formatted = formatPhoneNumber(e.target.value);
+        setFormData({ ...formData, phone: formatted });
     };
 
     const fetchHistory = async (clientId) => {
@@ -115,8 +120,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                     finalImageUrl = await uploadImage(compressedFile, 'crm_uploads');
                 } catch (uploadErr) {
                     console.error("Upload failed", uploadErr);
-                    showError("Image upload failed, saving without image.");
-                    // Optional: return; to stop saving completely if image fails
+                    showError("Resim yüklenemedi, resimsiz kaydediliyor.");
                 }
             }
 
@@ -140,15 +144,15 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
 
                 if (!error) {
                     const changes = Object.keys(clientData).filter(k => clientData[k] !== client[k]);
-                    await logActivity('Updated Client', {
+                    await logActivity('Müşteri Güncellendi', {
                         client_name: `${formData.first_name} ${formData.last_name} `,
                         client_id: client.id,
-                        changes: changes.length > 0 ? changes : ['No significant changes']
+                        changes: changes.length > 0 ? changes : ['Önemli değişiklik yok']
                     });
                 }
             } else {
                 // Create Mode
-                if (!profile?.clinic_id) throw new Error('You are not associated with a clinic.');
+                if (!profile?.clinic_id) throw new Error('Bir kliniğe bağlı değilsiniz.');
 
                 const { data, error: insertError } = await supabase
                     .from('clients')
@@ -160,7 +164,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
 
                 if (data) {
                     clientId = data.id;
-                    await logActivity('Created Client', {
+                    await logActivity('Müşteri Oluşturuldu', {
                         client_name: `${formData.first_name} ${formData.last_name} `,
                         client_id: clientId
                     });
@@ -181,21 +185,21 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
 
                     if (noteError) {
                         console.error('Error adding initial note:', noteError);
-                        showError('Client created but failed to save note.');
+                        showError('Müşteri oluşturuldu ancak not kaydedilemedi.');
                     }
                 }
             }
 
-            success(client ? 'Client updated successfully' : 'Client created successfully');
+            success(client ? 'Müşteri başarıyla güncellendi' : 'Müşteri başarıyla oluşturuldu');
             onSuccess();
             onClose();
         } catch (error) {
             console.error('Error saving client:', error);
 
             if (error.message?.includes('clients_email_key') || error.code === '23505') {
-                showError('A client with this email already exists.');
+                showError('Bu e-posta adresiyle kayıtlı bir müşteri zaten var.');
             } else {
-                showError('Failed to save client. ' + (error.message || ''));
+                showError('Müşteri kaydedilemedi. ' + (error.message || ''));
             }
         } finally {
             setLoading(false);
@@ -223,7 +227,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                         <span className="material-symbols-outlined text-3xl text-slate-400">add_a_photo</span>
                                     )}
                                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span className="text-white text-[10px] font-bold">UPLOAD</span>
+                                        <span className="text-white text-[10px] font-bold">YÜKLE</span>
                                     </div>
                                     <input
                                         type="file"
@@ -232,7 +236,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                         onChange={handleFileChange}
                                     />
                                 </label>
-                                <span className="font-bold text-slate-900">New Client</span>
+                                <span className="font-bold text-slate-900">Yeni Hasta</span>
                             </div>
                         ) : (
                             <div className="flex flex-col items-center text-center">
@@ -257,7 +261,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                     />
                                 </label>
                                 <h3 className="text-lg font-bold text-slate-900 leading-tight mt-3">{client.first_name} {client.last_name}</h3>
-                                <p className="text-sm text-slate-500 mt-1">{client.status}</p>
+                                <p className="text-sm text-slate-500 mt-1">{client.status === 'Active' ? 'Aktif' : client.status === 'Lead' ? 'Potansiyel' : 'Pasif'}</p>
                             </div>
                         )}
                     </div>
@@ -268,7 +272,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                 key={tab}
                                 disabled={isNewClient && tab !== 'Profile'}
                                 onClick={() => setActiveTab(tab)}
-                                className={`w - full flex items - center gap - 3 px - 4 py - 3 rounded - xl text - sm font - bold transition - all ${activeTab === tab
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab
                                     ? 'bg-white text-primary shadow-sm ring-1 ring-slate-100'
                                     : 'text-slate-500 hover:bg-slate-100'
                                     } ${isNewClient && tab !== 'Profile' ? 'opacity-50 cursor-not-allowed' : ''} `}
@@ -276,7 +280,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                 <span className="material-symbols-outlined">
                                     {tab === 'Profile' ? 'id_card' : tab === 'History' ? 'history' : 'photo_library'}
                                 </span>
-                                {tab}
+                                {tab === 'Profile' ? 'Profil' : tab === 'History' ? 'Geçmiş' : 'Galeri'}
                             </button>
                         ))}
                     </nav>
@@ -285,7 +289,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                     <div className="p-4 border-t border-slate-100">
                         <button onClick={onClose} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 px-4 py-2 transition-colors">
                             <span className="material-symbols-outlined text-[20px]">logout</span>
-                            <span className="text-sm font-bold">Close</span>
+                            <span className="text-sm font-bold">Kapat</span>
                         </button>
                     </div>
                 </div>
@@ -298,12 +302,12 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                         {activeTab === 'Profile' && (
                             <div className="max-w-xl mx-auto space-y-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-2xl font-bold text-slate-900">Personal Information</h2>
+                                    <h2 className="text-2xl font-bold text-slate-900">Kişisel Bilgiler</h2>
                                 </div>
                                 <form id="clientForm" onSubmit={handleSubmit} className="space-y-6">
                                     <div className="grid grid-cols-2 gap-5">
                                         <div>
-                                            <label className="block text-sm font-bold text-slate-700 mb-1.5">First Name <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
+                                            <label className="block text-sm font-bold text-slate-700 mb-1.5">Ad <span className="text-xs font-normal text-slate-400">(İsteğe Bağlı)</span></label>
                                             <input
                                                 type="text"
                                                 required
@@ -311,51 +315,51 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                                 value={formData.first_name}
                                                 onChange={e => setFormData({ ...formData, first_name: e.target.value })}
                                                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all"
-                                                placeholder="Jane"
+                                                placeholder="Ayşe"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-bold text-slate-700 mb-1.5">Last Name <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
+                                            <label className="block text-sm font-bold text-slate-700 mb-1.5">Soyad <span className="text-xs font-normal text-slate-400">(İsteğe Bağlı)</span></label>
                                             <input
                                                 type="text"
                                                 value={formData.last_name}
                                                 onChange={e => setFormData({ ...formData, last_name: e.target.value })}
                                                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all"
-                                                placeholder="Doe"
+                                                placeholder="Yılmaz"
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-1.5">Email Address <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1.5">E-posta Adresi <span className="text-xs font-normal text-slate-400">(İsteğe Bağlı)</span></label>
                                         <input
                                             type="email"
                                             value={formData.email}
                                             onChange={e => setFormData({ ...formData, email: e.target.value })}
                                             className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all"
-                                            placeholder="jane@example.com"
+                                            placeholder="ayse@ornek.com"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-1.5">Phone Number <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1.5">Telefon Numarası <span className="text-xs font-normal text-slate-400">(İsteğe Bağlı)</span></label>
                                         <div className="relative">
                                             <input
                                                 type="tel"
                                                 value={formData.phone}
-                                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                                onChange={handlePhoneChange}
                                                 className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all"
-                                                placeholder="+1 (555) 000-0000"
+                                                placeholder="(5XX) XXX XX XX"
                                             />
                                             {formData.phone && (
                                                 <button
                                                     type="button"
                                                     onClick={() => {
                                                         const cleanNumber = formData.phone.replace(/\D/g, '');
-                                                        window.open(`https://wa.me/${cleanNumber}`, '_blank');
+                                                        window.open(`https://wa.me/90${cleanNumber.length > 10 ? cleanNumber.slice(-10) : cleanNumber}`, '_blank');
                                                     }}
                                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 hover:text-green-600 hover:bg-green-50 p-1.5 rounded-lg transition-colors"
-                                                    title="Open in WhatsApp"
+                                                    title="WhatsApp'ta Aç"
                                                 >
                                                     <span className="material-symbols-outlined text-[20px]">chat</span>
                                                 </button >
@@ -364,7 +368,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                     </div >
 
                                     <div>
-                                        <label className="block text-sm font-bold text-slate-700 mb-1.5">Status</label>
+                                        <label className="block text-sm font-bold text-slate-700 mb-1.5">Durum</label>
                                         <div className="relative">
                                             <select
 
@@ -372,9 +376,9 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                                 onChange={e => setFormData({ ...formData, status: e.target.value })}
                                                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:ring-4 focus:ring-primary/10 outline-none font-bold text-slate-700 appearance-none cursor-pointer transition-all"
                                             >
-                                                <option value="Active">Active Patient</option>
-                                                <option value="Lead">Lead / Prospect</option>
-                                                <option value="Inactive">Inactive</option>
+                                                <option value="Active">Aktif Hasta</option>
+                                                <option value="Lead">Potansiyel / Aday</option>
+                                                <option value="Inactive">Pasif</option>
                                             </select>
                                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
                                                 <span className="material-symbols-outlined">expand_more</span>
@@ -382,16 +386,16 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                         </div>
                                     </div>
 
-                                    {/* New Note Field (Only for Creating New Client, OR always? User asked "Add New client ypaınca Müsteriye not ekleyebilelim") */}
+                                    {/* New Note Field */}
                                     {
                                         isNewClient && (
                                             <div>
-                                                <label className="block text-sm font-bold text-slate-700 mb-1.5">Initial Note <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
+                                                <label className="block text-sm font-bold text-slate-700 mb-1.5">İlk Not <span className="text-xs font-normal text-slate-400">(İsteğe Bağlı)</span></label>
                                                 <textarea
                                                     value={formData.note}
                                                     onChange={e => setFormData({ ...formData, note: e.target.value })}
                                                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all resize-none h-24"
-                                                    placeholder="Add a welcome note or initial consultation details..."
+                                                    placeholder="Hoşgeldin notu veya ilk görüşme detayları ekleyin..."
                                                 />
                                             </div>
                                         )
@@ -404,7 +408,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                         {
                             activeTab === 'History' && (
                                 <div className="space-y-6">
-                                    <h2 className="text-2xl font-bold text-slate-900">Appointment History</h2>
+                                    <h2 className="text-2xl font-bold text-slate-900">Randevu Geçmişi</h2>
 
                                     {loadingHistory ? (
                                         <div className="flex justify-center py-12">
@@ -415,7 +419,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                             <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-300">
                                                 <span className="material-symbols-outlined text-2xl">event_busy</span>
                                             </div>
-                                            <p className="text-slate-500 font-medium">No appointment history found.</p>
+                                            <p className="text-slate-500 font-medium">Randevu geçmişi bulunamadı.</p>
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
@@ -431,11 +435,11 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                                         </span>
                                                     </div>
                                                     <div className="flex-1">
-                                                        <h4 className="font-bold text-slate-900">{apt.services?.name || 'Appointment'}</h4>
+                                                        <h4 className="font-bold text-slate-900">{apt.services?.name || 'Randevu'}</h4>
                                                         <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
                                                             <span className="flex items-center gap-1">
                                                                 <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                                                                {apt.date}
+                                                                {new Date(apt.date).toLocaleDateString('tr-TR')}
                                                             </span>
                                                             <span className="flex items-center gap-1">
                                                                 <span className="material-symbols-outlined text-[16px]">schedule</span>
@@ -477,7 +481,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                     onClick={onClose}
                                     className="px-6 py-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors"
                                 >
-                                    Cancel
+                                    İptal
                                 </button>
                                 <button
                                     type="submit"
@@ -490,7 +494,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                     ) : (
                                         <span className="material-symbols-outlined text-[20px]">save</span>
                                     )}
-                                    Save Changes
+                                    Değişiklikleri Kaydet
                                 </button>
                             </div>
                         ) : (
@@ -501,7 +505,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                     className="px-6 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">close</span>
-                                    Close
+                                    Kapat
                                 </button>
                             </div>
                         )

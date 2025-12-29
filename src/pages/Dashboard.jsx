@@ -254,7 +254,7 @@ export default function Dashboard() {
             });
 
             if (isOccupied) {
-                showError('Time slot already occupied');
+                showError('Bu saat dilimi zaten dolu');
                 return;
             }
 
@@ -271,10 +271,10 @@ export default function Dashboard() {
                     .eq('id', appointment.id);
 
                 if (error) throw error;
-                success(`Rescheduled to ${newTime}`);
+                success(`${newTime} saatine ertelendi`);
 
                 // Log Activity
-                await logActivity('Rescheduled Appointment', {
+                await logActivity('Randevu Ertelendi', {
                     appointment_id: appointment.id,
                     old_time: appointment.time,
                     new_time: newTime,
@@ -284,7 +284,7 @@ export default function Dashboard() {
                 fetchAppointments(); // Sync upcoming automatically
             } catch (error) {
                 console.error('Reschedule error:', error);
-                showError('Failed to reschedule');
+                showError('Erteleme başarısız');
                 fetchAppointments(); // Revert on error
             }
         }
@@ -360,8 +360,8 @@ export default function Dashboard() {
         <div className="pb-24">
             {/* Welcome Header */}
             <div className="px-5 pt-8 pb-2">
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Good Morning, {userName}</h1>
-                <p className="text-slate-500 font-medium">Here is your schedule for today.</p>
+                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Günaydın, {userName}</h1>
+                <p className="text-slate-500 font-medium">Bugünkü programınız burada.</p>
             </div>
 
             {/* Action Center - Smart Assistant */}
@@ -382,13 +382,13 @@ export default function Dashboard() {
                                         onClick={() => setView('day')}
                                         className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${view === 'day' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                                     >
-                                        Day
+                                        Gün
                                     </button>
                                     <button
                                         onClick={() => setView('month')}
                                         className={`px-4 py-1.5 text-sm font-bold rounded-lg transition-all ${view === 'month' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                                     >
-                                        Month
+                                        Ay
                                     </button>
                                 </div>
 
@@ -400,10 +400,10 @@ export default function Dashboard() {
                                             onChange={(e) => setSelectedStaffId(e.target.value)}
                                             className="px-4 py-1.5 pl-3 pr-8 text-sm font-bold rounded-xl bg-slate-100 text-slate-700 border-none outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer hover:bg-slate-200 transition-colors"
                                         >
-                                            <option value="all">All Doctors</option>
+                                            <option value="all">Tüm Doktorlar</option>
                                             {staffList.map(member => (
                                                 <option key={member.id} value={member.id}>
-                                                    {member.full_name || 'Unnamed Staff'}
+                                                    {member.full_name || 'İsimsiz Personel'}
                                                 </option>
                                             ))}
                                         </select>
@@ -416,10 +416,10 @@ export default function Dashboard() {
                                     <button
                                         onClick={() => setShowBookedOnly(!showBookedOnly)}
                                         className={`hidden sm:flex px-3 py-1.5 text-xs font-bold rounded-lg transition-all items-center gap-1 ${showBookedOnly ? 'bg-primary text-white shadow-sm' : 'bg-slate-100 text-slate-500 hover:text-slate-700'}`}
-                                        title="Show Booked Slots Only"
+                                        title="Sadece Dolu Slotları Göster"
                                     >
                                         <span className="material-symbols-outlined text-[16px]">{showBookedOnly ? 'filter_alt' : 'filter_alt_off'}</span>
-                                        {showBookedOnly ? 'Booked Only' : 'All Slots'}
+                                        {showBookedOnly ? 'Sadece Dolu' : 'Tüm Saatler'}
                                     </button>
                                 )}
                             </div>
@@ -430,7 +430,7 @@ export default function Dashboard() {
                                     className="flex items-center gap-1.5 px-3 py-2 text-sm font-bold text-slate-500 hover:text-primary hover:bg-slate-100 rounded-lg transition-colors"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">today</span>
-                                    <span className="hidden sm:inline">Today</span>
+                                    <span className="hidden sm:inline">Bugün</span>
                                 </button>
                                 <DatePickerTrigger selectedDate={selectedDate} onSelectDate={setSelectedDate} />
                             </div>
@@ -439,7 +439,7 @@ export default function Dashboard() {
                         {view === 'day' && (
                             <div className="w-full overflow-hidden">
                                 <div className="px-6 pb-2 text-lg font-bold text-slate-800 capitalize">
-                                    {new Date(selectedDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                    {new Date(selectedDate).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
                                 </div>
                                 <CalendarStrip selectedDate={selectedDate} onSelectDate={setSelectedDate} />
                             </div>
@@ -471,7 +471,7 @@ export default function Dashboard() {
                                     className="bg-primary text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary/30 hover:scale-105 transition-transform flex items-center gap-2"
                                 >
                                     <span className="material-symbols-outlined">add</span>
-                                    Add Appointment
+                                    Randevu Ekle
                                 </button>
                             </div>
                         </div>
@@ -482,8 +482,8 @@ export default function Dashboard() {
                                 {displayedHours.length === 0 && showBookedOnly && (
                                     <div className="py-12 text-center text-slate-400">
                                         <span className="material-symbols-outlined text-4xl mb-2 opacity-50">event_busy</span>
-                                        <p>No appointments for this day.</p>
-                                        <button onClick={() => setShowBookedOnly(false)} className="text-primary font-bold mt-2 hover:underline">Show All Slots</button>
+                                        <p>Bugün için randevu yok.</p>
+                                        <button onClick={() => setShowBookedOnly(false)} className="text-primary font-bold mt-2 hover:underline">Tüm Saatleri Göster</button>
                                     </div>
                                 )}
 

@@ -148,7 +148,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <h2 className="text-lg font-bold text-slate-900">
-                        {productToEdit ? 'Edit Product' : 'Add New Product'}
+                        {productToEdit ? 'Ürünü Düzenle' : 'Yeni Ürün Ekle'}
                     </h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
                         <span className="material-symbols-outlined">close</span>
@@ -157,50 +157,50 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Product Name</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Ürün Adı</label>
                         <input
                             type="text"
                             required
                             value={formData.name}
                             onChange={e => setFormData({ ...formData, name: e.target.value })}
                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                            placeholder="e.g. Hydrating Cleanser"
+                            placeholder="örn. Nemlendirici Temizleyici"
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Category</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Kategori</label>
                             <select
                                 required
                                 value={formData.category}
                                 onChange={e => setFormData({ ...formData, category: e.target.value })}
                                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium bg-white"
                             >
-                                <option value="" disabled>Select Category</option>
-                                <option value="Retail">Retail Product</option>
-                                <option value="Professional">Professional Supply</option>
-                                <option value="Consumable">Consumable</option>
-                                <option value="Equipment">Equipment</option>
+                                <option value="" disabled>Kategori Seç</option>
+                                <option value="Retail">Perakende Ürün</option>
+                                <option value="Professional">Profesyonel Malzeme</option>
+                                <option value="Consumable">Sarf Malzemesi</option>
+                                <option value="Equipment">Ekipman</option>
                             </select>
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">
-                                SKU <span className="text-xs font-normal text-slate-400 ml-1">(Optional)</span>
+                                SKU <span className="text-xs font-normal text-slate-400 ml-1">(Opsiyonel)</span>
                             </label>
                             <input
                                 type="text"
                                 value={formData.sku}
                                 onChange={e => setFormData({ ...formData, sku: e.target.value })}
                                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium"
-                                placeholder="e.g. CL-001"
+                                placeholder="örn. CL-001"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Initial Stock</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Başlangıç Stoğu</label>
                             <input
                                 type="number"
                                 min="0"
@@ -211,7 +211,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Price ($)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-1">Fiyat (₺)</label>
                             <input
                                 type="number"
                                 min="0"
@@ -225,7 +225,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Low Stock Alert Threshold</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Düşük Stok Uyarı Eşiği</label>
                         <div className="flex items-center gap-3">
                             <input
                                 type="number"
@@ -234,18 +234,18 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
                                 onChange={e => setFormData({ ...formData, min_stock_alert: e.target.value })}
                                 className="w-24 px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium"
                             />
-                            <p className="text-xs text-slate-500">You will be alerted when stock falls below this number.</p>
+                            <p className="text-xs text-slate-500">Stok bu sayının altına düştüğünde uyarılacaksınız.</p>
                         </div>
                     </div>
 
                     <div>
                         <label className="block text-sm font-bold text-slate-700 mb-1">
-                            Product Image <span className="text-xs font-normal text-slate-400 ml-1">(Optional)</span>
+                            Ürün Görseli <span className="text-xs font-normal text-slate-400 ml-1">(Opsiyonel)</span>
                         </label>
                         <div className="flex gap-4 items-start">
                             {formData.image_url && (
                                 <div className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200">
-                                    <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                                    <img src={formData.image_url} alt="Önizleme" className="w-full h-full object-cover" />
                                 </div>
                             )}
                             <div className="flex-1">
@@ -265,7 +265,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
                                             cursor-pointer"
                                     />
                                 </label>
-                                {uploading && <p className="text-xs text-primary mt-1 font-medium animate-pulse">Uploading...</p>}
+                                {uploading && <p className="text-xs text-primary mt-1 font-medium animate-pulse">Yükleniyor...</p>}
                             </div>
                         </div>
                     </div>
@@ -276,7 +276,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
                             onClick={onClose}
                             className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors"
                         >
-                            Cancel
+                            İptal
                         </button>
                         <button
                             type="submit"
@@ -284,7 +284,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
                             className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {loading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
-                            {productToEdit ? 'Save Changes' : 'Add Product'}
+                            {productToEdit ? 'Değişiklikleri Kaydet' : 'Ürünü Ekle'}
                         </button>
                     </div>
                 </form>

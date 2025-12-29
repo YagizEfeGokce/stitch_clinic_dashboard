@@ -27,13 +27,13 @@ export default function Sidebar() {
                             <img src={clinic.branding_config.logo_url} alt="Logo" className="w-full h-full object-cover" />
                         </div>
                     ) : (
-                        <div className="flex items-center justify-center size-10 rounded-full bg-gradient-to-tr from-primary to-purple-400 text-white shadow-lg shadow-primary/30">
-                            <span className="material-symbols-outlined text-[24px]">local_hospital</span>
+                        <div className="size-10 rounded-full overflow-hidden shadow-sm border border-slate-100 bg-white">
+                            <img src="/logo.png" alt="Dermdesk Logo" className="w-full h-full object-contain p-1" />
                         </div>
                     )}
                     <div>
-                        <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none">{clinic?.name || 'Velara Clinic'}</h1>
-                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Dashboard</span>
+                        <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none">{clinic?.name || 'Dermdesk Klinik'}</h1>
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Panel</span>
                     </div>
                 </div>
 
@@ -41,40 +41,40 @@ export default function Sidebar() {
                     {isAdminOrDoctor && (
                         <NavLink to="/" end className={getLinkClass}>
                             <span className="material-symbols-outlined">dashboard</span>
-                            Dashboard
+                            Panel
                         </NavLink>
                     )}
 
                     <NavLink to="/schedule" className={getLinkClass}>
                         <span className="material-symbols-outlined">calendar_month</span>
-                        Schedule
+                        Takvim
                     </NavLink>
 
                     <NavLink to="/clients" className={getLinkClass}>
                         <span className="material-symbols-outlined">group</span>
-                        Clients
+                        Müşteriler
                     </NavLink>
 
                     <NavLink to="/inventory" className={getLinkClass}>
                         <span className="material-symbols-outlined">inventory_2</span>
-                        Inventory
+                        Envanter
                     </NavLink>
 
                     {isAdminOrDoctor && (
                         <>
                             <NavLink to="/services" className={getLinkClass}>
                                 <span className="material-symbols-outlined">medical_services</span>
-                                Services
+                                Hizmetler
                             </NavLink>
 
-                            <div className="my-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Business</div>
+                            <div className="my-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">YÖNETİM</div>
                             <NavLink to="/finance" className={getLinkClass}>
                                 <span className="material-symbols-outlined">payments</span>
-                                Finance
+                                Finans
                             </NavLink>
                             <NavLink to="/performance" className={getLinkClass}>
                                 <span className="material-symbols-outlined">monitoring</span>
-                                Performance
+                                Performans
                             </NavLink>
                         </>
                     )}
@@ -84,7 +84,7 @@ export default function Sidebar() {
                     {isAdminOrDoctor && (
                         <NavLink to="/settings" className={getLinkClass}>
                             <span className="material-symbols-outlined">settings</span>
-                            Settings
+                            Ayarlar
                         </NavLink>
                     )}
                 </nav>
@@ -97,9 +97,9 @@ export default function Sidebar() {
                         <div className="size-10 rounded-full bg-slate-200 bg-cover bg-center shrink-0" style={{ backgroundImage: `url("${profile?.avatar_url || 'https://ui-avatars.com/api/?name=' + (profile?.full_name || 'User') + '&background=random'}")` }}></div>
                         <div className="min-w-0">
                             <p className="text-sm font-bold text-slate-900 truncate">
-                                {profile?.full_name || user?.email?.split('@')[0] || 'Medical Staff'}
+                                {profile?.full_name || user?.email?.split('@')[0] || 'Personel'}
                             </p>
-                            <p className="text-xs text-slate-500 truncate">View Profile</p>
+                            <p className="text-xs text-slate-500 truncate">Profili Gör</p>
                         </div>
                     </button>
                 </div>

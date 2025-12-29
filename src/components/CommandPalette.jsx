@@ -50,12 +50,12 @@ const CommandPalette = () => {
             ]);
 
             const staticPages = [
-                { id: 'p1', type: 'page', title: 'Dashboard', path: '/' },
-                { id: 'p2', type: 'page', title: 'Schedule', path: '/schedule' },
-                { id: 'p3', type: 'page', title: 'Clients', path: '/clients' },
-                { id: 'p4', type: 'page', title: 'Inventory', path: '/inventory' },
-                { id: 'p5', type: 'page', title: 'Services', path: '/services' },
-                { id: 'p6', type: 'page', title: 'Finance', path: '/finance' },
+                { id: 'p1', type: 'page', title: 'Panel', path: '/' },
+                { id: 'p2', type: 'page', title: 'Takvim', path: '/schedule' },
+                { id: 'p3', type: 'page', title: 'Müşteriler', path: '/clients' },
+                { id: 'p4', type: 'page', title: 'Envanter', path: '/inventory' },
+                { id: 'p5', type: 'page', title: 'Hizmetler', path: '/services' },
+                { id: 'p6', type: 'page', title: 'Finans', path: '/finance' },
             ].filter(p => p.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
             const combined = [
@@ -105,7 +105,7 @@ const CommandPalette = () => {
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder="Search clients, inventory, or pages..."
+                        placeholder="Müşteri, envanter veya sayfa ara..."
                         className="flex-1 bg-transparent border-none outline-none text-slate-700 placeholder:text-slate-400 h-10 text-lg"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
@@ -120,11 +120,11 @@ const CommandPalette = () => {
                 <div className="max-h-[60vh] overflow-y-auto p-2">
                     {results.length === 0 && searchTerm.length > 1 ? (
                         <div className="p-8 text-center text-slate-400">
-                            No results found.
+                            Sonuç bulunamadı.
                         </div>
                     ) : searchTerm.length < 2 ? (
                         <div className="p-8 text-center text-slate-400 text-sm">
-                            Type at least 2 characters to search...
+                            Aramak için en az 2 karakter yazın...
                         </div>
                     ) : (
                         <div className="flex flex-col gap-1">
@@ -156,11 +156,11 @@ const CommandPalette = () => {
 
                 {/* Footer */}
                 <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 text-[10px] text-slate-400 flex justify-between">
-                    <span>Pro Tip: Use arrow keys to navigate</span>
-                    <span>Velara Spotlight</span>
+                    <span>İpucu: Yön tuşlarını kullanabilirsiniz</span>
+                    <span>Dermdesk Spotlight</span>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

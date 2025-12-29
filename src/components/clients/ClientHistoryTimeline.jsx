@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatCurrency } from '../../utils/formatUtils';
 
 export default function ClientHistoryTimeline({ appointments, transactions }) {
     // 1. Merge and Normalize Data
@@ -7,8 +8,8 @@ export default function ClientHistoryTimeline({ appointments, transactions }) {
             id: `appt-${a.id}`,
             date: new Date(a.date + 'T' + (a.time || '00:00')),
             type: 'appointment',
-            title: 'Appointment',
-            subtitle: a.services?.name || 'Service',
+            title: 'Randevu',
+            subtitle: a.services?.name || 'Hizmet',
             status: a.status,
             amount: null,
             icon: 'calendar_today'
@@ -17,8 +18,8 @@ export default function ClientHistoryTimeline({ appointments, transactions }) {
             id: `tx-${t.id}`,
             date: new Date(t.date),
             type: 'transaction',
-            title: 'Transaction',
-            subtitle: t.payment_method || 'Payment',
+            title: 'İşlem',
+            subtitle: t.payment_method || 'Ödeme',
             status: 'Completed',
             amount: t.amount,
             icon: 'payments'
@@ -29,7 +30,7 @@ export default function ClientHistoryTimeline({ appointments, transactions }) {
         return (
             <div className="text-center py-12 text-slate-400">
                 <span className="material-symbols-outlined text-4xl mb-2">history</span>
-                <p>No history found for this client.</p>
+                <p>Bu müşteri için geçmiş bulunamadı.</p>
             </div>
         );
     }
@@ -48,13 +49,24 @@ export default function ClientHistoryTimeline({ appointments, transactions }) {
                     <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                                {event.date.toLocaleDateString()}
+                                {event.date.toLocaleDateString('tr-TR')}
                             </span>
                             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${event.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                                    event.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                                event.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                                    event.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
                                         'bg-slate-100 text-slate-600'
                                 }`}>
-                                {event.status}
+                                {(() => {
+                                    const map = {
+                                        'Scheduled': 'Planlandı',
+                                        'Completed': 'Tamamlandı',
+                                        'Cancelled': 'İptal Edildi',
+                                        'Pending': 'Bekliyor',
+                                        'Confirmed': 'Onaylandı',
+                                        'NoShow': 'Gelmedi'
+                                    };
+                                    return map[event.status] || event.status;
+                                })()}
                             </span>
                         </div>
                         <div className="flex items-start justify-between">
@@ -62,13 +74,13 @@ export default function ClientHistoryTimeline({ appointments, transactions }) {
                                 <h4 className="text-slate-900 font-bold">{event.title}: {event.subtitle}</h4>
                                 {event.type === 'appointment' && (
                                     <p className="text-slate-500 text-sm mt-1">
-                                        {event.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {event.date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 )}
                             </div>
                             {event.amount && (
                                 <span className={`font-bold ${event.amount > 0 ? 'text-slate-900' : 'text-red-500'}`}>
-                                    ${Math.abs(event.amount).toFixed(2)}
+                                    {formatCurrency(Math.abs(event.amount))}
                                 </span>
                             )}
                         </div>

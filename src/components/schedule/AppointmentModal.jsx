@@ -57,12 +57,12 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                 .eq('id', appointment.id);
 
             if (error) throw error;
-            success(`Time updated to ${newTime}`);
+            success(`Saat ${newTime} olarak güncellendi`);
             setIsEditingTime(false);
             onUpdate();
         } catch (err) {
             console.error('Error updating time:', err);
-            toastError('Failed to update time');
+            toastError('Saat güncellenemedi');
         } finally {
             setLoading(false);
         }
@@ -77,7 +77,6 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                 .eq('id', appointment.id);
 
             if (error) throw error;
-            if (error) throw error;
 
             await logActivity('Rescheduled Appointment', {
                 appointment_id: appointment.id,
@@ -85,13 +84,13 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                 old_date: appointment.date
             });
 
-            success(`Rescheduled to ${newDate}`);
+            success(`${newDate} tarihine ertelendi`);
             setIsEditingDate(false);
             onUpdate();
             onClose(); // Close modal after rescheduling to different day
         } catch (err) {
             console.error('Error updating date:', err);
-            toastError('Failed to reschedule');
+            toastError('Yeniden planlanamadı');
         } finally {
             setLoading(false);
         }
@@ -130,7 +129,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                 });
 
                 if (hasConflict) {
-                    toastError('Conflict! The selected staff member is busy at this time.');
+                    toastError('Çakışma! Seçilen personel bu saatte meşgul.');
                     setLoading(false);
                     return;
                 }
@@ -144,14 +143,14 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
 
             if (error) throw error;
 
-            const newStaffName = staffList.find(s => s.id === targetStaffId)?.full_name || 'Staff';
-            success(`Reassigned to ${newStaffName}`);
+            const newStaffName = staffList.find(s => s.id === targetStaffId)?.full_name || 'Personel';
+            success(`${newStaffName} kişisine atandı`);
             setIsReassigning(false);
             onUpdate(); // Parent refresh
             onClose(); // Close modal
         } catch (err) {
             console.error('Reassignment Error:', err);
-            toastError('Failed to reassign appointment');
+            toastError('Randevu atanamadı');
         } finally {
             setLoading(false);
         }
@@ -164,13 +163,13 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
         id,
         service_name,
         date,
-        time,
+        // time, // Removed unused variable
         status,
         clients,
         staff_id // ensure this exists in selection
     } = appointment;
 
-    const assignedStaffName = staffList.find(s => s.id === staff_id)?.full_name || 'Unknown Staff';
+    // const assignedStaffName = staffList.find(s => s.id === staff_id)?.full_name || 'Unknown Staff'; // Removed unused variable
 
 
     const handleUpdateStatus = async (newStatus) => {
@@ -186,20 +185,25 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
 
             if (error) throw error;
 
-            if (error) throw error;
-
             await logActivity('Updated Appointment Status', {
                 status: newStatus,
                 appointment_id: id,
                 client_id: appointment.client_id
             });
 
-            success(`Appointment marked as ${newStatus}`);
+            // Translate status for toast
+            const statusMap = {
+                'Scheduled': 'Planlandı',
+                'Completed': 'Tamamlandı',
+                'Cancelled': 'İptal Edildi',
+                'Pending': 'Bekliyor'
+            };
+            success(`Randevu ${statusMap[newStatus] || newStatus} olarak işaretlendi`);
             onUpdate();
             onClose();
         } catch (err) {
             console.error('Error updating status:', err);
-            toastError('Failed to update status');
+            toastError('Durum güncellenemedi');
         } finally {
             setLoading(false);
         }
@@ -208,19 +212,18 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
     const handleSaveNotes = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            const { error } = await supabase // Removed unused 'data'
                 .from('appointments')
                 .update({ notes: currentNotes })
-                .eq('id', id)
-                .select();
+                .eq('id', id); // Removed .select() as we don't need data
 
             if (error) throw error;
 
-            success('Notes saved successfully');
+            success('Notlar başarıyla kaydedildi');
             onUpdate();
         } catch (err) {
             console.error('Error saving notes:', err);
-            toastError('Failed to save notes');
+            toastError('Notlar kaydedilemedi');
         } finally {
             setLoading(false);
         }
@@ -228,12 +231,21 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
 
     // Format Times
     const formatTimeDisplay = (t) => {
-        if (!t) return '00:00 AM';
+        if (!t) return '00:00';
         const [h, m] = t.split(':');
-        const hour = parseInt(h);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const hour12 = hour % 12 || 12;
-        return `${hour12}:${m} ${ampm}`;
+        return `${h}:${m}`; // Turkish format usually 24h
+    };
+
+    const getStatusLabel = (status) => {
+        const normalized = status?.toLowerCase();
+        switch (normalized) {
+            case 'scheduled': return 'Planlandı';
+            case 'completed': return 'Tamamlandı';
+            case 'cancelled': return 'İptal Edildi';
+            case 'pending': return 'Bekliyor';
+            case 'noshow': return 'Gelmedi';
+            default: return status;
+        }
     };
 
     return (
@@ -248,7 +260,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                 status === 'Completed' ? 'bg-green-100 text-green-700' :
                                     status === 'Cancelled' ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'}
                         `}>
-                            {status}
+                            {getStatusLabel(status)}
                         </span>
                         <span className="text-slate-400">•</span>
                         {isEditingDate ? (
@@ -259,16 +271,16 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                     onChange={(e) => setNewDate(e.target.value)}
                                     className="font-semibold text-slate-700 bg-white border border-slate-200 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
                                 />
-                                <button onClick={handleSaveDate} disabled={loading} className="text-primary font-bold text-xs hover:underline">Save</button>
-                                <button onClick={() => { setIsEditingDate(false); setNewDate(date); }} className="text-slate-400 text-xs hover:text-slate-600">Cancel</button>
+                                <button onClick={handleSaveDate} disabled={loading} className="text-primary font-bold text-xs hover:underline">Kaydet</button>
+                                <button onClick={() => { setIsEditingDate(false); setNewDate(date); }} className="text-slate-400 text-xs hover:text-slate-600">İptal</button>
                             </div>
                         ) : (
                             <div className="flex items-center gap-1 group">
-                                <span className="font-semibold text-slate-500">{newDate}</span>
+                                <span className="font-semibold text-slate-500">{newDate.split('-').reverse().join('.')}</span>
                                 <button
                                     onClick={() => setIsEditingDate(true)}
                                     className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-slate-200 rounded"
-                                    title="Reschedule to another day"
+                                    title="Başka güne ertele"
                                 >
                                     <span className="material-symbols-outlined text-[14px] text-slate-400">edit_calendar</span>
                                 </button>
@@ -300,7 +312,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                             window.open(`https://wa.me/${cleanNumber}`, '_blank');
                                         }}
                                         className="text-green-500 hover:text-green-600 bg-green-50 hover:bg-green-100 p-1.5 rounded-full transition-colors"
-                                        title="Chat on WhatsApp"
+                                        title="WhatsApp'ta Sohbet Et"
                                     >
                                         <span className="material-symbols-outlined text-[18px]">chat</span>
                                     </button>
@@ -316,7 +328,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                             <span className="material-symbols-outlined">schedule</span>
                         </div>
                         <div className="flex-1">
-                            <p className="text-xs text-blue-500 font-bold uppercase tracking-wide">Time Slot</p>
+                            <p className="text-xs text-blue-500 font-bold uppercase tracking-wide">Randevu Saati</p>
                             {isEditingTime ? (
                                 <input
                                     type="time"
@@ -335,8 +347,8 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                         </div>
                         {isEditingTime && (
                             <div className="flex gap-2">
-                                <button onClick={handleSaveTime} disabled={loading} className="text-blue-600 font-bold text-sm hover:underline">Save</button>
-                                <button onClick={() => { setIsEditingTime(false); setNewTime(appointment.time); }} className="text-slate-400 text-sm hover:text-slate-600">Cancel</button>
+                                <button onClick={handleSaveTime} disabled={loading} className="text-blue-600 font-bold text-sm hover:underline">Kaydet</button>
+                                <button onClick={() => { setIsEditingTime(false); setNewTime(appointment.time); }} className="text-slate-400 text-sm hover:text-slate-600">İptal</button>
                             </div>
                         )}
                     </div>
@@ -348,7 +360,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                 <span className="material-symbols-outlined">stethoscope</span>
                             </div>
                             <div className="flex-1">
-                                <p className="text-xs text-purple-700 font-bold uppercase tracking-wide">Assigned Specialist</p>
+                                <p className="text-xs text-purple-700 font-bold uppercase tracking-wide">Atanan Uzman</p>
 
                                 {isReassigning ? (
                                     <select
@@ -356,7 +368,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                         onChange={(e) => setTargetStaffId(e.target.value)}
                                         className="w-full mt-1 bg-white border border-purple-200 text-slate-900 font-bold rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                     >
-                                        <option value="" disabled>Select Staff</option>
+                                        <option value="" disabled>Personel Seç</option>
                                         {staffList.map(s => (
                                             <option key={s.id} value={s.id}>{s.full_name}</option>
                                         ))}
@@ -365,12 +377,12 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                     <div className="flex items-center gap-2">
                                         <p className="text-lg font-bold text-slate-900">
                                             {/* We try to find name in list, otherwise fallback to prop if available or loading */}
-                                            {staffList.find(s => s.id === staff_id)?.full_name || 'Loading...'}
+                                            {staffList.find(s => s.id === staff_id)?.full_name || 'Yükleniyor...'}
                                         </p>
                                         <button
                                             onClick={() => { setIsReassigning(true); setTargetStaffId(staff_id); }}
                                             className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-purple-100 rounded"
-                                            title="Reassign Staff"
+                                            title="Personeli Değiştir"
                                         >
                                             <span className="material-symbols-outlined text-[16px] text-purple-600">swap_horiz</span>
                                         </button>
@@ -384,7 +396,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                         disabled={loading}
                                         className="text-white bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded-lg font-bold text-xs shadow-sm transition-colors"
                                     >
-                                        Confirm
+                                        Onayla
                                     </button>
                                     <button
                                         onClick={() => setIsReassigning(false)}
@@ -399,12 +411,12 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
 
                     {/* Notes */}
                     <div className="mb-6">
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Notes</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Notlar</label>
                         <div className="relative">
                             <textarea
                                 rows="3"
                                 className="w-full p-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-slate-700 resize-none bg-slate-50 focus:bg-white transition-all"
-                                placeholder="Add internal notes about this visit..."
+                                placeholder="Bu ziyaret hakkında dahili notlar ekleyin..."
                                 value={currentNotes}
                                 onChange={(e) => setCurrentNotes(e.target.value)}
                             ></textarea>
@@ -415,7 +427,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                     className="text-xs font-bold text-primary hover:text-primary-dark hover:bg-primary/5 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
                                 >
                                     <span className="material-symbols-outlined text-[16px]">save</span>
-                                    Save Notes
+                                    Notları Kaydet
                                 </button>
                             </div>
                         </div>
@@ -430,7 +442,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                 className="py-3 px-4 rounded-xl border border-red-100 text-red-600 font-bold hover:bg-red-50 hover:border-red-200 transition-all flex items-center justify-center gap-2"
                             >
                                 <span className="material-symbols-outlined">block</span>
-                                Cancel
+                                İptal Et
                             </button>
                         )}
 
@@ -441,7 +453,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                 className="py-3 px-4 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2 col-span-1 ml-auto w-full"
                             >
                                 <span className="material-symbols-outlined">check_circle</span>
-                                Complete
+                                Tamamla
                             </button>
                         )}
 
@@ -452,7 +464,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                                 className="col-span-2 py-3 px-4 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
                             >
                                 <span className="material-symbols-outlined">restore</span>
-                                Re-activate
+                                Tekrar Aktif Et
                             </button>
                         )}
                     </div>

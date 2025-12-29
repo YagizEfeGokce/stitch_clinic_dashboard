@@ -27,7 +27,7 @@ export default function RevenueBreakdown({ transactions = [] }) {
 
     return (
         <div className="p-5 bg-white rounded-2xl shadow-card border border-slate-100 h-full flex flex-col">
-            <h3 className="text-base font-bold text-slate-900 mb-4">Income by Category</h3>
+            <h3 className="text-base font-bold text-slate-900 mb-4">Gelir Dağılımı</h3>
 
             {data.length > 0 ? (
                 <div className="flex items-center gap-4 flex-1">
@@ -48,13 +48,13 @@ export default function RevenueBreakdown({ transactions = [] }) {
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Pie>
-                                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                                <Tooltip formatter={(value) => `₺${value.toLocaleString('tr-TR')}`} />
                             </PieChart>
                         </ResponsiveContainer>
                         {/* Center Text */}
                         <div className="absolute inset-0 flex items-center justify-center flex-col pointer-events-none">
-                            <span className="text-xs text-slate-500">Total</span>
-                            <span className="text-sm font-bold text-slate-900">${(totalIncome / 1000).toFixed(1)}k</span>
+                            <span className="text-xs text-slate-500">Toplam</span>
+                            <span className="text-sm font-bold text-slate-900">₺{(totalIncome / 1000).toFixed(1)}k</span>
                         </div>
                     </div>
 
@@ -72,7 +72,7 @@ export default function RevenueBreakdown({ transactions = [] }) {
                 </div>
             ) : (
                 <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">
-                    No income data to breakdown
+                    Dağılım için gelir verisi yok
                 </div>
             )}
         </div>

@@ -13,7 +13,7 @@ export default function Performance() {
     const [staffList, setStaffList] = useState([]);
 
     // Filter State
-    const [filter, setFilter] = useState('This Month');
+    const [filter, setFilter] = useState('Bu Ay');
     const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
     const [isPickerOpen, setIsPickerOpen] = useState(false);
 
@@ -89,17 +89,17 @@ export default function Performance() {
         const now = new Date();
         let start, end;
 
-        if (filter === 'This Month') {
+        if (filter === 'Bu Ay') {
             const y = now.getFullYear();
             const m = now.getMonth();
             start = new Date(y, m, 1, 0, 0, 0); // Start of month 00:00
             end = new Date(y, m + 1, 0, 23, 59, 59); // End of month 23:59
-        } else if (filter === 'Custom Month') {
+        } else if (filter === 'Özel Ay') {
             const [y, m] = selectedMonth.split('-').map(Number);
             start = new Date(y, m - 1, 1, 0, 0, 0);
             end = new Date(y, m, 0, 23, 59, 59);
         } else {
-            // All Time
+            // Tüm Zamanlar (All Time)
             start = new Date(2023, 0, 1);
             end = new Date(new Date().getFullYear() + 1, 0, 1);
         }
@@ -154,24 +154,29 @@ export default function Performance() {
     return (
         <div className="p-5 pb-32">
             <div className="flex flex-col gap-1 mb-6">
-                <h1 className="text-2xl font-bold text-slate-900">Operational Performance</h1>
-                <p className="text-sm text-slate-500">Analytics on services, staff, and growth.</p>
+                <h1 className="text-2xl font-bold text-slate-900">Operasyonel Performans</h1>
+                <p className="text-sm text-slate-500">Hizmetler, personel ve büyüme analizleri.</p>
             </div>
 
             {/* Filter & Month Selection - RELATIVE for Positioning */}
             <div className="flex flex-wrap items-center gap-3 mb-6 relative">
                 <div className="flex bg-white p-1 rounded-xl shadow-sm ring-1 ring-slate-100">
-                    {['This Month', 'Custom Month', 'All Time'].map((f) => (
+                    {['Bu Ay', 'Özel Ay', 'Tüm Zamanlar'].map((f) => (
                         <button
                             key={f}
                             onClick={() => {
+                                // Map Turkish labels back to internal English keys or change state logic?
+                                // Let's change state logic to use Turkish keys or strict ID based.
+                                // Or simplest: keep variable 'filter' English internally if logic depends on it, but button text is Turkish.
+                                // However, code below uses `filter === 'This Month'` etc.
+                                // I will change the internal logic checks to match Turkish strings:
                                 setFilter(f);
-                                if (f === 'This Month') {
+                                if (f === 'Bu Ay') {
                                     const now = new Date();
                                     setSelectedMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
                                     setIsPickerOpen(false);
                                 }
-                                if (f === 'Custom Month') {
+                                if (f === 'Özel Ay') {
                                     setIsPickerOpen(!isPickerOpen);
                                 } else {
                                     setIsPickerOpen(false);
@@ -200,13 +205,13 @@ export default function Performance() {
                 )}
 
                 {/* Selected Month Label */}
-                {filter === 'Custom Month' && !isPickerOpen && (
+                {filter === 'Özel Ay' && !isPickerOpen && (
                     <div
                         onClick={() => setIsPickerOpen(true)}
                         className="text-sm font-bold text-slate-500 flex items-center gap-2 animate-in fade-in cursor-pointer hover:text-primary transition-colors"
                     >
                         <span className="material-symbols-outlined text-[18px]">calendar_month</span>
-                        {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        {new Date(selectedMonth + '-01').toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
                     </div>
                 )}
             </div>
@@ -215,7 +220,7 @@ export default function Performance() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Total Visits</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Toplam Ziyaret</p>
                         <p className="text-2xl font-bold text-slate-900 mt-1">{totalVisits}</p>
                     </div>
                     <div className="size-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
@@ -224,7 +229,7 @@ export default function Performance() {
                 </div>
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">New Clients</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Yeni Müşteriler</p>
                         <p className="text-2xl font-bold text-slate-900 mt-1">{newClients}</p>
                     </div>
                     <div className="size-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-500">
@@ -233,7 +238,7 @@ export default function Performance() {
                 </div>
                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Completion Rate</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wide">Tamamlama Oranı</p>
                         <p className="text-2xl font-bold text-slate-900 mt-1">{completionRate}%</p>
                     </div>
                     <div className={`size-12 rounded-xl flex items-center justify-center ${completionRate > 80 ? 'bg-green-50 text-green-500' : 'bg-orange-50 text-orange-500'}`}>
@@ -258,13 +263,13 @@ export default function Performance() {
 
                     {/* Operational Health Card (Inline) */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                        <h3 className="font-bold text-slate-900 text-lg mb-6">Operational Health</h3>
+                        <h3 className="font-bold text-slate-900 text-lg mb-6">Operasyonel Sağlık</h3>
 
                         <div className="space-y-6">
                             {/* Cancellation Rate */}
                             <div>
                                 <div className="flex justify-between items-end mb-2">
-                                    <span className="text-sm font-semibold text-slate-600">Cancellation Rate</span>
+                                    <span className="text-sm font-semibold text-slate-600">İptal Oranı</span>
                                     <span className="text-xl font-bold text-slate-900">
                                         {currentApts.length > 0 ? Math.round((currentApts.filter(a => a.status === 'Cancelled').length / currentApts.length) * 100) : 0}%
                                     </span>
@@ -277,13 +282,13 @@ export default function Performance() {
                             {/* Rebooking Rate (Calculated: Clients with > 1 visit / Total Clients with visits) */}
                             <div>
                                 <div className="flex justify-between items-end mb-2">
-                                    <span className="text-sm font-semibold text-slate-600">Rebooking Rate</span>
+                                    <span className="text-sm font-semibold text-slate-600">Tekrar Randevu Oranı</span>
                                     <span className="text-xl font-bold text-slate-900">{rebookingRate}%</span>
                                 </div>
                                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                                     <div className="h-full bg-teal-500 rounded-full" style={{ width: `${rebookingRate}%` }}></div>
                                 </div>
-                                <p className="text-xs text-slate-400 mt-2">Based on clients with 2+ completed visits</p>
+                                <p className="text-xs text-slate-400 mt-2">En az 2 tamamlanmış ziyareti olan müşterilere dayanır</p>
                             </div>
                         </div>
                     </div>

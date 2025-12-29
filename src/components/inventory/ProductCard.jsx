@@ -93,7 +93,7 @@ export default function ProductCard({ product, onEdit, onDelete }) {
                                         }}
                                         className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors flex items-center gap-2"
                                     >
-                                        <span className="material-symbols-outlined text-[16px]">edit</span> Edit
+                                        <span className="material-symbols-outlined text-[16px]">edit</span> Düzenle
                                     </button>
                                     {(role === 'admin' || role === 'owner' || role === 'doctor') && (
                                         <button
@@ -104,7 +104,7 @@ export default function ProductCard({ product, onEdit, onDelete }) {
                                             }}
                                             className="w-full text-left px-4 py-2.5 text-sm font-medium text-rose-500 hover:bg-rose-50 transition-colors flex items-center gap-2"
                                         >
-                                            <span className="material-symbols-outlined text-[16px]">delete</span> Delete
+                                            <span className="material-symbols-outlined text-[16px]">delete</span> Sil
                                         </button>
                                     )}
                                 </div>
@@ -112,14 +112,14 @@ export default function ProductCard({ product, onEdit, onDelete }) {
                         </div>
                     </div>
 
-                    <p className="text-xs text-slate-500 mt-1">{product.category} • SKU: {product.sku || 'N/A'}</p>
+                    <p className="text-xs text-slate-500 mt-1">{product.category} • SKU: {product.sku || 'Belirtilmedi'}</p>
                     <div className="mt-2 flex items-center gap-2">
                         {isOutOfStock ? (
-                            <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500 ring-1 ring-inset ring-slate-500/20">Out of Stock</span>
+                            <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500 ring-1 ring-inset ring-slate-500/20">Stok Yok</span>
                         ) : isLowStock ? (
-                            <span className="inline-flex items-center rounded-md bg-rose-50 px-2 py-1 text-xs font-bold text-rose-500 ring-1 ring-inset ring-rose-200">Low Stock</span>
+                            <span className="inline-flex items-center rounded-md bg-rose-50 px-2 py-1 text-xs font-bold text-rose-500 ring-1 ring-inset ring-rose-200">Düşük Stok</span>
                         ) : (
-                            <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">In Stock</span>
+                            <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">Stokta</span>
                         )}
                     </div>
                 </div>
@@ -127,11 +127,11 @@ export default function ProductCard({ product, onEdit, onDelete }) {
 
             <div className={`flex items-center justify-between border-t ${isLowStock ? 'border-rose-100' : 'border-slate-100'} pt-3 relative z-10`}>
                 <div className={`text-sm font-medium ${isLowStock ? 'text-rose-500' : 'text-slate-500'}`}>
-                    {isOutOfStock ? `Reorder Level: ${product.min_stock_alert || 5}` : 'Current Stock'}
+                    {isOutOfStock ? `Sipariş Limiti: ${product.min_stock_alert || 5}` : 'Mevcut Stok'}
                 </div>
 
                 {isOutOfStock ? (
-                    <button onClick={() => saveStock(10)} className="text-sm font-semibold text-primary hover:underline">Restock Now</button>
+                    <button onClick={() => saveStock(10)} className="text-sm font-semibold text-primary hover:underline">Stok Ekle</button>
                 ) : (
                     <div className="flex items-center gap-3">
                         <button

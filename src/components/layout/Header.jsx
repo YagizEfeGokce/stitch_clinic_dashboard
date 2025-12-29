@@ -80,13 +80,13 @@ export default function Header() {
                 {showNotifications && (
                     <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
                         <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                            <h3 className="font-bold text-slate-800">Notifications</h3>
-                            <span className="text-xs font-medium text-slate-400">{allNotifications.length} New</span>
+                            <h3 className="font-bold text-slate-800">Bildirimler</h3>
+                            <span className="text-xs font-medium text-slate-400">{allNotifications.length} Yeni</span>
                         </div>
                         <div className="max-h-80 overflow-y-auto">
                             {allNotifications.length === 0 ? (
                                 <div className="p-8 text-center text-slate-400 text-sm">
-                                    No new notifications
+                                    Yeni bildirim yok
                                 </div>
                             ) : (
                                 <div className="flex flex-col">
@@ -110,7 +110,7 @@ export default function Header() {
                                                     {note.message}
                                                 </p>
                                                 <p className="text-[10px] text-slate-400 mt-1">
-                                                    {note.type === 'warning' ? 'Inventory Alert' : 'Just now'}
+                                                    {note.type === 'warning' ? 'Stok Uyarısı' : 'Az önce'}
                                                 </p>
                                             </div>
                                             {!note.action && (

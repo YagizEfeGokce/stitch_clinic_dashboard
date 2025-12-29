@@ -22,7 +22,7 @@ export default function InventoryStats({ products = [] }) {
                 </div>
                 <div>
                     <p className="text-2xl font-bold text-slate-900">{stats.totalProducts}</p>
-                    <p className="text-xs font-medium text-slate-500">Total Products</p>
+                    <p className="text-xs font-medium text-slate-500">Toplam Ürün</p>
                 </div>
             </div>
 
@@ -34,11 +34,11 @@ export default function InventoryStats({ products = [] }) {
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${stats.lowStockCount > 0 ? 'bg-amber-50 text-amber-500' : 'bg-slate-50 text-slate-400'}`}>
                         <span className="material-symbols-outlined text-[18px]">warning</span>
                     </div>
-                    {stats.lowStockCount > 0 && <span className="text-xs font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">Alert</span>}
+                    {stats.lowStockCount > 0 && <span className="text-xs font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">Uyarı</span>}
                 </div>
                 <div className="relative z-10">
                     <p className="text-2xl font-bold text-slate-900">{stats.lowStockCount}</p>
-                    <p className="text-xs font-medium text-slate-500">Low Stock</p>
+                    <p className="text-xs font-medium text-slate-500">Düşük Stok</p>
                 </div>
             </div>
 
@@ -51,7 +51,7 @@ export default function InventoryStats({ products = [] }) {
                 </div>
                 <div className="relative z-10">
                     <p className="text-2xl font-bold text-slate-900">{stats.outOfStockCount}</p>
-                    <p className="text-xs font-medium text-slate-500">Out of Stock</p>
+                    <p className="text-xs font-medium text-slate-500">Stok Yok</p>
                 </div>
             </div>
 
@@ -63,8 +63,8 @@ export default function InventoryStats({ products = [] }) {
                     </div>
                 </div>
                 <div>
-                    <p className="text-2xl font-bold text-slate-900">${stats.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-                    <p className="text-xs font-medium text-slate-500">Value in Hand</p>
+                    <p className="text-2xl font-bold text-slate-900">₺{stats.totalValue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+                    <p className="text-xs font-medium text-slate-500">Stok Değeri</p>
                 </div>
             </div>
         </div>

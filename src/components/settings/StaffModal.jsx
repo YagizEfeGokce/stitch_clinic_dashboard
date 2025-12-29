@@ -34,12 +34,12 @@ export default function StaffModal({ isOpen, onClose, staffMember, onSuccess }) 
 
             if (error) throw error;
 
-            toast.success('Staff member updated successfully');
+            toast.success('Personel başarıyla güncellendi');
             onSuccess();
             onClose();
         } catch (error) {
             console.error('Error updating staff:', error);
-            toast.error('Failed to update staff member');
+            toast.error('Personel güncellenemedi');
         } finally {
             setLoading(false);
         }
@@ -51,7 +51,7 @@ export default function StaffModal({ isOpen, onClose, staffMember, onSuccess }) 
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
                 <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                    <h3 className="font-bold text-slate-900">Edit Staff Member</h3>
+                    <h3 className="font-bold text-slate-900">Personeli Düzenle</h3>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
                         <span className="material-symbols-outlined">close</span>
                     </button>
@@ -59,7 +59,7 @@ export default function StaffModal({ isOpen, onClose, staffMember, onSuccess }) 
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Full Name</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Ad Soyad</label>
                         <input
                             type="text"
                             required
@@ -70,15 +70,15 @@ export default function StaffModal({ isOpen, onClose, staffMember, onSuccess }) 
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Role</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-1">Rol</label>
                         <select
                             value={formData.role}
                             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-bold text-slate-900 bg-white"
                         >
-                            <option value="admin">Admin</option>
-                            <option value="doctor">Doctor</option>
-                            <option value="staff">Staff</option>
+                            <option value="admin">Yönetici</option>
+                            <option value="doctor">Doktor</option>
+                            <option value="staff">Personel</option>
                         </select>
                     </div>
 
@@ -88,14 +88,14 @@ export default function StaffModal({ isOpen, onClose, staffMember, onSuccess }) 
                             onClick={onClose}
                             className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors"
                         >
-                            Cancel
+                            İptal
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
                             className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:bg-primary-dark transition-colors disabled:opacity-50"
                         >
-                            {loading ? 'Saving...' : 'Save Changes'}
+                            {loading ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
                         </button>
                     </div>
                 </form>
