@@ -21,9 +21,10 @@ export default function AuthProvider({ children }) {
     const refreshUserData = async (userId) => {
         try {
             // Fetch Profile AND Clinic in one go using the foreign key relation
+            // Optimization: Select only necessary fields to reduce payload size
             const { data, error } = await supabase
                 .from('profiles')
-                .select('*, clinics(*)')
+                .select('id, role, full_name, avatar_url, clinic_id, clinics(id, name, branding_config, settings_config)')
                 .eq('id', userId)
                 .maybeSingle();
 
@@ -119,15 +120,10 @@ export default function AuthProvider({ children }) {
         };
     }, []);
 
-    const withTimeout = (promise, ms = 30000) => {
-        const timeout = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error(`Request timed out after ${ms}ms`)), ms)
-        );
-        return Promise.race([promise, timeout]);
-    };
+
 
     const signIn = async (email, password) => {
-        return await withTimeout(supabase.auth.signInWithPassword({ email, password }));
+        return await supabase.auth.signInWithPassword({ email, password });
     };
 
     const signOut = async () => {
@@ -135,13 +131,13 @@ export default function AuthProvider({ children }) {
     };
 
     const signUp = async (email, password, fullName) => {
-        const result = await withTimeout(supabase.auth.signUp({
+        const result = await supabase.auth.signUp({
             email,
             password,
             options: {
                 data: { full_name: fullName } // saved to metadata
             }
-        }));
+        });
 
         // We rely on the DB trigger 'on_auth_user_created' to create the profile and clinic.
         // No manual upsert needed here.
