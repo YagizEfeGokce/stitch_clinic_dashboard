@@ -84,17 +84,30 @@ export default function AuthProvider({ children }) {
         initAuth();
 
         // Listen for changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        // Listen for changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (!mounted) return;
 
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                await refreshUserData(session.user.id);
-            } else {
+            // console.log('Auth State Change:', event);
+
+            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
+                setUser(session?.user ?? null);
+                if (session?.user) {
+                    await refreshUserData(session.user.id);
+                }
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
                 setRole(null);
                 setProfile(null);
                 setClinic(null);
+            } else if (event === 'TOKEN_REFRESHED') {
+                // Just update the user session, do NOT re-fetch profile/clinic data
+                // This prevents "flicker" or "re-fetch" on window focus/tab switch when token auto-refreshes
+                if (session?.user) {
+                    setUser(session.user);
+                }
             }
+
             // Ensure loading is false on any auth change
             setLoading(false);
         });
