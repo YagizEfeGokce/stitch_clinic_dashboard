@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ProductCard({ product, onEdit, onDelete }) {
+    const { role } = useAuth();
     const [stock, setStock] = useState(product.stock);
     const [loading, setLoading] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
@@ -93,16 +95,18 @@ export default function ProductCard({ product, onEdit, onDelete }) {
                                     >
                                         <span className="material-symbols-outlined text-[16px]">edit</span> Edit
                                     </button>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onDelete(product.id);
-                                            setShowMenu(false);
-                                        }}
-                                        className="w-full text-left px-4 py-2.5 text-sm font-medium text-rose-500 hover:bg-rose-50 transition-colors flex items-center gap-2"
-                                    >
-                                        <span className="material-symbols-outlined text-[16px]">delete</span> Delete
-                                    </button>
+                                    {(role === 'admin' || role === 'owner' || role === 'doctor') && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDelete(product.id);
+                                                setShowMenu(false);
+                                            }}
+                                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-rose-500 hover:bg-rose-50 transition-colors flex items-center gap-2"
+                                        >
+                                            <span className="material-symbols-outlined text-[16px]">delete</span> Delete
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>

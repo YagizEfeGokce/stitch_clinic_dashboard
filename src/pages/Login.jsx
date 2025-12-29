@@ -38,9 +38,11 @@ export default function Login() {
                         .eq('id', data.user.id)
                         .single();
 
-                    if (profile?.role === 'staff') {
-                        navigate('/schedule');
+                    const role = profile?.role;
+                    if (role === 'admin' || role === 'owner' || role === 'doctor') {
+                        navigate('/');
                     } else {
+                        // Default for Staff, Clients, or unknown roles
                         navigate('/schedule');
                     }
                 } else {
@@ -55,77 +57,131 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-            <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
-                        <span className="material-symbols-outlined text-3xl">spa</span>
+        <div className="min-h-screen flex bg-white">
+            {/* Left Side - Image Board */}
+            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-900">
+                <img
+                    src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=2068&auto=format&fit=crop"
+                    alt="Clinic Aesthetics"
+                    className="absolute inset-0 w-full h-full object-cover opacity-60"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex flex-col justify-end p-12">
+                    <div className="mb-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md text-white mb-6 border border-white/20">
+                            <span className="material-symbols-outlined text-4xl">spa</span>
+                        </div>
+                        <h1 className="text-4xl font-black text-white tracking-tight mb-4">
+                            Velara <span className="text-primary-300">CRM</span>
+                        </h1>
+                        <p className="text-slate-300 text-lg max-w-md leading-relaxed">
+                            Manage your aesthetics clinic with precision. Clients, appointments, and inventory—all in one premium dashboard.
+                        </p>
                     </div>
-                    <h1 className="text-2xl font-bold text-slate-900">{isSignUp ? 'Create Account' : 'Welcome Back'}</h1>
-                    <p className="text-slate-500 mt-2">{isSignUp ? 'Join Stitch Clinic CRM today' : 'Sign in to your dashboard'}</p>
+                    <div className="flex items-center gap-4 text-sm text-slate-400 font-medium">
+                        <span>&copy; 2025 Velara</span>
+                    </div>
                 </div>
+            </div>
 
-                {error && (
-                    <div className="mb-6 p-4 rounded-xl bg-rose-50 text-rose-600 text-sm font-medium border border-rose-100 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-lg">error</span>
-                        {error}
+            {/* Right Side - Form */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white lg:bg-slate-50/30">
+                <div className="max-w-md w-full bg-white lg:bg-transparent lg:shadow-none rounded-3xl lg:rounded-none p-8 lg:p-0 shadow-2xl lg:shadow-none border lg:border-none border-slate-100">
+                    <div className="text-center lg:text-left mb-10">
+                        {/* Mobile Icon */}
+                        <div className="lg:hidden inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 text-primary mb-6">
+                            <span className="material-symbols-outlined text-3xl">spa</span>
+                        </div>
+
+                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+                            {isSignUp ? 'Create Account' : 'Welcome Back'}
+                        </h2>
+                        <p className="text-slate-500 font-medium mt-2">
+                            {isSignUp ? 'Start your premium trial.' : 'Please enter your details to sign in.'}
+                        </p>
                     </div>
-                )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {isSignUp && (
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Full Name</label>
-                            <input
-                                type="text"
-                                required
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-slate-900"
-                                placeholder="Dr. Sarah Smith"
-                            />
+                    {error && (
+                        <div className="mb-8 p-4 rounded-xl bg-rose-50 text-rose-600 text-sm font-bold border border-rose-100 flex items-center gap-3 animate-in fade-in zoom-in-95">
+                            <span className="material-symbols-outlined text-xl">error</span>
+                            {error}
                         </div>
                     )}
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Email</label>
-                        <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-slate-900"
-                            placeholder="doctor@stitchclinic.com"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
-                        <input
-                            type="password"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium text-slate-900"
-                            placeholder="••••••••"
-                        />
-                    </div>
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full py-3.5 rounded-xl bg-primary text-white font-bold text-lg shadow-lg shadow-primary/25 hover:bg-primary-dark active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                        {loading && <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>}
-                        {loading ? (isSignUp ? 'Creating Account...' : 'Signing in...') : (isSignUp ? 'Sign Up' : 'Sign In')}
-                    </button>
-                </form>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        {isSignUp && (
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Full Name</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-[20px]">person</span>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={fullName}
+                                        onChange={(e) => setFullName(e.target.value)}
+                                        className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-slate-900 placeholder:font-medium placeholder:text-slate-400"
+                                        placeholder="Dr. Sarah Smith"
+                                    />
+                                </div>
+                            </div>
+                        )}
 
-                <div className="mt-6 text-center">
-                    <button
-                        onClick={() => setIsSignUp(!isSignUp)}
-                        className="text-sm font-bold text-primary hover:text-primary-dark transition-colors"
-                    >
-                        {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
-                    </button>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Email Address</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-[20px]">mail</span>
+                                <input
+                                    type="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-slate-900 placeholder:font-medium placeholder:text-slate-400"
+                                    placeholder="doctor@velara.com"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Password</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-[20px]">lock</span>
+                                <input
+                                    type="password"
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-slate-900 placeholder:font-medium placeholder:text-slate-400"
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 rounded-xl bg-primary text-white font-bold text-lg shadow-xl shadow-primary/20 hover:bg-primary-dark hover:shadow-2xl hover:shadow-primary/30 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+                        >
+                            {loading ? (
+                                <>
+                                    <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>
+                                    <span>Processing...</span>
+                                </>
+                            ) : (
+                                <span>{isSignUp ? 'Create Account' : 'Sign In'}</span>
+                            )}
+                        </button>
+                    </form>
+
+                    <div className="mt-8 pt-8 border-t border-slate-100 text-center">
+                        <p className="text-slate-500 font-medium mb-3">
+                            {isSignUp ? 'Already have an account?' : "Don't have an account?"}
+                        </p>
+                        <button
+                            onClick={() => setIsSignUp(!isSignUp)}
+                            className="text-primary font-bold hover:text-primary-dark hover:underline decoration-2 underline-offset-4 transition-all"
+                        >
+                            {isSignUp ? 'Sign in to existing account' : 'Create new account'}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

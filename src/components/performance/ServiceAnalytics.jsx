@@ -64,7 +64,7 @@ export default function ServiceAnalytics({ appointments }) {
                     </PieChart>
                 </ResponsiveContainer>
                 {/* Center Text */}
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-20">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-8">
                     <div className="text-center">
                         <span className="block text-2xl font-bold text-slate-900">{total}</span>
                         <span className="text-[10px] text-slate-400 uppercase font-bold">Total</span>

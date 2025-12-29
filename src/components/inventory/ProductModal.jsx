@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
+import { logActivity } from '../../lib/logger';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit = null }) {
     const { success, error: showError } = useToast();
+    const { profile } = useAuth();
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [formData, setFormData] = useState({
@@ -89,26 +92,44 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
         };
 
         try {
-            let error;
-
             if (productToEdit) {
                 // UPDATE
                 const { error: updateError } = await supabase
                     .from('inventory')
                     .update(payload)
                     .eq('id', productToEdit.id);
-                error = updateError;
+
+                if (updateError) throw updateError;
+
+                // Log activity for update
+                const changes = Object.keys(payload).filter(key => payload[key] !== productToEdit[key]);
+                await logActivity('Updated Inventory Item', {
+                    item_name: formData.name,
+                    item_id: productToEdit.id,
+                    changes: changes.length > 0 ? changes : ['No significant changes']
+                });
+
                 success('Product updated successfully');
             } else {
                 // CREATE
-                const { error: insertError } = await supabase
+                if (!profile?.clinic_id) throw new Error('You are not associated with a clinic.');
+
+                const { data, error: insertError } = await supabase
                     .from('inventory')
-                    .insert([payload]);
-                error = insertError;
+                    .insert([payload])
+                    .select(); // Select the inserted data to get the ID
+
+                if (insertError) throw insertError;
+
+                // Log activity for creation
+                await logActivity('Created Inventory Item', {
+                    item_name: formData.name,
+                    item_id: data?.[0]?.id
+                });
+
                 success('Product created successfully');
             }
 
-            if (error) throw error;
 
             onSuccess();
             onClose();

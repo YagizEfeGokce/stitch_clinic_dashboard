@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Unauthorized() {
     const navigate = useNavigate();
+    const { signOut } = useAuth();
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4 font-display">
@@ -17,18 +19,29 @@ export default function Unauthorized() {
                     </p>
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-2 flex flex-col gap-3">
                     <button
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate('/schedule')}
+                        className="w-full py-3 px-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-dark shadow-sm transition-colors"
+                    >
+                        Go to Dashboard
+                    </button>
+
+                    <button
+                        onClick={async () => {
+                            await signOut();
+                            navigate('/login');
+                        }}
                         className="w-full py-3 px-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors"
                     >
-                        Go Back
+                        Sign Out
                     </button>
+
                     <button
-                        onClick={() => navigate('/')}
-                        className="mt-3 block w-full text-center text-sm font-bold text-primary hover:underline"
+                        onClick={() => navigate(-1)}
+                        className="block w-full text-center text-sm font-bold text-slate-400 hover:text-slate-600 hover:underline"
                     >
-                        Back to Home
+                        Go Back
                     </button>
                 </div>
             </div>

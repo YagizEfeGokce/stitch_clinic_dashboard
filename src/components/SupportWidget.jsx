@@ -55,7 +55,7 @@ export default function SupportWidget() {
                         <div className="flex items-center gap-2">
                             <span className="material-symbols-outlined">smart_toy</span>
                             <div>
-                                <div className="font-bold text-sm">Stitch Assistant</div>
+                                <div className="font-bold text-sm">Velara Assistant</div>
                                 <div className="text-[10px] text-slate-300 flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
                                     Online

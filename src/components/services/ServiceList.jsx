@@ -1,4 +1,9 @@
+import { useAuth } from '../../context/AuthContext';
+
 export default function ServiceList({ services, onEdit, onDelete }) {
+    const { role } = useAuth();
+
+
     if (services.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-12 text-center bg-white rounded-2xl border border-slate-100 shadow-sm border-dashed">
@@ -23,18 +28,22 @@ export default function ServiceList({ services, onEdit, onDelete }) {
                             {service.name}
                         </h3>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                                onClick={() => onEdit(service)}
-                                className="size-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-[18px]">edit</span>
-                            </button>
-                            <button
-                                onClick={() => onDelete(service.id)}
-                                className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
-                            >
-                                <span className="material-symbols-outlined text-[18px]">delete</span>
-                            </button>
+                            {['owner', 'admin', 'doctor'].includes(role) && (
+                                <>
+                                    <button
+                                        onClick={() => onEdit(service)}
+                                        className="size-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">edit</span>
+                                    </button>
+                                    <button
+                                        onClick={() => onDelete(service.id)}
+                                        className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
 

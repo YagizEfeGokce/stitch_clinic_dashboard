@@ -6,6 +6,8 @@ export default function TimelineItem({
     status = 'future',
     image,
     isActive = false,
+    duration, // New prop
+    notes,    // New prop
     onClick // Added missing prop
 }) {
     const isPast = status === 'past';
@@ -55,7 +57,14 @@ export default function TimelineItem({
                                         <span className="text-sm text-slate-500">First Consultation</span>
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-slate-500 truncate">{treatment}</p>
+                                    <div className="flex flex-col gap-1">
+                                        <p className="text-sm text-slate-500 truncate">{treatment}</p>
+                                        {/* Added Duration and Notes for inactive state as requested */}
+                                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                                            {duration && <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">schedule</span> {duration} min</span>}
+                                            {notes && <span className="flex items-center gap-1 max-w-[150px] truncate" title={notes}><span className="material-symbols-outlined text-[14px]">sticky_note_2</span> {notes}</span>}
+                                        </div>
+                                    </div>
                                 )}
                             </div>
 

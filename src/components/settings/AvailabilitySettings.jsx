@@ -28,9 +28,9 @@ export default function AvailabilitySettings() {
 
     const fetchClinicSettings = async () => {
         try {
-            const response = await supabase.from('clinic_settings').select('working_start_hour, working_end_hour').single();
-            if (response && response.data) {
-                setClinicSettings(response.data);
+            const response = await supabase.from('clinics').select('settings_config').single();
+            if (response && response.data?.settings_config) {
+                setClinicSettings(response.data.settings_config);
             }
         } catch (error) {
             console.error('Error fetching clinic settings:', error);

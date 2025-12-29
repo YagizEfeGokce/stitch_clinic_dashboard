@@ -1,13 +1,14 @@
 import { useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 export default function ThemeManager() {
-    useEffect(() => {
-        fetchAndApplyTheme();
+    const { clinic } = useAuth();
 
-        // Optional: Subscribe to changes if we want real-time updates across devices
-        // For now, simpler fetch is fine.
-    }, []);
+    useEffect(() => {
+        if (clinic?.branding_config) {
+            applyTheme(clinic.branding_config);
+        }
+    }, [clinic]);
 
     const hexToRgb = (hex) => {
         // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
@@ -23,21 +24,6 @@ export default function ThemeManager() {
             b: parseInt(result[3], 16)
         } : null;
     }
-
-    const fetchAndApplyTheme = async () => {
-        try {
-            const { data } = await supabase
-                .from('clinic_settings')
-                .select('primary_color, secondary_color')
-                .single();
-
-            if (data) {
-                applyTheme(data);
-            }
-        } catch (error) {
-            console.error('Error applying theme:', error);
-        }
-    };
 
     const applyTheme = (settings) => {
         const root = document.documentElement;

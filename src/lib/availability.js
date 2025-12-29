@@ -5,22 +5,25 @@ export const checkWorkingHours = async (dateStr, timeStr, staffId) => {
         const date = new Date(dateStr);
         const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
 
-        // 1. Fetch Clinic Settings
+        // 1. Fetch Clinic Settings (New Schema: 'clinics' table)
+        // RLS ensures we only get our own clinic
         const { data: clinic } = await supabase
-            .from('clinic_settings')
-            .select('working_days, working_start_hour, working_end_hour')
+            .from('clinics')
+            .select('settings_config')
             .single();
 
-        if (clinic) {
+        if (clinic?.settings_config) {
+            const { working_days, working_start_hour, working_end_hour } = clinic.settings_config;
+
             // Check Clinic Days
-            if (clinic.working_days && !clinic.working_days.includes(dayName)) {
+            if (working_days && Array.isArray(working_days) && !working_days.includes(dayName)) {
                 return { valid: false, message: `Clinic is closed on ${dayName}s.` };
             }
 
             // Check Clinic Hours
-            if (clinic.working_start_hour && clinic.working_end_hour) {
-                if (timeStr < clinic.working_start_hour || timeStr >= clinic.working_end_hour) {
-                    return { valid: false, message: `Time is outside clinic hours (${clinic.working_start_hour} - ${clinic.working_end_hour}).` };
+            if (working_start_hour && working_end_hour) {
+                if (timeStr < working_start_hour || timeStr >= working_end_hour) {
+                    return { valid: false, message: `Time is outside clinic hours (${working_start_hour} - ${working_end_hour}).` };
                 }
             }
         }
@@ -55,7 +58,6 @@ export const checkWorkingHours = async (dateStr, timeStr, staffId) => {
 
     } catch (error) {
         console.error('Availability Check Error:', error);
-        // Fail safe: Allow if check fails? Or Block? Block is safer.
-        return { valid: false, message: 'Could not verify working hours.' };
+        return { valid: false, message: `Error verifying: ${error.message}` };
     }
 };

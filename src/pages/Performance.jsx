@@ -7,7 +7,7 @@ import StaffAvailability from '../components/performance/StaffAvailability';
 import MonthPicker from '../components/ui/MonthPicker';
 
 export default function Performance() {
-    const [loading, setLoading] = useState(true);
+    // const [loading, setLoading] = useState(true);
     const [appointments, setAppointments] = useState([]);
     const [clients, setClients] = useState([]);
     const [staffList, setStaffList] = useState([]);
@@ -29,33 +29,60 @@ export default function Performance() {
 
     const fetchData = async () => {
         try {
-            setLoading(true);
+            // setLoading(true); // Don't block UI on re-fetch
 
             // 1. Fetch Appointments (All time for analytics)
-            const { data: aptData } = await supabase
+            const { data: aptData, error: aptError } = await supabase
                 .from('appointments')
                 .select('*, profiles:staff_id(full_name, role, avatar_url), services:service_id(name, duration_min)')
                 .gte('date', '2023-01-01');
 
+            if (aptError) console.error('Error fetching appointments:', aptError);
+
             // 2. Fetch Clients (for growth)
-            const { data: clientData } = await supabase
+            const { data: clientData, error: clientError } = await supabase
                 .from('clients')
                 .select('id, created_at');
 
+            if (clientError) console.error('Error fetching clients:', clientError);
+
             // 3. Fetch Staff Profiles
-            const { data: profileData } = await supabase
+            const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
                 .select('*');
+
+            if (profileError) console.error('Error fetching profiles:', profileError);
 
             setAppointments(aptData || []);
             setClients(clientData || []);
             setStaffList(profileData || []);
         } catch (error) {
-            console.error('Error fetching performance data:', error);
+            console.error('Critical error fetching performance data:', error);
         } finally {
-            setLoading(false);
+            // setLoading(false);
         }
     };
+
+    // Realtime Subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('performance_realtime')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'appointments' },
+                () => fetchData()
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'clients' },
+                () => fetchData()
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
 
     // --- Helper Logic ---
     const getDateRange = () => {
@@ -63,16 +90,18 @@ export default function Performance() {
         let start, end;
 
         if (filter === 'This Month') {
-            start = new Date(now.getFullYear(), now.getMonth(), 1);
-            end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+            const y = now.getFullYear();
+            const m = now.getMonth();
+            start = new Date(y, m, 1, 0, 0, 0); // Start of month 00:00
+            end = new Date(y, m + 1, 0, 23, 59, 59); // End of month 23:59
         } else if (filter === 'Custom Month') {
             const [y, m] = selectedMonth.split('-').map(Number);
-            start = new Date(y, m - 1, 1);
+            start = new Date(y, m - 1, 1, 0, 0, 0);
             end = new Date(y, m, 0, 23, 59, 59);
         } else {
             // All Time
-            start = new Date(2020, 0, 1);
-            end = new Date(2100, 0, 1);
+            start = new Date(2023, 0, 1);
+            end = new Date(new Date().getFullYear() + 1, 0, 1);
         }
         return { start, end };
     };
@@ -80,8 +109,13 @@ export default function Performance() {
     const { start, end } = getDateRange();
 
     const currentApts = appointments.filter(a => {
-        const d = new Date(a.date);
-        return d >= start && d <= end;
+        // Safe string comparison or robust Date parsing
+        // a.date is YYYY-MM-DD. We treat it as local date at 00:00 or simple string comparison if range matches.
+        // Let's use robust Date object comparison but setting time to 12:00 to avoid timezone shifts jumping days.
+        const [y, m, d] = a.date.split('-').map(Number);
+        const aptDate = new Date(y, m - 1, d, 12, 0, 0);
+
+        return aptDate >= start && aptDate <= end;
     });
 
     // --- KPIs ---
@@ -99,6 +133,22 @@ export default function Performance() {
     const completed = currentApts.filter(a => a.status === 'Completed').length;
     const completionRate = currentApts.length > 0
         ? Math.round((completed / currentApts.length) * 100)
+        : 0;
+
+    // 4. Rebooking Rate (Clients with >= 2 completed appointments)
+    // First, count completed visits per client
+    const clientVisitCounts = currentApts
+        .filter(a => a.status === 'Completed' && a.client_id)
+        .reduce((acc, a) => {
+            acc[a.client_id] = (acc[a.client_id] || 0) + 1;
+            return acc;
+        }, {});
+
+    const totalClientsWithVisits = Object.keys(clientVisitCounts).length;
+    const returningClients = Object.values(clientVisitCounts).filter(count => count >= 2).length;
+
+    const rebookingRate = totalClientsWithVisits > 0
+        ? Math.round((returningClients / totalClientsWithVisits) * 100)
         : 0;
 
     return (
@@ -224,16 +274,16 @@ export default function Performance() {
                                 </div>
                             </div>
 
-                            {/* Rebooking Rate (Mock Logic for now as 'Returning') */}
+                            {/* Rebooking Rate (Calculated: Clients with > 1 visit / Total Clients with visits) */}
                             <div>
                                 <div className="flex justify-between items-end mb-2">
                                     <span className="text-sm font-semibold text-slate-600">Rebooking Rate</span>
-                                    <span className="text-xl font-bold text-slate-900">64%</span>
+                                    <span className="text-xl font-bold text-slate-900">{rebookingRate}%</span>
                                 </div>
                                 <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary rounded-full" style={{ width: '64%' }}></div>
+                                    <div className="h-full bg-teal-500 rounded-full" style={{ width: `${rebookingRate}%` }}></div>
                                 </div>
-                                <p className="text-xs text-slate-400 mt-2">Based on clients with 2+ visits</p>
+                                <p className="text-xs text-slate-400 mt-2">Based on clients with 2+ completed visits</p>
                             </div>
                         </div>
                     </div>

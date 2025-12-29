@@ -4,56 +4,81 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
 export default function Onboarding() {
-    const { user } = useAuth();
+    const { user, profile, loading: authLoading, refreshUserData } = useAuth(); // Get profile and loading from AuthContext
     const navigate = useNavigate();
 
     const [clinicName, setClinicName] = useState('');
-    const [fullName, setFullName] = useState('');
+    const [existingName, setExistingName] = useState('');
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        // Redirect if already onboarded
+        if (!authLoading && profile?.has_completed_onboarding) {
+            navigate('/schedule', { replace: true });
+        }
+    }, [profile, authLoading, navigate]);
+
+    useEffect(() => {
+        // Fetch user's existing name to greet them
+        const loadUserName = async () => {
+            if (!user) return;
+            const { data } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', user.id)
+                .single();
+
+            if (data?.full_name) {
+                setExistingName(data.full_name);
+            }
+        };
+        loadUserName();
+    }, [user]);
 
     const handleComplete = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            // 1. Update User Profile
+            // 1. Get user's clinic_id first
+            const { data: profileData, error: fetchError } = await supabase
+                .from('profiles')
+                .select('clinic_id')
+                .eq('id', user.id)
+                .single();
+
+            if (fetchError) throw fetchError;
+            if (!profileData?.clinic_id) throw new Error('No clinic associated with this account.');
+
+            // 2. Mark Profile as Onboarded (Name is already set during sign up)
             const { error: profileError } = await supabase
                 .from('profiles')
                 .update({
-                    full_name: fullName,
-                    clinic_name: clinicName,
                     has_completed_onboarding: true
                 })
                 .eq('id', user.id);
 
             if (profileError) throw profileError;
 
-            // 2. Update Global Clinic Settings
-            // Fetch existing ID to avoid duplicates, or create new
-            const { data: existingSettings } = await supabase
-                .from('clinic_settings')
-                .select('id')
-                .limit(1)
-                .maybeSingle();
+            // 3. Update Clinic Name
+            const { error: clinicError } = await supabase
+                .from('clinics')
+                .update({
+                    name: clinicName,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', profileData.clinic_id);
 
-            const { error: settingsError } = await supabase
-                .from('clinic_settings')
-                .upsert({
-                    id: existingSettings?.id, // Update if exists, else insert (auto-gen ID)
-                    clinic_name: clinicName,
-                    // Set defaults if new
-                    primary_color: existingSettings ? undefined : '#0F172A',
-                    secondary_color: existingSettings ? undefined : '#F43F5E'
-                });
+            if (clinicError) throw clinicError;
 
-            if (settingsError) console.warn("Settings update warning:", settingsError);
+            // 4. Force refresh of context data to update Sidebar immediately
+            await refreshUserData(user.id);
 
-            if (profileError) throw profileError;
             // Navigate implies success
             navigate('/schedule');
         } catch (error) {
             console.error(error);
-            alert('Failed to update profile. Please try again.');
+            alert('Failed to update profile: ' + (error.message || 'Unknown error'));
         } finally {
             setLoading(false);
         }
@@ -67,22 +92,12 @@ export default function Onboarding() {
                         <span className="material-symbols-outlined text-3xl">rocket_launch</span>
                     </div>
 
-                    <h1 className="text-2xl font-bold text-center text-slate-900 mb-2">Setup Your Clinic</h1>
-                    <p className="text-center text-slate-500 mb-8">Let's personalize your workspace.</p>
+                    <h1 className="text-2xl font-bold text-center text-slate-900 mb-2">
+                        Welcome, {existingName || 'Doctor'}
+                    </h1>
+                    <p className="text-center text-slate-500 mb-8">Let's set up your clinic workspace.</p>
 
                     <form onSubmit={handleComplete} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-bold text-slate-900 mb-1.5">Your Full Name</label>
-                            <input
-                                type="text"
-                                required
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                placeholder="e.g. Dr. Ray"
-                                className="w-full px-5 py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all font-semibold outline-none"
-                            />
-                        </div>
-
                         <div>
                             <label className="block text-sm font-bold text-slate-900 mb-1.5">Clinic Name</label>
                             <input

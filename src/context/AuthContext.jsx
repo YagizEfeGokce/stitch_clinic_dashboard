@@ -1,8 +1,9 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext({});
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
 export default function AuthProvider({ children }) {
@@ -11,24 +12,34 @@ export default function AuthProvider({ children }) {
     const [profile, setProfile] = useState(null);
     const [clinic, setClinic] = useState(null);
     const [loading, setLoading] = useState(true);
+    const loadingRef = useRef(true);
+
+    useEffect(() => {
+        loadingRef.current = loading;
+    }, [loading]);
 
     const refreshUserData = async (userId) => {
         try {
-            // Safety timeout: Don't block auth for more than 4s trying to get profile
-            const fetchPromise = Promise.all([
-                supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
-                supabase.from('clinic_settings').select('*').limit(1).maybeSingle()
-            ]);
+            // Fetch Profile AND Clinic in one go using the foreign key relation
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*, clinics(*)')
+                .eq('id', userId)
+                .maybeSingle();
 
-            const timeoutPromise = new Promise(resolve => setTimeout(() => resolve([{ data: null }, { data: null }]), 1500));
+            if (error) throw error;
 
-            const [profileRes, clinicRes] = await Promise.race([fetchPromise, timeoutPromise]);
-
-            if (profileRes?.data) {
-                setProfile(profileRes.data);
-                setRole(profileRes.data.role);
+            if (data) {
+                setProfile(data);
+                setRole(data.role);
+                // Set clinic from the joined data. 
+                // Note: 'clinics' will be an object if relation is 1:1 or N:1, or array if 1:N.
+                // Based on schema: profiles.clinic_id -> clinics.id (Many to One).
+                // So Supabase returns it as an object (single) or null.
+                if (data.clinics) {
+                    setClinic(data.clinics);
+                }
             }
-            if (clinicRes?.data) setClinic(clinicRes.data);
         } catch (error) {
             console.error('Error fetching user data:', error);
         }
@@ -37,32 +48,35 @@ export default function AuthProvider({ children }) {
     useEffect(() => {
         let mounted = true;
 
-        // Safety timeout mechanism: Force app to load if Auth takes > 2.5s
+        // Safety timeout mechanism: Force app to load if Auth takes > 16s
         const timeoutId = setTimeout(() => {
-            if (mounted && loading) {
+            if (mounted && loadingRef.current) {
                 console.warn('Auth init timed out, forcing load.');
                 setLoading(false);
             }
-        }, 2500);
+        }, 16000);
 
         const initAuth = async () => {
-
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                // Timeout to prevent infinite hang
+                const sessionPromise = supabase.auth.getSession();
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Auth getSession 5s timeout')), 5000)
+                );
+
+                const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
 
                 if (mounted) {
-                    setUser(session?.user ?? null);
-
-                    // CRITICAL: Unblock UI immediately, don't wait for role
-                    setLoading(false);
-
                     if (session?.user) {
-                        // Fetch data in background
-                        refreshUserData(session.user.id).catch(e => console.error('Data fetch error:', e));
+                        setUser(session.user);
+                        await refreshUserData(session.user.id).catch(e => console.error('Data fetch error:', e));
+                    } else {
+                        setUser(null);
                     }
+                    setLoading(false);
                 }
             } catch (error) {
-                console.error('Auth initialization failed:', error);
+                console.warn('Auth initialization skipped or timed out:', error.message);
                 if (mounted) setLoading(false);
             }
         };
@@ -92,8 +106,15 @@ export default function AuthProvider({ children }) {
         };
     }, []);
 
+    const withTimeout = (promise, ms = 10000) => {
+        const timeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error(`Request timed out after ${ms}ms`)), ms)
+        );
+        return Promise.race([promise, timeout]);
+    };
+
     const signIn = async (email, password) => {
-        return await supabase.auth.signInWithPassword({ email, password });
+        return await withTimeout(supabase.auth.signInWithPassword({ email, password }));
     };
 
     const signOut = async () => {
@@ -101,20 +122,16 @@ export default function AuthProvider({ children }) {
     };
 
     const signUp = async (email, password, fullName) => {
-        const result = await supabase.auth.signUp({
+        const result = await withTimeout(supabase.auth.signUp({
             email,
             password,
             options: {
                 data: { full_name: fullName } // saved to metadata
             }
-        });
+        }));
 
-        if (result.data?.user && !result.error) {
-            // Attempt to ensure profile exists, but don't block if trigger handles it
-            await supabase.from('profiles').upsert([
-                { id: result.data.user.id, email: email, full_name: fullName, role: 'staff' }
-            ], { onConflict: 'id', ignoreDuplicates: true });
-        }
+        // We rely on the DB trigger 'on_auth_user_created' to create the profile and clinic.
+        // No manual upsert needed here.
 
         return result;
     };

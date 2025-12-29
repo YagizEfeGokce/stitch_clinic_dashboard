@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
+import { logActivity } from '../../lib/logger';
 
 export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
     const { success, error: showError } = useToast();
@@ -47,20 +48,35 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
                     })
                     .eq('id', service.id);
                 if (error) throw error;
+
+                await logActivity('Updated Service', {
+                    service_name: formData.name,
+                    service_id: service.id,
+                    changes: Object.keys(formData).filter(k => formData[k] !== service[k])
+                });
+
                 success('Service updated successfully');
             } else {
                 // Create Mode
-                const { error } = await supabase
+                const { data, error } = await supabase
                     .from('services')
                     .insert([{
                         name: formData.name,
                         duration_min: parseInt(formData.duration_min),
                         price: parseFloat(formData.price),
                         description: formData.description
-                    }]);
+                    }])
+                    .select(); // Get id
                 if (error) throw error;
+
+                await logActivity('Created Service', {
+                    service_name: formData.name,
+                    service_id: data?.[0]?.id
+                });
+
                 success('Service created successfully');
             }
+
 
             onSuccess();
             onClose();

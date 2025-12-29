@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }) {
-    const { toast } = useToast();
+    const toast = useToast();
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [fullName, setFullName] = useState(profile?.full_name || '');
@@ -62,8 +62,7 @@ export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }
                 .from('profiles')
                 .update({
                     full_name: fullName,
-                    avatar_url: avatarUrl,
-                    updated_at: new Date()
+                    avatar_url: avatarUrl
                 })
                 .eq('id', user.id);
 

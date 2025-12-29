@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
+// import { useAuth } from '../../context/AuthContext';
 
 import { checkWorkingHours } from '../../lib/availability';
+import { logActivity } from '../../lib/logger';
 
 export default function QuickAppointmentModal({
     isOpen,
     onClose,
     onSuccess,
     preselectedDate,
+    preselectedTime, // Add this
     preselectedStaffId,
     canAssignStaff = false,
     staffList = []
 }) {
-    const { toast, success, error: showError } = useToast();
+    const { success, error: showError } = useToast();
+    // const { profile } = useAuth(); // Unused
     const [loading, setLoading] = useState(false);
     const [clients, setClients] = useState([]);
     const [services, setServices] = useState([]);
@@ -27,16 +31,25 @@ export default function QuickAppointmentModal({
         notes: ''
     });
 
+    const [ignoreConflict, setIgnoreConflict] = useState(false);
+
     useEffect(() => {
         if (isOpen) {
             fetchOptions();
             setFormData(prev => ({
                 ...prev,
                 date: preselectedDate || prev.date,
+                time: preselectedTime || '09:00', // Use prop
                 staff_id: preselectedStaffId || ''
             }));
+            setIgnoreConflict(false);
         }
-    }, [isOpen, preselectedDate, preselectedStaffId]);
+    }, [isOpen, preselectedDate, preselectedTime, preselectedStaffId]);
+
+    // Reset ignoreConflict if user changes booking details
+    useEffect(() => {
+        setIgnoreConflict(false);
+    }, [formData.date, formData.time, formData.staff_id, formData.service_id]);
 
     const fetchOptions = async () => {
         const { data: clientsData } = await supabase.from('clients').select('id, first_name, last_name, phone').order('first_name');
@@ -67,6 +80,7 @@ export default function QuickAppointmentModal({
             if (!targetStaffId) throw new Error('No staff member assigned.');
 
             // Validation 2: Clinic & Staff Working Hours
+            // Skip this if ignoring conflicts (maybe? or keep it strict? Strict for now, usually shifts are strict)
             const availabilityCheck = await checkWorkingHours(formData.date, formData.time, targetStaffId);
             if (!availabilityCheck.valid) {
                 showError(availabilityCheck.message);
@@ -79,33 +93,36 @@ export default function QuickAppointmentModal({
             if (!selectedService) throw new Error('Service not found');
 
             // Validation 3: Conflict Check (Overlapping Appointments)
-            // Fetch appointments for the same day (and same staff member)
-            const { data: dayAppointments } = await supabase
-                .from('appointments')
-                .select('time, services(duration_min)')
-                .eq('date', formData.date)
-                .eq('staff_id', targetStaffId) // Check conflict for specific staff
-                .neq('status', 'Cancelled');
+            if (!ignoreConflict) {
+                // Fetch appointments for the same day (and same staff member)
+                const { data: dayAppointments } = await supabase
+                    .from('appointments')
+                    .select('time, services(duration_min)')
+                    .eq('date', formData.date)
+                    .eq('staff_id', targetStaffId) // Check conflict for specific staff
+                    .neq('status', 'Cancelled');
 
-            if (dayAppointments) {
-                const newStart = selectedDateTime.getTime();
-                const newEnd = newStart + (selectedService.duration_min * 60000);
+                if (dayAppointments) {
+                    const newStart = selectedDateTime.getTime();
+                    const newEnd = newStart + (selectedService.duration_min * 60000);
 
-                const hasConflict = dayAppointments.some(apt => {
-                    const aptTime = new Date(`${formData.date}T${apt.time}`); // Local time assumption
-                    const aptStart = aptTime.getTime();
-                    // Fallback to 30 min if duration missing
-                    const aptDuration = apt.services?.duration_min || 30;
-                    const aptEnd = aptStart + (aptDuration * 60000);
+                    const hasConflict = dayAppointments.some(apt => {
+                        const aptTime = new Date(`${formData.date}T${apt.time}`); // Local time assumption
+                        const aptStart = aptTime.getTime();
+                        // Fallback to 30 min if duration missing
+                        const aptDuration = apt.services?.duration_min || 30;
+                        const aptEnd = aptStart + (aptDuration * 60000);
 
-                    // Check overlap: (StartA < EndB) and (EndA > StartB)
-                    return newStart < aptEnd && newEnd > aptStart;
-                });
+                        // Check overlap: (StartA < EndB) and (EndA > StartB)
+                        return newStart < aptEnd && newEnd > aptStart;
+                    });
 
-                if (hasConflict) {
-                    showError('Time slot conflict! This staff member is busy at that time.');
-                    setLoading(false);
-                    return;
+                    if (hasConflict) {
+                        showError('Time slot occupied! Click "Force Schedule" to proceed anyway.');
+                        setIgnoreConflict(true);
+                        setLoading(false);
+                        return;
+                    }
                 }
             }
 
@@ -113,7 +130,7 @@ export default function QuickAppointmentModal({
                 client_id: formData.client_id,
                 service_id: formData.service_id,
                 staff_id: targetStaffId,
-                service_name: selectedService?.name,
+                // service_name: selectedService?.name, // Removed as per schema check
                 date: formData.date,
                 time: formData.time,
                 status: 'Scheduled',
@@ -127,6 +144,16 @@ export default function QuickAppointmentModal({
             if (insertError) throw insertError;
 
             success('Appointment scheduled successfully');
+
+            // Log Activity
+            await logActivity('Created Appointment', {
+                client_id: formData.client_id,
+                service_id: formData.service_id,
+                staff_id: targetStaffId,
+                date: formData.date,
+                time: formData.time
+            });
+
             onSuccess();
             onClose();
         } catch (err) {
@@ -251,10 +278,13 @@ export default function QuickAppointmentModal({
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            className={`flex-1 py-3 rounded-xl font-bold shadow-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${ignoreConflict
+                                ? 'bg-amber-500 text-white shadow-amber-500/25 hover:bg-amber-600'
+                                : 'bg-primary text-white shadow-primary/25 hover:bg-primary-dark'
+                                }`}
                         >
                             {loading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
-                            Schedule
+                            {ignoreConflict ? 'Force Schedule' : 'Schedule'}
                         </button>
                     </div>
                 </form>

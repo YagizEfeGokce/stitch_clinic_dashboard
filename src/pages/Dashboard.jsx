@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getLocalISOString } from '../utils/dateUtils';
 import CalendarStrip from '../components/CalendarStrip';
@@ -17,10 +17,10 @@ import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dn
 import { useToast } from '../context/ToastContext';
 import ActionCenter from '../components/ActionCenter';
 import { useAuth } from '../context/AuthContext';
+import { logActivity } from '../lib/logger';
 import UpcomingSidebar from '../components/schedule/UpcomingSidebar';
 
 export default function Dashboard() {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [upcoming, setUpcoming] = useState([]);
     const { success, error: showError } = useToast();
@@ -65,14 +65,14 @@ export default function Dashboard() {
             // If we haven't loaded staff list yet or are just a normal staff, ensure we settle on user.id
             setSelectedStaffId(user.id);
         }
-    }, [user?.id]);
+    }, [user?.id, staffList.length]);
 
 
-    const [appointments, setAppointments] = useState([]);
     const [rawAppointments, setRawAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+    const [selectedTimeForQuickAdd, setSelectedTimeForQuickAdd] = useState(null); // Add state
 
     // Schedule Settings
     const [showBookedOnly, setShowBookedOnly] = useState(false);
@@ -81,10 +81,15 @@ export default function Dashboard() {
     // DnD Sensors
     const sensors = useSensors(
         useSensor(MouseSensor, { activationConstraint: { distance: 10 } }),
-        useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 150, // Reduced from 250ms for faster activation
+                tolerance: 5 // Movement during delay cancels activation (prevents scrolling being mistaken for drag)
+            }
+        })
     );
 
-    const fetchUpcoming = async () => {
+    const fetchUpcoming = useCallback(async () => {
         const today = getLocalISOString();
         // Simple logic: Get next 5 appointments from today onwards
         let query = supabase
@@ -114,9 +119,9 @@ export default function Dashboard() {
                 services: Array.isArray(apt.services) ? apt.services[0] : apt.services
             })));
         }
-    };
+    }, [selectedStaffId]);
 
-    const fetchAppointments = async (retryCount = 0) => {
+    const fetchAppointments = useCallback(async (retryCount = 0) => {
         if (!navigator.onLine) {
             setLoading(false);
             return;
@@ -185,13 +190,36 @@ export default function Dashboard() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [view, selectedDate, selectedStaffId, fetchUpcoming, showError]);
 
-    // Fetch appointments when selectedDate, view, or selectedStaffId changes
+    // Fetch appointments when dependencies change (the callback itself updates when its deps change)
     useEffect(() => {
         fetchAppointments();
-        fetchUpcoming(); // Syncs upcoming
-    }, [view, selectedDate, user, selectedStaffId]);
+        fetchUpcoming();
+    }, [fetchAppointments, fetchUpcoming]);
+
+    // Realtime Subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('dashboard_appointments')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'appointments'
+                },
+                () => {
+                    // Refresh on any change
+                    fetchAppointments();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [fetchAppointments]);
 
     const handleDragEnd = async (event) => {
         const { active, over } = event;
@@ -206,12 +234,24 @@ export default function Dashboard() {
             const appointment = active.data.current;
 
             // Check for overlap
-            const isOccupied = dayViewAppointments.some(apt =>
-                apt.time &&
-                apt.time.startsWith(newTime.split(':')[0]) &&
-                apt.status !== 'Cancelled' &&
-                apt.id !== appointment.id
-            );
+            // Calculate new start/end
+            const [newH, newM] = newTime.split(':').map(Number);
+            const newStartMin = newH * 60 + newM;
+            const newDuration = appointment?.services?.duration_min || 30;
+            const newEndMin = newStartMin + newDuration;
+
+            // Check for overlap
+            const isOccupied = dayViewAppointments.some(apt => {
+                // Ignore self, cancelled, AND completed appointments (as requested)
+                if (apt.id === appointment.id || apt.status === 'Cancelled' || apt.status === 'Completed' || !apt.time) return false;
+
+                const [h, m] = apt.time.split(':').map(Number);
+                const aptStartMin = h * 60 + m;
+                const aptDuration = apt.services?.duration_min || 30;
+                const aptEndMin = aptStartMin + aptDuration;
+
+                return newStartMin < aptEndMin && newEndMin > aptStartMin;
+            });
 
             if (isOccupied) {
                 showError('Time slot already occupied');
@@ -232,6 +272,15 @@ export default function Dashboard() {
 
                 if (error) throw error;
                 success(`Rescheduled to ${newTime}`);
+
+                // Log Activity
+                await logActivity('Rescheduled Appointment', {
+                    appointment_id: appointment.id,
+                    old_time: appointment.time,
+                    new_time: newTime,
+                    date: appointment.date
+                });
+
                 fetchAppointments(); // Sync upcoming automatically
             } catch (error) {
                 console.error('Reschedule error:', error);
@@ -256,14 +305,16 @@ export default function Dashboard() {
     // Generate Hours 09:00 to 19:00 (Dynamic based on Clinic Settings)
     const hours = useMemo(() => {
         let startMinutes = 9 * 60; // Default 09:00
-        if (clinic?.working_start_hour) {
-            const [h, m] = clinic.working_start_hour.split(':').map(Number);
+        const config = clinic?.settings_config || {};
+
+        if (config.working_start_hour) {
+            const [h, m] = config.working_start_hour.split(':').map(Number);
             startMinutes = h * 60 + (m || 0);
         }
 
         let closingMinutes = 19 * 60; // Default 19:00
-        if (clinic?.working_end_hour) {
-            const [h, m] = clinic.working_end_hour.split(':').map(Number);
+        if (config.working_end_hour) {
+            const [h, m] = config.working_end_hour.split(':').map(Number);
             closingMinutes = h * 60 + (m || 0);
         }
 
@@ -437,7 +488,7 @@ export default function Dashboard() {
                                 )}
 
                                 {(() => {
-                                    // Group slots by hour
+                                    // 1. Group slots by hour
                                     const hoursMap = new Map();
                                     displayedHours.forEach(time => {
                                         const h = time.split(':')[0];
@@ -445,31 +496,35 @@ export default function Dashboard() {
                                         hoursMap.get(h).push(time);
                                     });
 
+                                    // 2. Pre-calculate appointment map for O(1) lookup
+                                    // Map Key: "HH:MM" -> Array of appointments starting in this slot
+                                    const appointmentLookup = new Map();
+                                    dayViewAppointments.forEach(apt => {
+                                        if (!apt.time || apt.status === 'Cancelled') return;
+
+                                        // We need to find which "interval" this appointment falls into
+                                        // Assuming appointments snap to grid, but even if not:
+                                        const [h, m] = apt.time.split(':').map(Number);
+                                        const totalMin = h * 60 + m;
+
+                                        // Find generic slot floor
+                                        const slotMin = Math.floor(totalMin / timeSlotInterval) * timeSlotInterval;
+                                        const slotH = Math.floor(slotMin / 60);
+                                        const slotM = slotMin % 60;
+                                        const slotKey = `${slotH < 10 ? '0' : ''}${slotH}:${slotM === 0 ? '00' : (slotM < 10 ? '0' + slotM : slotM)}`;
+
+                                        if (!appointmentLookup.has(slotKey)) appointmentLookup.set(slotKey, []);
+                                        appointmentLookup.get(slotKey).push(apt);
+                                    });
+
                                     return Array.from(hoursMap.entries()).map(([hourStr, slots]) => {
-                                        // Check if this block has appointments for auto-expand state
-                                        const hasAppointments = slots.some(slotTime => {
-                                            const hourMinutes = parseInt(slotTime.split(':')[0]) * 60 + parseInt(slotTime.split(':')[1]);
-                                            const nextMinutes = hourMinutes + timeSlotInterval;
-                                            return dayViewAppointments.some(a => {
-                                                if (!a.time || a.status === 'Cancelled') return false;
-                                                const [ah, am] = a.time.split(':');
-                                                const aptMin = parseInt(ah) * 60 + parseInt(am);
-                                                return aptMin >= hourMinutes && aptMin < nextMinutes;
-                                            });
-                                        });
+                                        // Check if this block has appointments (O(1) lookup per slot)
+                                        const hasAppointments = slots.some(slotTime => appointmentLookup.has(slotTime));
 
                                         return (
                                             <HourBlock key={hourStr} hourStr={hourStr} hasAppointments={hasAppointments}>
                                                 {slots.map(slotTime => {
-                                                    const hourMinutes = parseInt(slotTime.split(':')[0]) * 60 + parseInt(slotTime.split(':')[1]);
-                                                    const nextHourMinutes = hourMinutes + timeSlotInterval;
-
-                                                    const slotAppointments = dayViewAppointments.filter(a => {
-                                                        if (!a.time || a.status === 'Cancelled') return false;
-                                                        const [h, m] = a.time.split(':');
-                                                        const aptMinutes = parseInt(h) * 60 + parseInt(m);
-                                                        return aptMinutes >= hourMinutes && aptMinutes < nextHourMinutes;
-                                                    });
+                                                    const slotAppointments = appointmentLookup.get(slotTime) || [];
 
                                                     return (
                                                         <DroppableTimeSlot key={slotTime} time={slotTime}>
@@ -485,6 +540,8 @@ export default function Dashboard() {
                                                                                     treatment={apt.service_name}
                                                                                     status={apt.status?.toLowerCase() || 'scheduled'}
                                                                                     image={apt.clients?.image_url}
+                                                                                    duration={apt.services?.duration_min} // Pass duration
+                                                                                    notes={apt.notes} // Pass notes
                                                                                 />
                                                                             </div>
                                                                         </DraggableAppointment>
@@ -492,7 +549,10 @@ export default function Dashboard() {
                                                                 </div>
                                                             ) : (
                                                                 <div
-                                                                    onClick={() => setIsQuickAddOpen(true)}
+                                                                    onClick={() => {
+                                                                        setSelectedTimeForQuickAdd(slotTime); // Set time
+                                                                        setIsQuickAddOpen(true);
+                                                                    }}
                                                                     className="h-full w-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
                                                                 >
                                                                     <span className="material-symbols-outlined text-slate-300 text-sm">add</span>
@@ -529,6 +589,7 @@ export default function Dashboard() {
                 onClose={() => setIsQuickAddOpen(false)}
                 onSuccess={fetchAppointments}
                 preselectedDate={selectedDate}
+                preselectedTime={selectedTimeForQuickAdd} // Pass prop
                 preselectedStaffId={selectedStaffId === 'all' ? user?.id : selectedStaffId}
                 canAssignStaff={role === 'admin' || role === 'doctor'}
                 staffList={staffList}

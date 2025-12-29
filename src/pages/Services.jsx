@@ -4,8 +4,14 @@ import ServiceList from '../components/services/ServiceList';
 import ServiceModal from '../components/services/ServiceModal';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { useToast } from '../context/ToastContext';
+import { logActivity } from '../lib/logger';
+
+import { useAuth } from '../context/AuthContext';
 
 export default function Services() {
+    const { role } = useAuth(); // Get Access Role
+    const isStaff = role === 'staff';
+
     const { success, error: showError } = useToast();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -17,6 +23,7 @@ export default function Services() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [serviceToDelete, setServiceToDelete] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
+
 
     useEffect(() => {
         fetchServices();
@@ -69,6 +76,12 @@ export default function Services() {
                 .eq('id', serviceToDelete.id);
 
             if (error) throw error;
+
+            await logActivity('Deleted Service', {
+                service_name: serviceToDelete.name,
+                service_id: serviceToDelete.id
+            });
+
             success('Service deleted successfully');
             fetchServices();
             setIsDeleteModalOpen(false);
@@ -98,13 +111,15 @@ export default function Services() {
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Services</h1>
                     <p className="text-slate-500 mt-1">Manage treatments and pricing</p>
                 </div>
-                <button
-                    onClick={handleOpenAddModal}
-                    className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-slate-900/20 hover:scale-105 transition-transform active:scale-95"
-                >
-                    <span className="material-symbols-outlined">add</span>
-                    <span>Add Service</span>
-                </button>
+                {!isStaff && (
+                    <button
+                        onClick={handleOpenAddModal}
+                        className="flex items-center justify-center gap-2 bg-slate-900 text-white px-5 py-3 rounded-xl font-bold shadow-lg shadow-slate-900/20 hover:scale-105 transition-transform active:scale-95"
+                    >
+                        <span className="material-symbols-outlined">add</span>
+                        <span>Add Service</span>
+                    </button>
+                )}
             </header>
 
             {/* Search */}

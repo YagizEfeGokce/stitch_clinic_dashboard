@@ -2,16 +2,17 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { logActivity } from '../../lib/logger';
 
 export default function BrandingSettings() {
     const { toast } = useToast();
-    const { setClinic } = useAuth();
+    const { setClinic, clinic } = useAuth();
     const [loading, setLoading] = useState(false);
     const fileInputRef = useRef(null);
     const [logoFile, setLogoFile] = useState(null);
 
+    // Flat state for the form
     const [settings, setSettings] = useState({
-        id: null,
         clinic_name: '',
         logo_url: '',
         address: '',
@@ -24,37 +25,47 @@ export default function BrandingSettings() {
     });
 
     useEffect(() => {
-        fetchSettings();
-    }, []);
+        if (clinic) {
+            // Map JSONB structure back to flat form state
+            const branding = clinic.branding_config || {};
+            const config = clinic.settings_config || {};
 
-    const fetchSettings = async () => {
-        try {
-            setLoading(true);
-            const { data, error } = await supabase
-                .from('clinic_settings')
-                .select('*')
-                .single();
-
-            if (error && error.code !== 'PGRST116') {
-                console.error('Error fetching settings:', error);
-            }
-
-            if (data) {
-                setSettings(prev => ({ ...prev, ...data }));
-            }
-        } finally {
-            setLoading(false);
+            setSettings({
+                clinic_name: clinic.name || '',
+                logo_url: branding.logo_url || '',
+                primary_color: branding.primary_color || '', // preserve if exists
+                secondary_color: branding.secondary_color || '',
+                address: config.address || '',
+                phone: config.phone || '',
+                email: config.email || '',
+                website: config.website || '',
+                working_start_hour: config.working_start_hour || '09:00',
+                working_end_hour: config.working_end_hour || '18:00',
+                working_days: config.working_days || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+            });
         }
-    };
+    }, [clinic]);
+
+    // Removed fetchSettings as we rely on Context now. 
+    // If we need strict sync, we can re-fetch profile/clinic.
 
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
-            setLogoFile(e.target.files[0]);
+            const file = e.target.files[0];
+            setLogoFile(file);
+            // Create preview URL immediately
+            const previewUrl = URL.createObjectURL(file);
+            setSettings(prev => ({ ...prev, logo_url: previewUrl }));
         }
     };
 
     const handleSave = async () => {
         try {
+            if (!clinic?.id) {
+                toast.error("No clinic found for this user.");
+                return;
+            }
+
             setLoading(true);
             let logoUrl = settings.logo_url;
 
@@ -65,8 +76,6 @@ export default function BrandingSettings() {
                     const fileName = `clinic-logo-${Date.now()}.${fileExt}`;
                     const filePath = `${fileName}`;
 
-                    // Ensure bucket exists (handled by SQL script ideally, but here we assume 'clinic-assets' or use 'avatars' as fallback if needed, but sticking to plan)
-                    // We'll use 'clinic-assets' bucket. User needs to create it or run the SQL.
                     const { error: uploadError } = await supabase.storage
                         .from('clinic-assets')
                         .upload(filePath, logoFile);
@@ -80,32 +89,58 @@ export default function BrandingSettings() {
                     logoUrl = publicUrl;
                 } catch (uploadError) {
                     console.error('Logo upload error:', uploadError);
-                    toast.error('Failed to upload logo. Ensure "clinic-assets" bucket exists.');
-                    // Don't stop saving other settings, just warn
+                    toast.error('Failed to upload logo.');
                 }
             }
 
-            // 2. Prepare Payload
-            const payload = {
-                ...settings,
-                logo_url: logoUrl
+            // 2. Prepare Payload for 'clinics' table
+            // We map flat state back to JSONB structure
+            const brandingConfig = {
+                logo_url: logoUrl,
+                primary_color: settings.primary_color,
+                secondary_color: settings.secondary_color
             };
-            if (!payload.id) delete payload.id;
+
+            const settingsConfig = {
+                address: settings.address,
+                phone: settings.phone,
+                email: settings.email,
+                website: settings.website,
+                working_start_hour: settings.working_start_hour,
+                working_end_hour: settings.working_end_hour,
+                working_days: settings.working_days
+            };
+
+            const payload = {
+                id: clinic.id, // Mandatory for update logic if we use upsert, or just match ID
+                name: settings.clinic_name,
+                branding_config: brandingConfig, // Supabase handles JSONB
+                settings_config: settingsConfig,
+                updated_at: new Date().toISOString()
+            };
 
             const { data, error } = await supabase
-                .from('clinic_settings')
-                .upsert(payload)
+                .from('clinics')
+                .update(payload)
+                .eq('id', clinic.id)
                 .select()
                 .single();
 
             if (error) throw error;
 
-            toast.success('Settings updated successfully!');
-            setLogoFile(null); // Reset file input
+            toast.success('Settings saved!');
+            setLogoFile(null);
 
             if (data) {
-                setSettings(data);
-                if (setClinic) setClinic(data);
+                // Update Context
+                if (setClinic) {
+                    setClinic(data);
+                }
+
+                await logActivity('Updated Branding Settings', {
+                    name_changed: settings.clinic_name !== clinic.name,
+                    logo_updated: !!logoFile
+                });
             }
         } catch (error) {
             console.error('Error saving settings:', error);
@@ -151,12 +186,27 @@ export default function BrandingSettings() {
                             accept="image/*"
                             className="hidden"
                         />
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            className="text-xs font-bold text-primary hover:underline"
-                        >
-                            Change Logo
-                        </button>
+                        <div className="flex flex-col items-center gap-1">
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                className="text-xs font-bold text-primary hover:underline"
+                            >
+                                Change Logo
+                            </button>
+                            {(logoFile || settings.logo_url) && (
+                                <button
+                                    onClick={async (e) => {
+                                        e.preventDefault();
+                                        setLogoFile(null);
+                                        setSettings(prev => ({ ...prev, logo_url: '' }));
+                                        await logActivity('Removed Logo');
+                                    }}
+                                    className="text-[10px] font-semibold text-rose-500 hover:text-rose-600 hover:underline"
+                                >
+                                    Remove Logo
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Basic Info */}
@@ -168,24 +218,17 @@ export default function BrandingSettings() {
                                 value={settings.clinic_name}
                                 onChange={(e) => setSettings({ ...settings, clinic_name: e.target.value })}
                                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium bg-white"
-                                placeholder="e.g. Stitch Clinic"
+                                placeholder="e.g. Velara Clinic"
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Description / Tagline <span className="text-slate-400 font-normal">(Optional)</span></label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium bg-white"
-                                placeholder="e.g. Advanced Aesthetic Medicine"
-                                disabled // Placeholder for future use
-                            />
-                        </div>
+
                     </div>
                 </div>
 
                 <div className="h-px bg-slate-100 w-full"></div>
 
                 {/* Contact Information */}
+                {/* Contact Information (Hidden per user request)
                 <div className="grid md:grid-cols-2 gap-6">
                     <div>
                         <label className="block text-sm font-bold text-slate-700 mb-1">Phone Number</label>
@@ -243,6 +286,7 @@ export default function BrandingSettings() {
                         </div>
                     </div>
                 </div>
+                */}
 
                 <div className="h-px bg-slate-100 w-full"></div>
 
@@ -305,6 +349,9 @@ export default function BrandingSettings() {
                         Save Changes
                     </button>
                 </div>
+
+                {/* Developer Zone (Demo Data) - ONLY FOR ADMINS */}
+
             </div>
         </div>
     );

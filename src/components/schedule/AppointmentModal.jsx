@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { logActivity } from '../../lib/logger';
 
 export default function AppointmentModal({ appointment, onClose, onUpdate }) {
     const { role } = useAuth();
@@ -11,6 +12,8 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
     const [currentNotes, setCurrentNotes] = useState(appointment?.notes || '');
     const [isEditingTime, setIsEditingTime] = useState(false);
     const [newTime, setNewTime] = useState(appointment?.time || '09:00');
+    const [isEditingDate, setIsEditingDate] = useState(false);
+    const [newDate, setNewDate] = useState(appointment?.date || '');
 
     // Reassign State
     const [staffList, setStaffList] = useState([]);
@@ -22,7 +25,9 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
         if (appointment) {
             setCurrentNotes(appointment.notes || '');
             setNewTime(appointment.time || '09:00');
+            setNewDate(appointment.date || '');
             setIsEditingTime(false);
+            setIsEditingDate(false);
             setIsReassigning(false);
             setTargetStaffId(appointment.staff_id || '');
         }
@@ -58,6 +63,35 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
         } catch (err) {
             console.error('Error updating time:', err);
             toastError('Failed to update time');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveDate = async () => {
+        setLoading(true);
+        try {
+            const { error } = await supabase
+                .from('appointments')
+                .update({ date: newDate })
+                .eq('id', appointment.id);
+
+            if (error) throw error;
+            if (error) throw error;
+
+            await logActivity('Rescheduled Appointment', {
+                appointment_id: appointment.id,
+                new_date: newDate,
+                old_date: appointment.date
+            });
+
+            success(`Rescheduled to ${newDate}`);
+            setIsEditingDate(false);
+            onUpdate();
+            onClose(); // Close modal after rescheduling to different day
+        } catch (err) {
+            console.error('Error updating date:', err);
+            toastError('Failed to reschedule');
         } finally {
             setLoading(false);
         }
@@ -152,6 +186,14 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
 
             if (error) throw error;
 
+            if (error) throw error;
+
+            await logActivity('Updated Appointment Status', {
+                status: newStatus,
+                appointment_id: id,
+                client_id: appointment.client_id
+            });
+
             success(`Appointment marked as ${newStatus}`);
             onUpdate();
             onClose();
@@ -209,7 +251,29 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                             {status}
                         </span>
                         <span className="text-slate-400">•</span>
-                        <span className="font-semibold text-slate-500">{date}</span>
+                        {isEditingDate ? (
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="date"
+                                    value={newDate}
+                                    onChange={(e) => setNewDate(e.target.value)}
+                                    className="font-semibold text-slate-700 bg-white border border-slate-200 rounded px-2 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                                />
+                                <button onClick={handleSaveDate} disabled={loading} className="text-primary font-bold text-xs hover:underline">Save</button>
+                                <button onClick={() => { setIsEditingDate(false); setNewDate(date); }} className="text-slate-400 text-xs hover:text-slate-600">Cancel</button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-1 group">
+                                <span className="font-semibold text-slate-500">{newDate}</span>
+                                <button
+                                    onClick={() => setIsEditingDate(true)}
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:bg-slate-200 rounded"
+                                    title="Reschedule to another day"
+                                >
+                                    <span className="material-symbols-outlined text-[14px] text-slate-400">edit_calendar</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                     <button onClick={onClose} className="size-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-400 transition-colors">
                         <span className="material-symbols-outlined text-[20px]">close</span>
@@ -227,7 +291,21 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                             }
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-slate-900">{clients?.first_name} {clients?.last_name}</h2>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-xl font-bold text-slate-900">{clients?.first_name} {clients?.last_name}</h2>
+                                {clients?.phone && (
+                                    <button
+                                        onClick={() => {
+                                            const cleanNumber = clients.phone.replace(/\D/g, '');
+                                            window.open(`https://wa.me/${cleanNumber}`, '_blank');
+                                        }}
+                                        className="text-green-500 hover:text-green-600 bg-green-50 hover:bg-green-100 p-1.5 rounded-full transition-colors"
+                                        title="Chat on WhatsApp"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">chat</span>
+                                    </button>
+                                )}
+                            </div>
                             <p className="text-slate-500 font-medium">{service_name}</p>
                         </div>
                     </div>

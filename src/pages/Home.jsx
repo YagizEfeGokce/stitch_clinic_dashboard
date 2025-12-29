@@ -47,8 +47,8 @@ export default function Home() {
                 .eq('status', 'Active');
 
             const settingsPromise = supabase
-                .from('clinic_settings')
-                .select('working_start_hour, working_end_hour, working_days')
+                .from('clinics')
+                .select('settings_config')
                 .single();
 
             const upcomingPromise = supabase
@@ -72,7 +72,7 @@ export default function Home() {
             const [
                 { data: todaysAppointments, count: todayCount },
                 { count: clientCount },
-                { data: settings },
+                { data: clinicData },
                 { data: upcoming }
             ] = await Promise.all([
                 todaysAppointmentsPromise,
@@ -85,25 +85,28 @@ export default function Home() {
 
             // --- CALCULATE OCCUPANCY RATE ---
             let occupancyRate = 0;
-            if (settings && todaysAppointments) {
+            if (clinicData?.settings_config && todaysAppointments) {
+                const { working_days, working_start_hour, working_end_hour } = clinicData.settings_config;
                 const dayName = new Date(today).toLocaleDateString('en-US', { weekday: 'long' });
 
-                // Only calculate if today is a working day
-                if (settings.working_days && settings.working_days.includes(dayName)) {
-                    const startHour = parseInt(settings.working_start_hour.split(':')[0]);
-                    const endHour = parseInt(settings.working_end_hour.split(':')[0]);
-                    const totalWorkingMinutes = (endHour - startHour) * 60;
+                // Only calculate if today is a working day and settings exist
+                if (working_days && Array.isArray(working_days) && working_days.includes(dayName)) {
+                    if (working_start_hour && working_end_hour) {
+                        const startHour = parseInt(working_start_hour.split(':')[0]);
+                        const endHour = parseInt(working_end_hour.split(':')[0]);
+                        const totalWorkingMinutes = (endHour - startHour) * 60;
 
-                    if (totalWorkingMinutes > 0) {
-                        const totalBookedMinutes = todaysAppointments.reduce((acc, apt) => {
-                            // Default to 30 mins if service duration is missing
-                            const duration = apt.services?.duration_min || 30;
-                            return acc + duration;
-                        }, 0);
+                        if (totalWorkingMinutes > 0) {
+                            const totalBookedMinutes = todaysAppointments.reduce((acc, apt) => {
+                                // Default to 30 mins if service duration is missing
+                                const duration = apt.services?.duration_min || 30;
+                                return acc + duration;
+                            }, 0);
 
-                        occupancyRate = Math.round((totalBookedMinutes / totalWorkingMinutes) * 100);
-                        // Cap at 100% just in case of overbooking
-                        if (occupancyRate > 100) occupancyRate = 100;
+                            occupancyRate = Math.round((totalBookedMinutes / totalWorkingMinutes) * 100);
+                            // Cap at 100% just in case of overbooking
+                            if (occupancyRate > 100) occupancyRate = 100;
+                        }
                     }
                 }
             }
@@ -148,7 +151,7 @@ export default function Home() {
                         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                             Good Morning, {displayName} 👋
                         </h1>
-                        <p className="text-slate-500 font-medium">Here's what's happening at Stitch Clinic today.</p>
+                        <p className="text-slate-500 font-medium">Here's what's happening at Velara Clinic today.</p>
                     </div>
                 </div>
             </header>

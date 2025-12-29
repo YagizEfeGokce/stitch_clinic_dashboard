@@ -53,18 +53,25 @@ export default function ClientProfile() {
                 .eq('id', id)
                 .single();
 
-            if (clientError) throw clientError;
+            if (clientError || !clientData) {
+                console.error('Client not found or access denied:', clientError);
+                // IDOR / RLS Protection: Redirect immediately if data is missing
+                navigate('/clients', { replace: true });
+                return;
+            }
             setClient(clientData);
 
             // 2. Fetch Appointments
+            console.log('Fetching appointments for client_id:', id);
             const { data: appointmentData, error: appError } = await supabase
                 .from('appointments')
                 .select(`
                     id, 
+                    client_id,
                     date, 
                     time, 
                     status, 
-                    services (name, duration, price)
+                    services (name, duration_min, price)
                 `)
                 .eq('client_id', id)
                 .order('date', { ascending: false });
@@ -202,6 +209,8 @@ export default function ClientProfile() {
             .filter(a => a.status === 'Completed') // Only count completed for value
             .reduce((sum, appt) => sum + (appt.services?.price || 0), 0);
 
+
+
     return (
         <div className="flex flex-col min-h-screen bg-background-light pb-24">
             {/* Header with Back Button */}
@@ -210,12 +219,21 @@ export default function ClientProfile() {
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
                 <h1 className="text-lg font-bold text-slate-900">Client Profile</h1>
-                <button
-                    onClick={() => setIsEditModalOpen(true)}
-                    className="ml-auto p-2 rounded-full hover:bg-slate-100 text-primary"
-                >
-                    <span className="material-symbols-outlined">edit</span>
-                </button>
+                <div className="ml-auto flex items-center gap-1">
+                    <button
+                        onClick={() => { fetchData(); fetchNotes(); }}
+                        className="p-2 rounded-full hover:bg-slate-100 text-slate-500"
+                        title="Refresh data"
+                    >
+                        <span className="material-symbols-outlined">refresh</span>
+                    </button>
+                    <button
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="p-2 rounded-full hover:bg-slate-100 text-primary"
+                    >
+                        <span className="material-symbols-outlined">edit</span>
+                    </button>
+                </div>
             </div>
 
             <div className="p-5 space-y-6 max-w-2xl mx-auto w-full">

@@ -5,7 +5,7 @@ const COLORS = ['#0D9488', '#A855F7', '#FBBF24', '#F43F5E', '#3B82F6'];
 
 export default function RevenueBreakdown({ transactions = [] }) {
     const { totalIncome, data } = useMemo(() => {
-        const incomeTxns = transactions.filter(t => t.type === 'Income');
+        const incomeTxns = transactions.filter(t => t.type === 'income');
         const total = incomeTxns.reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
         const grouped = incomeTxns.reduce((acc, t) => {

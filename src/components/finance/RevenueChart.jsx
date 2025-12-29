@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 export default function RevenueChart({ transactions = [] }) {
     // Process data to get daily revenue for the current month
     const chartData = useMemo(() => {
-        const incomeTxns = transactions.filter(t => t.type === 'Income');
+        const incomeTxns = transactions.filter(t => t.type === 'income');
 
         // Group by date
         const grouped = incomeTxns.reduce((acc, t) => {
@@ -19,7 +19,7 @@ export default function RevenueChart({ transactions = [] }) {
     }, [transactions]);
 
     const totalRevenue = transactions
-        .filter(t => t.type === 'Income')
+        .filter(t => t.type === 'income')
         .reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
     return (

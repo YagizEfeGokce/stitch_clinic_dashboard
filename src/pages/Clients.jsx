@@ -5,6 +5,7 @@ import ClientList from '../components/ClientList';
 import ClientModal from '../components/clients/ClientModal';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { useToast } from '../context/ToastContext';
+import { logActivity } from '../lib/logger';
 
 export default function Clients() {
     const navigate = useNavigate();
@@ -87,6 +88,12 @@ export default function Clients() {
                 .eq('id', clientToDelete.id);
 
             if (error) throw error;
+
+            await logActivity('Deleted Client', {
+                client_name: `${clientToDelete.first_name} ${clientToDelete.last_name}`,
+                client_id: clientToDelete.id
+            });
+
             success('Client deleted successfully');
             fetchClients();
             setIsDeleteModalOpen(false);

@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import InventoryStats from '../components/inventory/InventoryStats';
 import ProductCard from '../components/inventory/ProductCard';
 import ProductModal from '../components/inventory/ProductModal';
 import { useToast } from '../context/ToastContext';
+import { logActivity } from '../lib/logger';
+
 
 export default function Inventory() {
     const { success, error: showError } = useToast();
@@ -18,13 +20,8 @@ export default function Inventory() {
     const [confirmDeleteId, setConfirmDeleteId] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    useEffect(() => {
-        fetchInventory();
-    }, []);
-
-
-
-    const fetchInventory = async (retryCount = 0) => {
+    // Initial Fetch
+    const fetchInventory = useCallback(async (retryCount = 0) => {
         if (!navigator.onLine) {
             setLoading(false);
             return;
@@ -61,7 +58,34 @@ export default function Inventory() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [showError]);
+
+    // Initial Fetch
+    useEffect(() => {
+        fetchInventory();
+    }, [fetchInventory]);
+
+    // Realtime Subscription
+    useEffect(() => {
+        const channel = supabase
+            .channel('inventory_changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'inventory'
+                },
+                () => {
+                    fetchInventory();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [fetchInventory]);
 
     const handleEdit = (product) => {
         setEditingProduct(product);
@@ -83,6 +107,14 @@ export default function Inventory() {
                 .eq('id', confirmDeleteId);
 
             if (error) throw error;
+
+            if (error) throw error;
+
+            const deletedItem = products.find(p => p.id === confirmDeleteId);
+            await logActivity('Deleted Inventory Item', {
+                item_id: confirmDeleteId,
+                item_name: deletedItem?.name || 'Unknown Item'
+            });
 
             success('Product deleted successfully');
             // Close modal and refresh

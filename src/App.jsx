@@ -26,6 +26,7 @@ const Reviews = lazy(() => import('./pages/Reviews'));
 const Support = lazy(() => import('./pages/Support'));
 const BookingWizard = lazy(() => import('./components/booking/BookingWizard'));
 const Unauthorized = lazy(() => import('./pages/Unauthorized'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Loading Screen Component with Failsafe
 const LoadingScreen = () => {
@@ -102,6 +103,14 @@ const AppLayout = () => {
   );
 };
 
+// Root Redirector Logic
+const RootRedirector = () => {
+  const { role, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (role === 'admin' || role === 'owner' || role === 'doctor') return <Home />;
+  return <Navigate to="/schedule" replace />;
+};
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -120,6 +129,7 @@ export default function App() {
 
                   {/* Routes Accessible to ALL Authenticated Users (including Staff) */}
                   <Route element={<AppLayout />}>
+                    <Route path="/" element={<RootRedirector />} />
                     <Route path="/schedule" element={<Dashboard />} />
                     <Route path="/clients" element={<Clients />} />
                     <Route path="/clients/:id" element={<ClientProfile />} />
@@ -127,9 +137,9 @@ export default function App() {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/support" element={<Support />} />
 
-                    {/* Routes RESTRICTED to Admin & Doctor */}
-                    <Route element={<ProtectedRoute allowedRoles={['admin', 'doctor']} />}>
-                      <Route path="/" element={<Home />} />
+                    {/* Routes RESTRICTED to Admin, Owner & Doctor */}
+                    <Route element={<ProtectedRoute allowedRoles={['admin', 'owner', 'doctor']} />}>
+                      {/* Home is now handled by RootRedirector above */}
                       <Route path="/services" element={<Services />} />
                       <Route path="/finance" element={<Finance />} />
                       <Route path="/performance" element={<Performance />} />
@@ -137,7 +147,8 @@ export default function App() {
                     </Route>
 
                     {/* Fallback */}
-                    <Route path="*" element={<Navigate to="/clients" replace />} />
+                    {/* Fallback */}
+                    <Route path="*" element={<NotFound />} />
                   </Route>
                 </Route>
               </Routes>

@@ -14,27 +14,93 @@ export default function ActivityLogs() {
     const fetchLogs = async () => {
         setLoading(true);
         try {
+            // Attempt 1: Fetch with Relations (Requires correct FK to profiles)
             const { data, error } = await supabase
                 .from('activity_logs')
                 .select(`
                     *,
-                    profiles:user_id (full_name, email, role)
+                    profiles:user_id (full_name, role)
                 `)
                 .order('created_at', { ascending: false })
                 .limit(50);
 
+            if (error) throw error;
             if (data) setLogs(data);
+
         } catch (error) {
-            console.error('Error fetching logs:', error);
+            console.error('Error fetching joined logs:', error);
+
+            // Attempt 2: Fallback to raw logs (Diagnose if table exists but relation is broken)
+            try {
+                const { data: rawData, error: rawError } = await supabase
+                    .from('activity_logs')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (rawData) {
+                    setLogs(rawData); // Show raw logs at least
+                    setLogs(rawData); // Show raw logs at least
+                    // Show the specific error from the first attempt to help debugging
+                    alert(`Relation Error: ${error.message}\nHint: The database relation between logs and profiles is still not recognized. Try reloading Supabase schema cache.`);
+                } else if (rawError) {
+                    console.error('Raw fetch failed:', rawError);
+                }
+            } catch (fallbackErr) {
+                console.error('Fallback failed:', fallbackErr);
+            }
         } finally {
             setLoading(false);
         }
     };
 
     const filteredLogs = logs.filter(log =>
-        log.action.toLowerCase().includes(search.toLowerCase()) ||
-        log.profiles?.full_name?.toLowerCase().includes(search.toLowerCase())
+        log.action?.toLowerCase().includes(search.toLowerCase()) ||
+        (log.profiles?.full_name || 'Unknown').toLowerCase().includes(search.toLowerCase())
     );
+
+    const formatDetails = (log) => {
+        try {
+            const details = typeof log.details === 'string' ? JSON.parse(log.details) : log.details;
+            if (!details) return '-';
+
+            if (log.action === 'Created Appointment') {
+                return `Appt: ${details.time} on ${details.date}`;
+            }
+            if (log.action === 'Rescheduled Appointment') {
+                return `Moved to ${details.new_time} (${details.date})`;
+            }
+            if (log.action === 'Removed Logo') return 'Logo deleted';
+            else if (log.action === 'Updated Branding Settings') {
+                return `Updated branding colors/settings`;
+            } else if (log.action === 'Created Inventory Item') {
+                return `Added product: ${details.item_name || 'Item'}`;
+            } else if (log.action === 'Updated Inventory Item') {
+                const changes = Array.isArray(details.changes) ? details.changes.join(', ') : 'details';
+                return `Updated product ${details.item_name || ''}: ${changes}`;
+            } else if (log.action === 'Deleted Inventory Item') {
+                return `Deleted product: ${details.item_name || details.item_id}`;
+            } else if (log.action === 'Created Client') {
+                return `Added client: ${details.client_name || 'Client'}`;
+            } else if (log.action === 'Updated Client') {
+                const changes = Array.isArray(details.changes) ? details.changes.join(', ') : 'details';
+                return `Updated client ${details.client_name || ''}: ${changes}`;
+            } else if (log.action === 'Deleted Client') {
+                return `Deleted client: ${details.client_name || details.client_id}`;
+            } else if (log.action === 'Created Service') {
+                return `Added service: ${details.service_name || 'Service'}`;
+            } else if (log.action === 'Updated Service') {
+                const changes = Array.isArray(details.changes) ? details.changes.join(', ') : 'details';
+                return `Updated service ${details.service_name || ''}: ${changes}`;
+            } else if (log.action === 'Deleted Service') {
+                return `Deleted service: ${details.service_name || details.service_id}`;
+            }
+
+            return JSON.stringify(details);
+        } catch {
+            return JSON.stringify(log.details);
+        }
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -94,8 +160,8 @@ export default function ActivityLogs() {
                                                 {log.action}
                                             </span>
                                         </td>
-                                        <td className="p-4 text-slate-500 font-mono text-xs truncate max-w-xs" title={JSON.stringify(log.details)}>
-                                            {JSON.stringify(log.details)}
+                                        <td className="p-4 text-slate-500 font-mono text-xs truncate max-w-xs">
+                                            {formatDetails(log)}
                                         </td>
                                     </tr>
                                 ))

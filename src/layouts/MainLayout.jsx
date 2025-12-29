@@ -1,6 +1,6 @@
-import Header from '../components/Header';
-import BottomNav from '../components/BottomNav';
-import Sidebar from '../components/Sidebar';
+import Header from '../components/layout/Header';
+import BottomNav from '../components/layout/BottomNav';
+import Sidebar from '../components/layout/Sidebar';
 import CommandPalette from '../components/CommandPalette';
 import SupportWidget from '../components/SupportWidget';
 

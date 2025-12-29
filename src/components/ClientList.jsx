@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function ClientList({ clients, onEdit, onDelete }) {
     const navigate = useNavigate();
+    const { role } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
 
@@ -100,28 +102,30 @@ export default function ClientList({ clients, onEdit, onDelete }) {
                             </div>
 
                             {/* Actions */}
-                            <div className="flex items-center gap-2 pl-4 border-l border-slate-100 ml-4">
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onEdit(client);
-                                    }}
-                                    className="size-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
-                                    title="Edit Client"
-                                >
-                                    <span className="material-symbols-outlined text-[20px]">edit</span>
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onDelete(client.id);
-                                    }}
-                                    className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
-                                    title="Delete Client"
-                                >
-                                    <span className="material-symbols-outlined text-[20px]">delete</span>
-                                </button>
-                            </div>
+                            {['owner', 'admin', 'doctor'].includes(role) && (
+                                <div className="flex items-center gap-2 pl-4 border-l border-slate-100 ml-4">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onEdit(client);
+                                        }}
+                                        className="size-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
+                                        title="Edit Client"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px]">edit</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDelete(client.id);
+                                        }}
+                                        className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                                        title="Delete Client"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                                    </button>
+                                </div>
+                            )}
 
                             <span className="material-symbols-outlined text-slate-300 group-hover:translate-x-1 transition-transform ml-2">chevron_right</span>
                         </div>

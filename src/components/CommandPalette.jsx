@@ -157,7 +157,7 @@ const CommandPalette = () => {
                 {/* Footer */}
                 <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 text-[10px] text-slate-400 flex justify-between">
                     <span>Pro Tip: Use arrow keys to navigate</span>
-                    <span>Stitch Spotlight</span>
+                    <span>Velara Spotlight</span>
                 </div>
             </div>
         </div>

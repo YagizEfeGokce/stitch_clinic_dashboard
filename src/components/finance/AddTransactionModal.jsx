@@ -55,7 +55,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                 .from('transactions')
                 .insert([
                     {
-                        type: formData.type,
+                        type: formData.type.toLowerCase(),
                         amount: parseFloat(formData.amount),
                         description: formData.description,
                         category: formData.category,
@@ -113,8 +113,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                                 type="button"
                                 onClick={() => handleChange({ target: { name: 'type', value: 'Income' } })}
                                 className={`py-2 rounded-lg text-sm font-bold transition-all ${formData.type === 'Income'
-                                        ? 'bg-white text-green-600 shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700'
+                                    ? 'bg-white text-green-600 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700'
                                     }`}
                             >
                                 <span className="flex items-center justify-center gap-2">
@@ -126,8 +126,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                                 type="button"
                                 onClick={() => handleChange({ target: { name: 'type', value: 'Expense' } })}
                                 className={`py-2 rounded-lg text-sm font-bold transition-all ${formData.type === 'Expense'
-                                        ? 'bg-white text-red-600 shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700'
+                                    ? 'bg-white text-red-600 shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-700'
                                     }`}
                             >
                                 <span className="flex items-center justify-center gap-2">
@@ -208,8 +208,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                                         type="button"
                                         onClick={() => handleChange({ target: { name: 'payment_method', value: method } })}
                                         className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${formData.payment_method === method
-                                                ? 'bg-slate-900 text-white border-slate-900'
-                                                : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
+                                            ? 'bg-slate-900 text-white border-slate-900'
+                                            : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
                                             }`}
                                     >
                                         {method}

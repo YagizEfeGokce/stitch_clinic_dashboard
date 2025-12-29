@@ -1,14 +1,23 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import ClientGallery from './ClientGallery';
 import { useToast } from '../../context/ToastContext';
+import { logActivity } from '../../lib/logger';
+import { useAuth } from '../../context/AuthContext';
+import { compressImage, uploadImage } from '../../lib/storage-utils';
 
 export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
+    const { profile } = useAuth();
     const { success, error: showError } = useToast();
     const [activeTab, setActiveTab] = useState('Profile');
     const [loading, setLoading] = useState(false);
     const [history, setHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
+
+    // Image Upload State
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -17,11 +26,15 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
         email: '',
         phone: '',
         status: 'Active',
-        note: '' // New Note field for creation
+        note: '',
+        image_url: ''
     });
 
     useEffect(() => {
         if (isOpen) {
+            setSelectedFile(null);
+            setPreviewUrl(null);
+
             if (client) {
                 // Edit Mode: Populate Form
                 setFormData({
@@ -30,10 +43,8 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                     email: client.email || '',
                     phone: client.phone || '',
                     status: client.status || 'Active',
-                    note: '' // Notes are handled in profile separate tab usually, but we could allow adding one here? 
-                    // User asked for "Add New Client" -> Add Note. 
-                    // So note field makes sense ONLY for Create Mode or as "Add new note" in Edit?
-                    // User specifically said "Add New client ypaınca Müsteriye not ekleyebilelim birde"
+                    image_url: client.image_url || '',
+                    note: ''
                 });
                 setActiveTab('Profile');
                 fetchHistory(client.id);
@@ -45,6 +56,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                     email: '',
                     phone: '',
                     status: 'Active',
+                    image_url: '',
                     note: ''
                 });
                 setActiveTab('Profile');
@@ -53,15 +65,27 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
         }
     }, [client, isOpen]);
 
+    const handleFileChange = async (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            try {
+                // Preview immediately (before compression/upload)
+                const objectUrl = URL.createObjectURL(file);
+                setPreviewUrl(objectUrl);
+                setSelectedFile(file);
+            } catch (err) {
+                console.error("File selection error", err);
+                showError("Failed to select image");
+            }
+        }
+    };
+
     const fetchHistory = async (clientId) => {
         try {
             setLoadingHistory(true);
             const { data, error } = await supabase
                 .from('appointments')
-                .select(`
-                    *,
-                    services (name, duration_min)
-                `)
+                .select('*, services(name, duration_min)')
                 .eq('client_id', clientId)
                 .order('date', { ascending: false })
                 .order('time', { ascending: false });
@@ -82,38 +106,64 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
         try {
             let clientId = client?.id;
             let error;
+            let finalImageUrl = formData.image_url;
+
+            // 1. Handle Image Upload if new file selected
+            if (selectedFile) {
+                try {
+                    const compressedFile = await compressImage(selectedFile);
+                    finalImageUrl = await uploadImage(compressedFile, 'crm_uploads');
+                } catch (uploadErr) {
+                    console.error("Upload failed", uploadErr);
+                    showError("Image upload failed, saving without image.");
+                    // Optional: return; to stop saving completely if image fails
+                }
+            }
 
             // Prepare client data (exclude note)
             const clientData = {
                 first_name: formData.first_name,
                 last_name: formData.last_name,
-                email: formData.email,
-                phone: formData.phone,
-                status: formData.status
+                email: formData.email?.trim() || null,
+                phone: formData.phone?.trim() || null,
+                status: formData.status,
+                image_url: finalImageUrl
             };
 
             if (client) {
                 // Edit Mode
-                const result = await supabase
+                const { error: updateError } = await supabase
                     .from('clients')
                     .update(clientData)
                     .eq('id', client.id);
-                error = result.error;
+                error = updateError;
+
+                if (!error) {
+                    const changes = Object.keys(clientData).filter(k => clientData[k] !== client[k]);
+                    await logActivity('Updated Client', {
+                        client_name: `${formData.first_name} ${formData.last_name} `,
+                        client_id: client.id,
+                        changes: changes.length > 0 ? changes : ['No significant changes']
+                    });
+                }
             } else {
                 // Create Mode
-                // Even though fields are optional in UI, we might default first_name if empty to avoid DB constraints if any
-                // If user leaves everything empty, we should probably at least require something or name it "Unknown"
-                // User asked for "Optional", so we allow empty strings.
+                if (!profile?.clinic_id) throw new Error('You are not associated with a clinic.');
 
-                const result = await supabase
+                const { data, error: insertError } = await supabase
                     .from('clients')
                     .insert([clientData])
                     .select()
                     .single();
 
-                error = result.error;
-                if (result.data) {
-                    clientId = result.data.id;
+                error = insertError;
+
+                if (data) {
+                    clientId = data.id;
+                    await logActivity('Created Client', {
+                        client_name: `${formData.first_name} ${formData.last_name} `,
+                        client_id: clientId
+                    });
                 }
             }
 
@@ -131,7 +181,6 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
 
                     if (noteError) {
                         console.error('Error adding initial note:', noteError);
-                        // We don't fail the whole process if note fails, but we warn
                         showError('Client created but failed to save note.');
                     }
                 }
@@ -142,11 +191,17 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
             onClose();
         } catch (error) {
             console.error('Error saving client:', error);
-            showError('Failed to save client. ' + (error.message || ''));
+
+            if (error.message?.includes('clients_email_key') || error.code === '23505') {
+                showError('A client with this email already exists.');
+            } else {
+                showError('Failed to save client. ' + (error.message || ''));
+            }
         } finally {
             setLoading(false);
         }
     };
+
 
     if (!isOpen) return null;
 
@@ -160,18 +215,48 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                 <div className="w-64 bg-slate-50 border-r border-slate-100 flex flex-col">
                     <div className="p-6 border-b border-slate-100">
                         {isNewClient ? (
-                            <div className="flex items-center gap-3 text-slate-400">
-                                <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-xl font-bold">
-                                    <span className="material-symbols-outlined">person_add</span>
-                                </div>
+                            <div className="flex flex-col items-center gap-3">
+                                <label className="relative group cursor-pointer w-20 h-20 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden hover:ring-4 hover:ring-slate-100 transition-all">
+                                    {previewUrl ? (
+                                        <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="material-symbols-outlined text-3xl text-slate-400">add_a_photo</span>
+                                    )}
+                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span className="text-white text-[10px] font-bold">UPLOAD</span>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                    />
+                                </label>
                                 <span className="font-bold text-slate-900">New Client</span>
                             </div>
                         ) : (
                             <div className="flex flex-col items-center text-center">
-                                <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center text-3xl font-bold mb-3 border-2 border-white shadow-sm">
-                                    {(client.first_name || 'U')[0]}
-                                </div>
-                                <h3 className="text-lg font-bold text-slate-900 leading-tight">{client.first_name} {client.last_name}</h3>
+                                <label className="relative group cursor-pointer w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border-4 border-white shadow-sm hover:border-primary/20 transition-all">
+                                    {previewUrl ? (
+                                        <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : formData.image_url ? (
+                                        <img src={formData.image_url} alt={formData.first_name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="text-primary text-3xl font-bold">
+                                            {(client.first_name || 'U')[0]}
+                                        </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span className="material-symbols-outlined text-white">edit</span>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleFileChange}
+                                    />
+                                </label>
+                                <h3 className="text-lg font-bold text-slate-900 leading-tight mt-3">{client.first_name} {client.last_name}</h3>
                                 <p className="text-sm text-slate-500 mt-1">{client.status}</p>
                             </div>
                         )}
@@ -183,10 +268,10 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                 key={tab}
                                 disabled={isNewClient && tab !== 'Profile'}
                                 onClick={() => setActiveTab(tab)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab
+                                className={`w - full flex items - center gap - 3 px - 4 py - 3 rounded - xl text - sm font - bold transition - all ${activeTab === tab
                                     ? 'bg-white text-primary shadow-sm ring-1 ring-slate-100'
                                     : 'text-slate-500 hover:bg-slate-100'
-                                    } ${isNewClient && tab !== 'Profile' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    } ${isNewClient && tab !== 'Profile' ? 'opacity-50 cursor-not-allowed' : ''} `}
                             >
                                 <span className="material-symbols-outlined">
                                     {tab === 'Profile' ? 'id_card' : tab === 'History' ? 'history' : 'photo_library'}
@@ -196,13 +281,13 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                         ))}
                     </nav>
 
-                    {/* Footer - REMOVED CLOSE BUTTON as per request */}
-                    {/* <div className="p-4 border-t border-slate-100">
+                    {/* Footer Close Button */}
+                    <div className="p-4 border-t border-slate-100">
                         <button onClick={onClose} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 px-4 py-2 transition-colors">
                             <span className="material-symbols-outlined text-[20px]">logout</span>
                             <span className="text-sm font-bold">Close</span>
                         </button>
-                    </div> */}
+                    </div>
                 </div>
 
                 {/* Main Content Area */}
@@ -221,6 +306,8 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                             <label className="block text-sm font-bold text-slate-700 mb-1.5">First Name <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
                                             <input
                                                 type="text"
+                                                required
+                                                maxLength={50}
                                                 value={formData.first_name}
                                                 onChange={e => setFormData({ ...formData, first_name: e.target.value })}
                                                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all"
@@ -252,14 +339,29 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
 
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 mb-1.5">Phone Number <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
-                                        <input
-                                            type="tel"
-                                            value={formData.phone}
-                                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all"
-                                            placeholder="+1 (555) 000-0000"
-                                        />
-                                    </div>
+                                        <div className="relative">
+                                            <input
+                                                type="tel"
+                                                value={formData.phone}
+                                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                                className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all"
+                                                placeholder="+1 (555) 000-0000"
+                                            />
+                                            {formData.phone && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const cleanNumber = formData.phone.replace(/\D/g, '');
+                                                        window.open(`https://wa.me/${cleanNumber}`, '_blank');
+                                                    }}
+                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 hover:text-green-600 hover:bg-green-50 p-1.5 rounded-lg transition-colors"
+                                                    title="Open in WhatsApp"
+                                                >
+                                                    <span className="material-symbols-outlined text-[20px]">chat</span>
+                                                </button >
+                                            )}
+                                        </div >
+                                    </div >
 
                                     <div>
                                         <label className="block text-sm font-bold text-slate-700 mb-1.5">Status</label>
@@ -281,112 +383,131 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                     </div>
 
                                     {/* New Note Field (Only for Creating New Client, OR always? User asked "Add New client ypaınca Müsteriye not ekleyebilelim") */}
-                                    {isNewClient && (
-                                        <div>
-                                            <label className="block text-sm font-bold text-slate-700 mb-1.5">Initial Note <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
-                                            <textarea
-                                                value={formData.note}
-                                                onChange={e => setFormData({ ...formData, note: e.target.value })}
-                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all resize-none h-24"
-                                                placeholder="Add a welcome note or initial consultation details..."
-                                            />
-                                        </div>
-                                    )}
-                                </form>
-                            </div>
+                                    {
+                                        isNewClient && (
+                                            <div>
+                                                <label className="block text-sm font-bold text-slate-700 mb-1.5">Initial Note <span className="text-xs font-normal text-slate-400">(Optional)</span></label>
+                                                <textarea
+                                                    value={formData.note}
+                                                    onChange={e => setFormData({ ...formData, note: e.target.value })}
+                                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all resize-none h-24"
+                                                    placeholder="Add a welcome note or initial consultation details..."
+                                                />
+                                            </div>
+                                        )
+                                    }
+                                </form >
+                            </div >
                         )}
 
                         {/* HISTORY TAB */}
-                        {activeTab === 'History' && (
-                            <div className="space-y-6">
-                                <h2 className="text-2xl font-bold text-slate-900">Appointment History</h2>
+                        {
+                            activeTab === 'History' && (
+                                <div className="space-y-6">
+                                    <h2 className="text-2xl font-bold text-slate-900">Appointment History</h2>
 
-                                {loadingHistory ? (
-                                    <div className="flex justify-center py-12">
-                                        <span className="material-symbols-outlined animate-spin text-primary text-3xl">progress_activity</span>
-                                    </div>
-                                ) : history.length === 0 ? (
-                                    <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                        <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-300">
-                                            <span className="material-symbols-outlined text-2xl">event_busy</span>
+                                    {loadingHistory ? (
+                                        <div className="flex justify-center py-12">
+                                            <span className="material-symbols-outlined animate-spin text-primary text-3xl">progress_activity</span>
                                         </div>
-                                        <p className="text-slate-500 font-medium">No appointment history found.</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {history.map(apt => (
-                                            <div key={apt.id} className="flex items-center p-4 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 
+                                    ) : history.length === 0 ? (
+                                        <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-300">
+                                                <span className="material-symbols-outlined text-2xl">event_busy</span>
+                                            </div>
+                                            <p className="text-slate-500 font-medium">No appointment history found.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {history.map(apt => (
+                                                <div key={apt.id} className="flex items-center p-4 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 
                                                     ${apt.status === 'Completed' ? 'bg-green-50 text-green-600' :
-                                                        apt.status === 'Cancelled' ? 'bg-red-50 text-red-600' :
-                                                            'bg-blue-50 text-blue-600'}`}>
-                                                    <span className="material-symbols-outlined">
-                                                        {apt.status === 'Completed' ? 'check_circle' :
-                                                            apt.status === 'Cancelled' ? 'cancel' : 'event'}
-                                                    </span>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h4 className="font-bold text-slate-900">{apt.services?.name || 'Appointment'}</h4>
-                                                    <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
-                                                        <span className="flex items-center gap-1">
-                                                            <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                                                            {apt.date}
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <span className="material-symbols-outlined text-[16px]">schedule</span>
-                                                            {apt.time.slice(0, 5)}
+                                                            apt.status === 'Cancelled' ? 'bg-red-50 text-red-600' :
+                                                                'bg-blue-50 text-blue-600'}`}>
+                                                        <span className="material-symbols-outlined">
+                                                            {apt.status === 'Completed' ? 'check_circle' :
+                                                                apt.status === 'Cancelled' ? 'cancel' : 'event'}
                                                         </span>
                                                     </div>
-                                                </div>
-                                                <div className={`px-3 py-1 rounded-full text-xs font-bold 
+                                                    <div className="flex-1">
+                                                        <h4 className="font-bold text-slate-900">{apt.services?.name || 'Appointment'}</h4>
+                                                        <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
+                                                            <span className="flex items-center gap-1">
+                                                                <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                                                                {apt.date}
+                                                            </span>
+                                                            <span className="flex items-center gap-1">
+                                                                <span className="material-symbols-outlined text-[16px]">schedule</span>
+                                                                {apt.time.slice(0, 5)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className={`px-3 py-1 rounded-full text-xs font-bold 
                                                     ${apt.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                                                        apt.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
-                                                            'bg-blue-100 text-blue-700'}`}>
-                                                    {apt.status}
+                                                            apt.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                                                                'bg-blue-100 text-blue-700'}`}>
+                                                        {apt.status}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        }
 
                         {/* GALLERY TAB */}
-                        {activeTab === 'Gallery' && (
-                            <div className="h-full flex flex-col">
-                                <ClientGallery clientId={client.id} />
-                            </div>
-                        )}
+                        {
+                            activeTab === 'Gallery' && (
+                                <div className="h-full flex flex-col">
+                                    <ClientGallery clientId={client.id} />
+                                </div>
+                            )
+                        }
 
-                    </div>
+                    </div >
 
                     {/* Footer Actions (Only show Save for Profile tab) */}
-                    {activeTab === 'Profile' && (
-                        <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="px-6 py-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                form="clientForm"
-                                disabled={loading}
-                                className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
-                            >
-                                {loading ? (
-                                    <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-                                ) : (
-                                    <span className="material-symbols-outlined text-[20px]">save</span>
-                                )}
-                                Save Changes
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+                    {
+                        activeTab === 'Profile' ? (
+                            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-6 py-3 rounded-xl text-slate-600 font-bold hover:bg-slate-100 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    form="clientForm"
+                                    disabled={loading}
+                                    className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {loading ? (
+                                        <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                                    ) : (
+                                        <span className="material-symbols-outlined text-[20px]">save</span>
+                                    )}
+                                    Save Changes
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-6 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">close</span>
+                                    Close
+                                </button>
+                            </div>
+                        )
+                    }
+                </div >
+            </div >
+        </div >
     );
 }

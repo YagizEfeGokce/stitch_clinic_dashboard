@@ -91,10 +91,10 @@ export default function Finance() {
     });
 
     const calculateKPIs = (txns) => {
-        const rev = txns.filter(t => t.type === 'Income').reduce((sum, t) => sum + parseFloat(t.amount), 0);
-        const exp = txns.filter(t => t.type === 'Expense').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        const rev = txns.filter(t => t.type === 'income').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        const exp = txns.filter(t => t.type === 'expense').reduce((sum, t) => sum + parseFloat(t.amount), 0);
         const profit = rev - exp;
-        const count = txns.filter(t => t.type === 'Income').length;
+        const count = txns.filter(t => t.type === 'income').length;
         const avg = count > 0 ? rev / count : 0;
         return { rev, exp, profit, avg };
     };

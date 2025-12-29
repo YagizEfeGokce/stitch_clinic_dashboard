@@ -66,10 +66,10 @@ export default function TransactionTable({ transactions, onRefresh }) {
                                 <tr key={t.id} className="hover:bg-slate-50/50 transition-colors group">
                                     <td className="px-5 py-4 first:pl-6">
                                         <div className="flex items-center gap-3">
-                                            <div className={`size-10 rounded-full flex items-center justify-center ${t.type === 'Income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                            <div className={`size-10 rounded-full flex items-center justify-center ${t.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                                                 }`}>
                                                 <span className="material-symbols-outlined text-[20px]">
-                                                    {t.type === 'Income' ? 'arrow_downward' : 'arrow_upward'}
+                                                    {t.type === 'income' ? 'arrow_downward' : 'arrow_upward'}
                                                 </span>
                                             </div>
                                             <div>
@@ -86,9 +86,9 @@ export default function TransactionTable({ transactions, onRefresh }) {
                                     <td className="px-5 py-4 text-slate-500">
                                         {new Date(t.date).toLocaleDateString()}
                                     </td>
-                                    <td className={`px-5 py-4 font-bold text-[15px] ${t.type === 'Income' ? 'text-green-600' : 'text-slate-900'
+                                    <td className={`px-5 py-4 font-bold text-[15px] ${t.type === 'income' ? 'text-green-600' : 'text-slate-900'
                                         }`}>
-                                        {t.type === 'Income' ? '+' : '-'}${parseFloat(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                        {t.type === 'income' ? '+' : '-'}${parseFloat(t.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                     </td>
                                     <td className="px-5 py-4 text-right first:pr-6">
                                         <button
