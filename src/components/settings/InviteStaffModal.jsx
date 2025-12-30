@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { createClient } from '@supabase/supabase-js'; // Import directly to create isolated client
+import { createClient } from '@supabase/supabase-js';
 import { useToast } from '../../context/ToastContext';
-import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth to get current admin's clinic_id
 
-export default function InviteStaffModal({ isOpen, onClose }) {
+export default function InviteStaffModal({ isOpen, onClose, onStaffAdded }) {
     const { toast } = useToast();
+    const { profile } = useAuth(); // Get current user profile
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
@@ -17,15 +18,20 @@ export default function InviteStaffModal({ isOpen, onClose }) {
         e.preventDefault();
         setLoading(true);
 
+        if (!profile?.clinic_id) {
+            toast.error('Klinik bilgisi bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
+            setLoading(false);
+            return;
+        }
+
         try {
             // Create a temporary client that DOES NOT persist session
-            // This prevents the main app from logging out the Admin and logging in the new user
             const tempClient = createClient(
                 import.meta.env.VITE_SUPABASE_URL,
                 import.meta.env.VITE_SUPABASE_ANON_KEY,
                 {
                     auth: {
-                        persistSession: false, // Critical: Don't save to localStorage
+                        persistSession: false,
                         autoRefreshToken: false,
                         detectSessionInUrl: false
                     }
@@ -33,30 +39,25 @@ export default function InviteStaffModal({ isOpen, onClose }) {
             );
 
             // Sign up using the temporary client
+            // Pass clinic_id and role in metadata so the DB trigger knows to add them to THIS clinic
             const { data, error } = await tempClient.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
-                    data: { full_name: formData.fullName }
+                    data: {
+                        full_name: formData.fullName,
+                        clinic_id: profile.clinic_id, // CRITICAL: Pass existing clinic ID
+                        role: formData.role           // CRITICAL: Pass assigned role
+                    }
                 }
             });
 
             if (error) throw error;
 
             if (data.user) {
-                // Use the MAIN 'supabase' client (Admin) to create the profile
-                // This ensures we have the permissions to set the 'role'
-                const { error: profileError } = await supabase.from('profiles').upsert([
-                    {
-                        id: data.user.id,
-                        email: formData.email,
-                        full_name: formData.fullName,
-                        role: formData.role
-                    }
-                ]);
-                if (profileError) console.error('Profile update error:', profileError);
-
+                // Success! The DB trigger 'handle_new_user' will now handle profile creation correctly.
                 toast.success(`${formData.fullName} için hesap oluşturuldu`);
+                onStaffAdded?.(); // Refresh the list
                 onClose();
                 setFormData({ email: '', password: '', fullName: '', role: 'staff' });
             }

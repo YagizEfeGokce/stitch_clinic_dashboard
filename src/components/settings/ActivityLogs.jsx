@@ -68,31 +68,49 @@ export default function ActivityLogs() {
             if (log.action === 'Created Appointment' || log.action === 'Randevu Oluşturuldu') {
                 return `Randevu: ${details.date} - ${details.time}`;
             }
-            if (log.action === 'Rescheduled Appointment' || log.action === 'Randevu Tarihi Değiştirildi') {
-                return `Taşındı: ${details.date}, ${details.new_time}`;
+            if (log.action === 'Rescheduled Appointment' || log.action === 'Randevu Tarihi Değiştirildi' || log.action === 'Randevu Ertelendi') {
+                const oldTime = details.old_time ? details.old_time.substring(0, 5) : '?';
+                const newTime = details.new_time ? details.new_time.substring(0, 5) : '?';
+                const date = details.date ? format(new Date(details.date), 'd MMM', { locale: tr }) : '';
+                return `Değişim: ${oldTime} ➝ ${newTime} (${date})`;
             }
-            if (log.action === 'Removed Logo') return 'Logo silindi';
-            else if (log.action === 'Updated Branding Settings') {
+            if (log.action === 'Removed Logo' || log.action === 'Logo Silindi') return 'Logo silindi';
+
+            if (log.action === 'Updated Branding Settings' || log.action === 'Marka Ayarları Güncellendi') {
                 return `Marka ayarları güncellendi`;
-            } else if (log.action === 'Created Inventory Item') {
-                return `Ürün eklendi: ${details.item_name || 'Ürün'}`;
-            } else if (log.action === 'Updated Inventory Item') {
+            }
+
+            if (log.action === 'Created Inventory Item' || log.action === 'Ürün Eklendi') {
+                return `Ürün eklendi: ${details.item_name || 'İsimsiz'}`;
+            }
+            if (log.action === 'Updated Inventory Item' || log.action === 'Ürün Güncellendi') {
                 return `Ürün güncellendi: ${details.item_name || ''}`;
-            } else if (log.action === 'Deleted Inventory Item') {
+            }
+            if (log.action === 'Deleted Inventory Item' || log.action === 'Ürün Silindi') {
                 return `Ürün silindi: ${details.item_name || details.item_id}`;
-            } else if (log.action === 'Created Client') {
-                return `Müşteri eklendi: ${details.client_name || 'Müşteri'}`;
-            } else if (log.action === 'Updated Client') {
+            }
+
+            if (log.action === 'Created Client' || log.action === 'Müşteri Eklendi') {
+                return `Müşteri eklendi: ${details.client_name || 'İsimsiz'}`;
+            }
+            if (log.action === 'Updated Client' || log.action === 'Müşteri Güncellendi') {
                 return `Müşteri güncellendi: ${details.client_name || ''}`;
-            } else if (log.action === 'Deleted Client') {
+            }
+            if (log.action === 'Deleted Client' || log.action === 'Müşteri Silindi') {
                 return `Müşteri silindi: ${details.client_name || details.client_id}`;
-            } else if (log.action === 'Created Service') {
-                return `Hizmet eklendi: ${details.service_name || 'Hizmet'}`;
-            } else if (log.action === 'Updated Service') {
+            }
+
+            if (log.action === 'Created Service' || log.action === 'Hizmet Eklendi') {
+                return `Hizmet eklendi: ${details.service_name || 'İsimsiz'}`;
+            }
+            if (log.action === 'Updated Service' || log.action === 'Hizmet Güncellendi') {
                 return `Hizmet güncellendi: ${details.service_name || ''}`;
-            } else if (log.action === 'Deleted Service') {
+            }
+            if (log.action === 'Deleted Service' || log.action === 'Hizmet Silindi') {
                 return `Hizmet silindi: ${details.service_name || details.service_id}`;
-            } else if (log.action === 'Manual Test Log') {
+            }
+
+            if (log.action === 'Manual Test Log' || log.action === 'Manuel Test' || log.action === 'Manuel Test Kaydı') {
                 return `Manuel Test Kaydı`;
             }
 

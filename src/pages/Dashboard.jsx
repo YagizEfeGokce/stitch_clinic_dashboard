@@ -43,7 +43,7 @@ export default function Dashboard() {
     const [selectedStaffId, setSelectedStaffId] = useState(user?.id); // Default to current user
 
     useEffect(() => {
-        if (role === 'admin' || role === 'doctor') {
+        if (role === 'admin' || role === 'doctor' || role === 'owner') {
             const fetchStaff = async () => {
                 const { data, error } = await supabase
                     .from('profiles')
@@ -591,7 +591,7 @@ export default function Dashboard() {
                 preselectedDate={selectedDate}
                 preselectedTime={selectedTimeForQuickAdd} // Pass prop
                 preselectedStaffId={selectedStaffId === 'all' ? user?.id : selectedStaffId}
-                canAssignStaff={role === 'admin' || role === 'doctor'}
+                canAssignStaff={role === 'admin' || role === 'doctor' || role === 'owner'}
                 staffList={staffList}
             />
         </div>

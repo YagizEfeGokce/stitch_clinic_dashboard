@@ -171,6 +171,7 @@ export default function StaffList({ searchTerm }) {
             <InviteStaffModal
                 isOpen={isInviteModalOpen}
                 onClose={() => setIsInviteModalOpen(false)}
+                onStaffAdded={fetchStaff}
             />
 
             <ConfirmationModal
