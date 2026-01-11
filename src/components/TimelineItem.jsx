@@ -6,11 +6,27 @@ export default function TimelineItem({
     status = 'future',
     image,
     isActive = false,
-    duration, // New prop
-    notes,    // New prop
-    onClick // Added missing prop
+    duration,
+    notes,
+    doctorName, // New: Dynamic doctor name
+    isVip = false, // New: Dynamic VIP tag
+    isNewPatient = false, // New: Dynamic New Patient tag
+    previousTreatment, // New: Data for previous treatment
+    onClick
 }) {
-    const isPast = status === 'past';
+    const isPast = status === 'completed' || status === 'cancelled';
+
+    // Status translation helper
+    const getStatusText = (s) => {
+        const map = {
+            'scheduled': 'Planlandı',
+            'confirmed': 'Onaylandı',
+            'completed': 'Tamamlandı',
+            'cancelled': 'İptal',
+            'no-show': 'Gelmedi'
+        };
+        return map[s?.toLowerCase()] || s;
+    };
 
     return (
         <div
@@ -46,35 +62,34 @@ export default function TimelineItem({
                         <div className="flex items-center gap-3 w-full min-w-0">
                             <div
                                 className={`rounded-full bg-slate-100 bg-cover bg-center shrink-0 ${isActive ? 'size-14 ring-2 ring-white shadow-sm' : 'size-12'}`}
-                                style={{ backgroundImage: `url("${image}")` }}
+                                style={{ backgroundImage: `url("${image || 'https://via.placeholder.com/150'}")` }}
                             ></div>
                             <div className="flex-1 min-w-0">
                                 <h3 className={`${isActive ? 'text-lg' : 'text-base'} font-bold text-slate-900 truncate`}>{patientName}</h3>
 
                                 {isActive ? (
                                     <div className="flex items-center gap-1.5 mt-0.5">
-                                        <span className="px-2 py-0.5 rounded-md bg-accent/20 text-xs font-bold text-rose-900 tracking-wide uppercase">VIP</span>
-                                        <span className="text-sm text-slate-500">First Consultation</span>
+                                        {isVip && <span className="px-2 py-0.5 rounded-md bg-accent/20 text-xs font-bold text-rose-900 tracking-wide uppercase">VIP</span>}
+                                        {isNewPatient && <span className="text-sm text-slate-500">İlk Muayene</span>}
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-1">
                                         <p className="text-sm text-slate-500 truncate">{treatment}</p>
-                                        {/* Added Duration and Notes for inactive state as requested */}
                                         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-                                            {duration && <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">schedule</span> {duration} min</span>}
-                                            {notes && <span className="flex items-center gap-1 max-w-[150px] truncate" title={notes}><span className="material-symbols-outlined text-[14px]">sticky_note_2</span> {notes}</span>}
+                                            {duration && <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">schedule</span> {duration} dk</span>}
+                                            {status && <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">info</span> {getStatusText(status)}</span>}
                                         </div>
                                     </div>
                                 )}
                             </div>
 
                             {/* Trailing Icon/Button */}
-                            {!isActive && status === 'completed' && (
+                            {!isActive && status?.toLowerCase() === 'completed' && (
                                 <div className="flex items-center justify-center size-8 rounded-full bg-green-50 text-green-600 shrink-0">
                                     <span className="material-symbols-outlined text-[20px]">check</span>
                                 </div>
                             )}
-                            {!isActive && status !== 'completed' && (
+                            {!isActive && status?.toLowerCase() !== 'completed' && (
                                 <div className="flex items-center justify-center size-8 rounded-full bg-slate-100 text-slate-400 shrink-0">
                                     <span className="material-symbols-outlined text-[20px]">hourglass_empty</span>
                                 </div>
@@ -97,34 +112,42 @@ export default function TimelineItem({
                                 </div>
                                 <div className="flex items-center gap-2 text-slate-500">
                                     <span className="material-symbols-outlined text-slate-400 text-[20px]">schedule</span>
-                                    <span className="text-sm">45 mins • Dr. Ray</span>
+                                    <span className="text-sm">{duration || 30} dk • {doctorName || 'Doktor Atanmadı'}</span>
                                 </div>
+                                {notes && (
+                                    <div className="flex items-start gap-2 text-slate-500 mt-1">
+                                        <span className="material-symbols-outlined text-slate-400 text-[20px]">sticky_note_2</span>
+                                        <span className="text-sm italic">"{notes}"</span>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Before/After Preview (Context) */}
-                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Previous Treatment</span>
-                                    <span className="text-xs font-medium text-primary cursor-pointer hover:underline">View Gallery</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2 h-24">
-                                    <div className="relative w-full h-full rounded-lg overflow-hidden group">
-                                        <div className="absolute inset-0 bg-black/10"></div>
-                                        <span className="absolute bottom-1 left-2 text-[10px] font-bold text-white bg-black/40 px-1.5 rounded backdrop-blur-sm">Before</span>
-                                        <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuApGVTDWk8aLKUagWYUFrIfM3MRQzW6OM-7TSsi5nqdz5YovnohNtWXzc8G5nDLuRhfEPAV_eF6zXwV9Dp7pGIS8Uztw3my0eLMJ-jNuTxqMgQWPa2z3rxE7R6svspYBKfxG9ybKOmW4J397rkOiQU9vdlcHitkAqmAiDpqggvBU6lV3daBbWOQ2hjso2JOnpMfNDQvDVTmkIrdqAmBmHGQonFyM7I0-LTNhbnrL5kGyYN6skdkU3Mh-EgXZ21Nl9s7aGuJZu06urfz")' }}></div>
+                            {/* Before/After Preview (Context) - Only show if data exists (Sample logic for now, or hidden if empty) */}
+                            {previousTreatment && (
+                                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Önceki İşlem</span>
+                                        <span className="text-xs font-medium text-primary cursor-pointer hover:underline">Galeriyi Gör</span>
                                     </div>
-                                    <div className="relative w-full h-full rounded-lg overflow-hidden group">
-                                        <span className="absolute bottom-1 left-2 text-[10px] font-bold text-white bg-primary/80 px-1.5 rounded backdrop-blur-sm z-10">After</span>
-                                        <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuC9knjMXZmiUZw2Y33hDV4oeeElJjCSZ6voBpoyhA0J_Oqu4ecU2xfg4ezq0NeKqGiEXBkVa5zz_k_4G4hF-A_kAvQaJLUBl2uYBBwTJLNBRgMSTRfhZDMv-nRc3VzPXyFuJsR_3-SRfuFPDZzrRi1wl1JsevbJxE0EtZ3fkYQ2Z-89bC1otZWMdzzIBvZxtt4IrBFRrktrRBezZOYBfLR5WA4WLTStFqS7OowJJyTLlZMjXAxVXzgwmDFcB9ai_uk7MmoObNEpnlM3")' }}></div>
+                                    <div className="grid grid-cols-2 gap-2 h-24">
+                                        <div className="relative w-full h-full rounded-lg overflow-hidden group">
+                                            <div className="absolute inset-0 bg-black/10"></div>
+                                            <span className="absolute bottom-1 left-2 text-[10px] font-bold text-white bg-black/40 px-1.5 rounded backdrop-blur-sm">Önce</span>
+                                            <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url("${previousTreatment.before || 'https://via.placeholder.com/150'}")` }}></div>
+                                        </div>
+                                        <div className="relative w-full h-full rounded-lg overflow-hidden group">
+                                            <span className="absolute bottom-1 left-2 text-[10px] font-bold text-white bg-primary/80 px-1.5 rounded backdrop-blur-sm z-10">Sonra</span>
+                                            <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url("${previousTreatment.after || 'https://via.placeholder.com/150'}")` }}></div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Actions */}
                             <div className="grid grid-cols-[1fr_auto] gap-3">
                                 <button className="flex items-center justify-center gap-2 h-12 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 transition-all active:scale-95">
                                     <span className="material-symbols-outlined text-[20px]">chat</span>
-                                    Send Reminder
+                                    Hatırlatma Gönder
                                 </button>
                                 <button className="flex items-center justify-center size-12 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors">
                                     <span className="material-symbols-outlined text-[20px]">edit_calendar</span>
@@ -137,3 +160,4 @@ export default function TimelineItem({
         </div>
     );
 }
+

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getLocalISOString } from '../utils/dateUtils';
@@ -11,6 +11,9 @@ import MonthView from '../components/schedule/MonthView';
 import DraggableAppointment from '../components/schedule/DraggableAppointment';
 import DroppableTimeSlot from '../components/schedule/DroppableTimeSlot';
 import HourBlock from '../components/schedule/HourBlock';
+import { useAppointments } from '../hooks/useAppointments';
+
+import TimelineSkeleton from '../components/TimelineSkeleton';
 
 // DnD Imports
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -22,7 +25,6 @@ import UpcomingSidebar from '../components/schedule/UpcomingSidebar';
 
 export default function Dashboard() {
     const [searchParams] = useSearchParams();
-    const [upcoming, setUpcoming] = useState([]);
     const { success, error: showError } = useToast();
 
     // Welcome Header Logic
@@ -67,12 +69,18 @@ export default function Dashboard() {
         }
     }, [user?.id, staffList.length]);
 
+    // --- REFACTORED: Hook Usage ---
+    const {
+        appointments: rawAppointments,
+        upcoming,
+        loading,
+        refreshAppointments: fetchAppointments,
+        setAppointments: setRawAppointments
+    } = useAppointments(selectedDate, view, selectedStaffId);
 
-    const [rawAppointments, setRawAppointments] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
-    const [selectedTimeForQuickAdd, setSelectedTimeForQuickAdd] = useState(null); // Add state
+    const [selectedTimeForQuickAdd, setSelectedTimeForQuickAdd] = useState(null);
 
     // Schedule Settings
     const [showBookedOnly, setShowBookedOnly] = useState(false);
@@ -88,138 +96,6 @@ export default function Dashboard() {
             }
         })
     );
-
-    const fetchUpcoming = useCallback(async () => {
-        const today = getLocalISOString();
-        // Simple logic: Get next 5 appointments from today onwards
-        let query = supabase
-            .from('appointments')
-            .select(`
-                id, client_id, date, time, status,
-                clients (first_name, last_name, image_url),
-                services (name)
-            `)
-            .gte('date', today)
-            .neq('status', 'Cancelled')
-            .order('date', { ascending: true })
-            .order('time', { ascending: true })
-            .limit(5);
-
-        // Filter upcoming by staff if selected (and not 'all')
-        if (selectedStaffId && selectedStaffId !== 'all') {
-            query = query.eq('staff_id', selectedStaffId);
-        }
-
-        const { data } = await query;
-
-        if (data) {
-            setUpcoming(data.map(apt => ({
-                ...apt,
-                clients: Array.isArray(apt.clients) ? apt.clients[0] : apt.clients,
-                services: Array.isArray(apt.services) ? apt.services[0] : apt.services
-            })));
-        }
-    }, [selectedStaffId]);
-
-    const fetchAppointments = useCallback(async (retryCount = 0) => {
-        if (!navigator.onLine) {
-            setLoading(false);
-            return;
-        }
-
-        setLoading(true);
-        try {
-
-            // Timeout promise - Increase to 15s for slow connections
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('TIMEOUT')), 15000)
-            );
-
-            // Execute complex fetch logic
-            const performFetch = async () => {
-                let query = supabase
-                    .from('appointments')
-                    .select(`
-                        *,
-                        services ( * ),
-                        clients ( id, first_name, last_name, image_url, phone )
-                    `)
-                    .order('date', { ascending: true }) // Also order by date for monthly view
-                    .order('time', { ascending: true });
-
-                // Date Filter
-                if (view === 'day') {
-                    query = query.eq('date', selectedDate);
-                } else {
-                    const [year, month] = selectedDate.split('-');
-                    const startDate = `${year}-${month}-01`;
-                    const lastDayOfMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
-                    const endDate = `${year}-${month}-${lastDayOfMonth}`;
-                    query = query.gte('date', startDate).lte('date', endDate);
-                }
-
-                // Staff Filter
-                if (selectedStaffId && selectedStaffId !== 'all') {
-                    query = query.eq('staff_id', selectedStaffId);
-                }
-
-                const { data, error } = await query;
-                if (error) throw error;
-
-                return (data || []).map(apt => ({
-                    ...apt,
-                    clients: Array.isArray(apt.clients) ? apt.clients[0] : apt.clients,
-                    services: Array.isArray(apt.services) ? apt.services[0] : apt.services
-                }));
-            };
-
-            // Race against timeout
-            const mergedData = await Promise.race([performFetch(), timeoutPromise]);
-
-            setRawAppointments(mergedData);
-            fetchUpcoming();
-        } catch (error) {
-            console.error('Critical error loading dashboard:', error);
-
-            const isNetworkError = error.message === 'TIMEOUT' || error.message?.includes('fetch');
-            if (isNetworkError && retryCount < 2) {
-                console.warn(`Retry attempt ${retryCount + 1} for dashboard...`);
-                return fetchAppointments(retryCount + 1);
-            }
-            showError('Failed to load appointments. Network unstable.');
-        } finally {
-            setLoading(false);
-        }
-    }, [view, selectedDate, selectedStaffId, fetchUpcoming, showError]);
-
-    // Fetch appointments when dependencies change (the callback itself updates when its deps change)
-    useEffect(() => {
-        fetchAppointments();
-        fetchUpcoming();
-    }, [fetchAppointments, fetchUpcoming]);
-
-    // Realtime Subscription
-    useEffect(() => {
-        const channel = supabase
-            .channel('dashboard_appointments')
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'appointments'
-                },
-                () => {
-                    // Refresh on any change
-                    fetchAppointments();
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [fetchAppointments]);
 
     const handleDragEnd = async (event) => {
         const { active, over } = event;
@@ -360,7 +236,14 @@ export default function Dashboard() {
         <div className="pb-24">
             {/* Welcome Header */}
             <div className="px-5 pt-8 pb-2">
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Günaydın, {userName}</h1>
+                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                    {(() => {
+                        const hour = new Date().getHours();
+                        if (hour < 12) return 'Günaydın';
+                        if (hour < 18) return 'Tünaydın';
+                        return 'İyi Akşamlar';
+                    })()}, {userName}
+                </h1>
                 <p className="text-slate-500 font-medium">Bugünkü programınız burada.</p>
             </div>
 
@@ -447,12 +330,9 @@ export default function Dashboard() {
                     </div>
 
                     {loading && rawAppointments.length === 0 ? (
-                        <div className="px-5 py-4 space-y-6 animate-pulse">
+                        <div className="px-5 pt-4 space-y-2">
                             {[1, 2, 3].map(i => (
-                                <div key={i} className="flex gap-4">
-                                    <div className="h-4 w-8 bg-slate-200 rounded"></div>
-                                    <div className="h-32 w-full bg-slate-100 rounded-[20px]"></div>
-                                </div>
+                                <TimelineSkeleton key={i} />
                             ))}
                         </div>
                     ) : view === 'month' ? (
@@ -536,12 +416,16 @@ export default function Dashboard() {
                                                                                 <TimelineItem
                                                                                     time={formatTime(apt.time).time}
                                                                                     ampm={formatTime(apt.time).ampm}
-                                                                                    patientName={apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'Unknown Client'}
-                                                                                    treatment={apt.service_name}
-                                                                                    status={apt.status?.toLowerCase() || 'scheduled'}
+                                                                                    patientName={apt.clients ? `${apt.clients.first_name} ${apt.clients.last_name}` : 'İsimsiz Hasta'}
+                                                                                    treatment={apt.services?.name || 'İşlem Yok'}
+                                                                                    status={apt.status}
                                                                                     image={apt.clients?.image_url}
-                                                                                    duration={apt.services?.duration_min} // Pass duration
-                                                                                    notes={apt.notes} // Pass notes
+                                                                                    duration={apt.services?.duration_min}
+                                                                                    notes={apt.notes}
+                                                                                    // Dynamic Props
+                                                                                    doctorName={staffList.find(s => s.id === apt.staff_id)?.full_name || 'Atanmadı'}
+                                                                                    isVip={apt.clients?.notes?.toLowerCase().includes('vip') || false}
+                                                                                    isNewPatient={apt.notes?.toLowerCase().includes('yeni') || apt.notes?.toLowerCase().includes('ilk') || false}
                                                                                 />
                                                                             </div>
                                                                         </DraggableAppointment>
