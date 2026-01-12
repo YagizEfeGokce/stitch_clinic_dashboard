@@ -4,8 +4,10 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Make sure .env.local exists and the server was restarted.');
-    throw new Error('Supabase Configuration Missing');
+    console.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY.');
+    // Do not throw to prevent app crash, handle null in AuthContext
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = (supabaseUrl && supabaseAnonKey)
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;

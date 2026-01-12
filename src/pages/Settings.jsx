@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import BrandingSettings from '../components/settings/BrandingSettings';
-import StaffList from '../components/settings/StaffList';
+import TeamSettings from '../components/settings/TeamSettings';
 import ProfileEditModal from '../components/settings/ProfileEditModal';
 import DataManagementSettings from '../components/settings/DataManagementSettings';
+import BillingSettings from '../components/settings/BillingSettings';
 
 import ActivityLogs from '../components/settings/ActivityLogs';
 import { useAuth } from '../context/AuthContext';
@@ -53,7 +54,7 @@ export default function Settings() {
     // Filter tabs based on role
     const tabs = role === 'staff'
         ? ['Security']
-        : ['General', 'Team', 'Data', 'Logs', 'Security'];
+        : ['General', 'Billing', 'Team', 'Data', 'Logs', 'Security'];
 
     // Ensure activeTab is valid
     useEffect(() => {
@@ -95,6 +96,7 @@ export default function Settings() {
     // Tab Mapping
     const tabLabels = {
         'General': 'Genel',
+        'Billing': 'Plan',
         'Team': 'Ekip',
         'Data': 'Veri',
         'Logs': 'Kayıtlar',
@@ -161,20 +163,21 @@ export default function Settings() {
             <main className="flex-1 px-4 space-y-6">
                 {activeTab === 'Team' && (
                     <>
-                        <div className="relative">
+                        {/* <div className="relative">
                             <div className="flex w-full items-center rounded-xl bg-white shadow-sm border border-slate-100 h-12 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                                 <div className="flex items-center justify-center pl-4 text-primary">
                                     <span className="material-symbols-outlined text-[20px]">search</span>
                                 </div>
                                 <input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-transparent border-none text-slate-900 placeholder:text-slate-400 px-3 text-base focus:ring-0 h-full" placeholder="Personel ara..." />
                             </div>
-                        </div>
-                        <StaffList searchTerm={searchTerm} />
+                        </div> */}
+                        <TeamSettings />
                     </>
                 )}
                 {activeTab === 'General' && <BrandingSettings />}
 
                 {activeTab === 'Data' && <DataManagementSettings />}
+                {activeTab === 'Billing' && <BillingSettings />}
                 {activeTab === 'Logs' && <ActivityLogs />}
 
                 {activeTab === 'Security' && (

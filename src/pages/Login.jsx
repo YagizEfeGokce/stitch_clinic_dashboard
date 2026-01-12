@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { translateError } from '../utils/errorHelpers';
 
 export default function Login() {
     const [isSignUp, setIsSignUp] = useState(false);

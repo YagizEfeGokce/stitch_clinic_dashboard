@@ -1,6 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-// import { useState, useEffect } from 'react'; // Unused
 
 export default function Sidebar() {
     const { role, clinic, profile, user } = useAuth();
@@ -39,7 +38,7 @@ export default function Sidebar() {
 
                 <nav className="flex-1 px-4 flex flex-col gap-2 overflow-y-auto">
                     {isAdminOrDoctor && (
-                        <NavLink to="/" end className={getLinkClass}>
+                        <NavLink to="/overview" end className={getLinkClass}>
                             <span className="material-symbols-outlined">dashboard</span>
                             Panel
                         </NavLink>

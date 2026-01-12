@@ -1,16 +1,68 @@
-# React + Vite
+# Stitch Clinic Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, comprehensive Clinic Relationship Management (CRM) dashboard built for ease of use and performance.
 
-Currently, two official plugins are available:
+## 🚀 Project Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The Stitch Clinic Dashboard is designed to help clinics manage their day-to-day operations, including:
 
-## React Compiler
+- **Client Management**: detailed client profiles and history.
+- **Appointment Scheduling**: Visual calendar and booking wizard.
+- **Inventory Tracking**: Manage stock and supplies.
+- **Financial Reporting**: Revenue tracking and analytics.
+- **Staff Performance**: KPI tracking and role-based access control.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠 Tech Stack
 
-## Expanding the ESLint configuration
+- **Frontend Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **State Management**: React Context API
+- **Backend/Auth**: [Supabase](https://supabase.com/)
+- **Routing**: [React Router](https://reactrouter.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Drag & Drop**: [dnd-kit](https://dndkit.com/)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## ⚙️ Setup Instructions
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository and install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+2. Set up Environment Variables:
+    Create a `.env` file in the root directory (copy from `.env.example` if available) and add your Supabase credentials:
+
+    ```env
+    VITE_SUPABASE_URL=your_supabase_url
+    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    ```
+
+3. Start the Development Server:
+
+    ```bash
+    npm run dev
+    ```
+
+## 🏗 Architecture
+
+- **`src/pages`**: Main application views (Dashboard, Clients, etc.).
+- **`src/components`**: Reusable UI components.
+- **`src/context`**: Global state (Auth, Theme, Toast).
+- **`src/layouts`**: Page layouts (MainLayout).
+- **`src/lib`**: Third-party library configurations (Supabase).
+- **`src/utils`**: Helper functions and constants.
+
+## 📝 Key Features
+
+- **Role-Based Access Control (RBAC)**: Secure routes for Admin, Owner, Doctor, and Staff.
+- **Responsive Design**: Fully optimized for desktop and tablet usage.
+- **Real-time Updates**: leveraging Supabase subscriptions (where applicable).

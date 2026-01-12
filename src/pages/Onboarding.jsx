@@ -12,28 +12,48 @@ export default function Onboarding() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // Redirect if already onboarded
-        if (!authLoading && profile?.has_completed_onboarding) {
-            navigate('/schedule', { replace: true });
-        }
-    }, [profile, authLoading, navigate]);
+        const checkStatus = async () => {
+            if (!user || authLoading) return;
 
-    useEffect(() => {
-        // Fetch user's existing name to greet them
-        const loadUserName = async () => {
-            if (!user) return;
-            const { data } = await supabase
-                .from('profiles')
-                .select('full_name')
-                .eq('id', user.id)
-                .single();
+            // 1. If already marked as onboarded, go to schedule
+            if (profile?.has_completed_onboarding) {
+                navigate('/schedule', { replace: true });
+                return;
+            }
 
-            if (data?.full_name) {
-                setExistingName(data.full_name);
+            // 2. Fetch Clinic Details to see if we are an INVITED member or OWNER
+            // If we are NOT the owner, or if the clinic is already named (not default), skip this step.
+            try {
+                const { data: clinicData, error } = await supabase
+                    .from('clinics')
+                    .select('name, id')
+                    .eq('id', profile?.clinic_id)
+                    .single();
+
+                if (clinicData) {
+                    const isDefaultName = clinicData.name === 'My New Clinic' || clinicData.name === 'My Clinic';
+                    const isOwner = profile?.role === 'owner';
+
+                    // If user is NOT owner, or clinic name is already set (not default)
+                    // Then we skip the "Name your clinic" step and just mark onboarded.
+                    if (!isOwner || !isDefaultName) {
+                        setLoading(true);
+                        await supabase
+                            .from('profiles')
+                            .update({ has_completed_onboarding: true })
+                            .eq('id', user.id);
+
+                        await refreshUserData(user.id);
+                        navigate('/schedule', { replace: true });
+                    }
+                }
+            } catch (err) {
+                console.error("Onboarding check error:", err);
             }
         };
-        loadUserName();
-    }, [user]);
+
+        checkStatus();
+    }, [user, profile, authLoading, navigate, refreshUserData]);
 
     const handleComplete = async (e) => {
         e.preventDefault();

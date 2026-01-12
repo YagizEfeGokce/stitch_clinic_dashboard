@@ -1,11 +1,13 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import PageTransition from './components/PageTransition';
 import MainLayout from './layouts/MainLayout';
 import AuthProvider, { useAuth } from './context/AuthContext';
 import ToastProvider from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ROLES } from './utils/constants';
 
 // Eager Load Core Pages
 import Home from './pages/Home';
@@ -15,6 +17,7 @@ import Inventory from './pages/Inventory';
 
 // Lazy Load Secondary Pages
 const Login = lazy(() => import('./pages/Login'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const ClientProfile = lazy(() => import('./pages/ClientProfile'));
 const Services = lazy(() => import('./pages/Services'));
@@ -25,6 +28,8 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Reviews = lazy(() => import('./pages/Reviews'));
 const Support = lazy(() => import('./pages/Support'));
 const BookingWizard = lazy(() => import('./components/booking/BookingWizard'));
+const SuperAdminLayout = lazy(() => import('./layouts/SuperAdminLayout'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const Unauthorized = lazy(() => import('./pages/Unauthorized'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -40,7 +45,7 @@ const LoadingScreen = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="flex flex-col items-center gap-4">
-        <span className="material-symbols-outlined animate-spin text-primary text-5xl">progress_activity</span>
+        <Loader2 className="animate-spin text-primary w-12 h-12" />
         <p className="text-slate-400 font-medium animate-pulse">Loading...</p>
 
         {showRetry && (
@@ -94,7 +99,7 @@ const AppLayout = () => {
     <MainLayout>
       <AnimatePresence mode="wait">
         <PageTransition key={location.pathname}>
-          <Suspense fallback={<div className="p-10 flex justify-center"><span className="material-symbols-outlined animate-spin text-slate-300 text-3xl">progress_activity</span></div>}>
+          <Suspense fallback={<div className="p-10 flex justify-center"><Loader2 className="animate-spin text-slate-300 w-8 h-8" /></div>}>
             <Outlet />
           </Suspense>
         </PageTransition>
@@ -107,7 +112,7 @@ const AppLayout = () => {
 const RootRedirector = () => {
   const { role, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  if (role === 'admin' || role === 'owner' || role === 'doctor') return <Home />;
+  if (role === ROLES.ADMIN || role === ROLES.OWNER || role === ROLES.DOCTOR) return <Home />;
   return <Navigate to="/schedule" replace />;
 };
 
@@ -120,6 +125,7 @@ export default function App() {
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
                 {/* Public Routes */}
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/unauthorized" element={<Unauthorized />} />
 
@@ -127,10 +133,17 @@ export default function App() {
                 <Route element={<ProtectedRoute />}>
                   <Route path="/onboarding" element={<Onboarding />} />
 
+                  {/* Super Admin Routes (Protected by RLS/RPC at data level, but UI route also needed) */}
+                  <Route path="/super-admin" element={<SuperAdminLayout />}>
+                    <Route index element={<AdminDashboard />} />
+                  </Route>
+
                   {/* Routes Accessible to ALL Authenticated Users (including Staff) */}
                   <Route element={<AppLayout />}>
-                    <Route path="/" element={<RootRedirector />} />
+                    {/* <Route path="/" element={<RootRedirector />} /> Removed, / is now Landing */}
+                    <Route path="/overview" element={<Home />} />
                     <Route path="/schedule" element={<Dashboard />} />
+                    <Route path="/dashboard" element={<Navigate to="/schedule" replace />} />
                     <Route path="/clients" element={<Clients />} />
                     <Route path="/clients/:id" element={<ClientProfile />} />
                     <Route path="/inventory" element={<Inventory />} />
@@ -138,7 +151,7 @@ export default function App() {
                     <Route path="/support" element={<Support />} />
 
                     {/* Routes RESTRICTED to Admin, Owner & Doctor */}
-                    <Route element={<ProtectedRoute allowedRoles={['admin', 'owner', 'doctor']} />}>
+                    <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.OWNER, ROLES.DOCTOR]} />}>
                       {/* Home is now handled by RootRedirector above */}
                       <Route path="/services" element={<Services />} />
                       <Route path="/finance" element={<Finance />} />
@@ -146,7 +159,6 @@ export default function App() {
                       <Route path="/book" element={<BookingWizard />} />
                     </Route>
 
-                    {/* Fallback */}
                     {/* Fallback */}
                     <Route path="*" element={<NotFound />} />
                   </Route>

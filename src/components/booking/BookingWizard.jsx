@@ -36,9 +36,6 @@ export default function BookingWizard() {
         setIsSubmitting(true);
         try {
             // Convert time (e.g., "09:00 AM") to 24h format for DB TIME column
-            // For now, let's assume "2023-10-24" is the date, as date selection is mocked.
-            const date = new Date();
-            // In a real app we'd get the actual date from DateTimeSelection
 
             const { error } = await supabase.from('appointments').insert([
                 {
