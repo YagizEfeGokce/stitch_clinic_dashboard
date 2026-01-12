@@ -357,8 +357,8 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 opacity-60">
                     <p className="font-bold text-slate-900">© 2025 Dermdesk.</p>
                     <div className="flex gap-8 text-sm font-medium text-slate-500">
-                        <a href="#" className="hover:text-primary">Gizlilik Politikası</a>
-                        <a href="#" className="hover:text-primary">Kullanım Şartları</a>
+                        <a href="/privacy" className="hover:text-primary transition-colors">Gizlilik Politikası</a>
+                        <a href="/terms" className="hover:text-primary transition-colors">Kullanım Şartları</a>
                         <a href="#" className="hover:text-primary">İletişim</a>
                     </div>
                 </div>
