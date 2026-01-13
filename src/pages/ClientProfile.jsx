@@ -62,7 +62,6 @@ export default function ClientProfile() {
             setClient(clientData);
 
             // 2. Fetch Appointments
-            console.log('Fetching appointments for client_id:', id);
             const { data: appointmentData, error: appError } = await supabase
                 .from('appointments')
                 .select(`

@@ -122,7 +122,7 @@ export default function LandingPage() {
                         className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
                     >
                         <button
-                            onClick={() => navigate('/login')}
+                            onClick={() => navigate('/login?plan=pro')}
                             className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold text-lg rounded-2xl shadow-xl shadow-primary/30 hover:bg-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                         >
                             1 Ay Ücretsiz Dene (Beta)
@@ -327,7 +327,16 @@ export default function LandingPage() {
                                         </li>
                                     ))}
                                 </ul>
-                                <button onClick={() => navigate('/login')} className={`w-full py-4 rounded-xl font-bold transition-all ${plan.popular ? 'bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25' : 'bg-white/10 hover:bg-white/20 text-white'}`}>
+                                <button
+                                    onClick={() => {
+                                        if (plan.name === 'Enterprise') {
+                                            window.location.href = 'mailto:yagiz.gokce19@gmail.com';
+                                        } else {
+                                            navigate(`/login?plan=${plan.name === 'Başlangıç' ? 'free' : 'pro'}`);
+                                        }
+                                    }}
+                                    className={`w-full py-4 rounded-xl font-bold transition-all ${plan.popular ? 'bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+                                >
                                     {plan.name === 'Enterprise' ? 'İletişime Geç' : '1 Ay Ücretsiz Dene'}
                                 </button>
                                 {plan.name !== 'Enterprise' && (
@@ -341,6 +350,67 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* COMPARISON TABLE */}
+            <section className="py-24 bg-slate-900 border-t border-white/10 relative">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h3 className="text-2xl font-bold text-white mb-4">Hangi Paket Size Uygun?</h3>
+                        <p className="text-slate-400 text-lg">Özellikleri detaylıca karşılaştırın ve size en uygun olanı seçin.</p>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-3xl border border-white/10 shadow-2xl bg-slate-800/20 backdrop-blur-sm">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr>
+                                    <th className="p-6 border-b border-white/10 text-slate-400 font-medium w-1/3">Özellikler</th>
+                                    <th className="p-6 border-b border-white/10 text-white font-bold text-center w-1/5 text-lg">Başlangıç</th>
+                                    <th className="p-6 border-b border-primary/30 text-primary font-bold text-center w-1/5 text-xl bg-primary/10">Pro</th>
+                                    <th className="p-6 border-b border-white/10 text-white font-bold text-center w-1/5 text-lg">Enterprise</th>
+                                </tr>
+                            </thead>
+                            <tbody className="text-slate-300 divide-y divide-white/5">
+                                {[
+                                    { name: 'Personel Sayısı', free: '2 Kişi', pro: 'Sınırsız', ent: 'Sınırsız' },
+                                    { name: 'Aylık Randevu', free: '200 Adet', pro: 'Sınırsız', ent: 'Sınırsız' },
+                                    { name: 'Hasta Kartı & Arşiv', free: true, pro: true, ent: true },
+                                    { name: 'Stok & Envanter Takibi', free: false, pro: true, ent: true },
+                                    { name: 'Gelir/Gider Raporları', free: 'Temel', pro: 'Gelişmiş', ent: 'Özel Dashboard' },
+                                    { name: 'SMS & E-posta Bildirim', free: true, pro: true, ent: true },
+                                    { name: 'Müşteri Desteği', free: 'E-posta', pro: 'Öncelikli (WhatsApp)', ent: '7/24 Telefon' },
+                                    { name: 'Veri Yedekleme', free: 'Günlük', pro: 'Saatlik', ent: 'Anlık' },
+                                    { name: 'Kurulum & Eğitim', free: false, pro: 'Video Eğitim', ent: 'Yerinde Kurulum' },
+                                ].map((row, i) => (
+                                    <tr key={i} className="hover:bg-white/5 transition-colors">
+                                        <td className="p-5 font-medium border-r border-white/5">{row.name}</td>
+                                        <td className="p-5 text-center border-r border-white/5">
+                                            {typeof row.free === 'boolean' ? (
+                                                row.free ?
+                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400"><CheckCircle2 className="w-5 h-5" /></div> :
+                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-700/50 text-slate-500"><span className="material-symbols-outlined text-base">close</span></div>
+                                            ) : <span className="text-white font-medium">{row.free}</span>}
+                                        </td>
+                                        <td className="p-5 text-center font-bold text-white bg-primary/5 border-x border-primary/20 relative">
+                                            {typeof row.pro === 'boolean' ? (
+                                                row.pro ?
+                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500 text-slate-900 shadow-lg shadow-emerald-500/30"><CheckCircle2 className="w-5 h-5" /></div> :
+                                                    <span className="material-symbols-outlined text-slate-500">close</span>
+                                            ) : <span className="text-white text-lg">{row.pro}</span>}
+                                        </td>
+                                        <td className="p-5 text-center border-l border-white/5">
+                                            {typeof row.ent === 'boolean' ? (
+                                                row.ent ?
+                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400"><CheckCircle2 className="w-5 h-5" /></div> :
+                                                    <span className="material-symbols-outlined text-slate-500">close</span>
+                                            ) : <span className="text-white font-medium">{row.ent}</span>}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             {/* CTA Bottom Section */}
             <section className="py-24 bg-primary relative overflow-hidden">
                 <div className="absolute inset-0 bg-black/10" />
@@ -348,7 +418,7 @@ export default function LandingPage() {
                     <h2 className="text-3xl lg:text-5xl font-black text-white mb-8">Kliniğinizi Büyütmeye Hazır Mısınız?</h2>
                     <p className="text-white/90 text-xl mb-10 max-w-2xl mx-auto">Beta sürecine özel 1 ay boyunca tüm özellikleri ücretsiz deneyin.</p>
                     <button
-                        onClick={() => navigate('/login')}
+                        onClick={() => navigate('/login?plan=pro')}
                         className="px-10 py-5 bg-white text-primary font-bold text-xl rounded-2xl shadow-2xl hover:bg-slate-50 hover:scale-[1.02] transition-all"
                     >
                         Hemen Ücretsiz Dene

@@ -12,10 +12,17 @@ export const PLANS = {
     },
     PRO: {
         id: 'pro',
-        name: 'Pro',
+        name: 'Pro (Aylık)',
         price: 2499,
-        priceId: 'price_iyzico_pro_monthly_id', // Replace with real Iyzico Price ID later
+        priceId: 'price_iyzico_pro_monthly_id',
         features: ['Sınırsız Personel', 'Gelişmiş Analitik', 'Öncelikli Destek']
+    },
+    PRO_YEARLY: {
+        id: 'pro_yearly',
+        name: 'Pro (Yıllık)',
+        price: 22490, // ~1874 TL/month (25% discount on 2499*12)
+        priceId: 'price_iyzico_pro_yearly_id',
+        features: ['Sınırsız Personel', 'Gelişmiş Analitik', 'Öncelikli Destek', '%25 İndirim']
     }
 };
 
@@ -45,6 +52,75 @@ export const paymentService = {
     checkStatus: async (token) => {
         if (USE_MOCK) return { status: 'success' };
         // Validates token with backend
+    },
+
+    /**
+     * Check if a clinic is eligible to downgrade to a specific plan
+     * @returns {Promise<{eligible: boolean, reason: string}>}
+     */
+    checkDowngradeEligibility: async (clinicId, targetPlanId) => {
+        if (targetPlanId !== 'free') return { eligible: true };
+
+        // 1. Check Staff Count
+        const { count: staffCount, error: staffError } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true })
+            .eq('clinic_id', clinicId);
+
+        if (staffError) {
+            console.error('Error checking staff:', staffError);
+            return { eligible: false, reason: 'Personel kontrolü yapılamadı.' };
+        }
+
+        if (staffCount > 2) {
+            return {
+                eligible: false,
+                reason: `Başlangıç paketinde en fazla 2 personel olabilir. Şu an ${staffCount} personeliniz var. Lütfen önce personel sayısını azaltın.`
+            };
+        }
+
+        // 2. Check Inventory (Pro Feature)
+        // Starter plan does not support inventory. If they have items, they must clear them.
+        const { count: inventoryCount, error: inventoryError } = await supabase
+            .from('inventory')
+            .select('*', { count: 'exact', head: true })
+            .eq('clinic_id', clinicId);
+
+        if (inventoryError) {
+            console.error('Error checking inventory:', inventoryError);
+            return { eligible: false, reason: 'Stok kontrolü yapılamadı.' };
+        }
+
+        if (inventoryCount > 0) {
+            return {
+                eligible: false,
+                reason: `Başlangıç paketinde Stok Takibi özelliği yoktur. Şu an ${inventoryCount} kayıtlı ürününüz var. Paket düşürmek için önce stok kayıtlarını silmelisiniz.`
+            };
+        }
+
+        // 3. Check Upcoming Appointments limit (200)
+        // We check usage for the *current month* or *future* depending on business logic. 
+        // Generous approach: Check if they have > 200 active future appointments.
+        const todayStr = new Date().toISOString().split('T')[0];
+        const { count: apptCount, error: apptError } = await supabase
+            .from('appointments')
+            .select('*', { count: 'exact', head: true })
+            .eq('clinic_id', clinicId)
+            .gte('date', todayStr); // Future appointments
+
+        if (apptError) {
+            console.error('Error checking appointments:', apptError);
+            return { eligible: false, reason: 'Randevu kontrolü yapılamadı.' };
+        }
+
+        if (apptCount > 200) {
+            return {
+                eligible: false,
+                reason: `Başlangıç paketinde limit 200 randevudur. Şu an ${apptCount} ileri tarihli randevunuz var. Lütfen randevu sayısını azaltın.`
+            };
+        }
+
+        return { eligible: true };
     }
 };
 
@@ -81,7 +157,9 @@ const updateSubscriptionMock = async (clinicId, planId) => {
     // Calculate trial/period end dates
     const startDate = new Date();
     const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 30); // 30 days sub
+    const isYearly = planId.includes('yearly');
+    const days = isYearly ? 365 : 30;
+    endDate.setDate(endDate.getDate() + days);
 
     const { error } = await supabase
         .from('clinics')

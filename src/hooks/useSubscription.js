@@ -17,14 +17,15 @@ export function useSubscription() {
     const isTrialing = status === 'trialing';
 
     // Helper to get numeric limits
+    // Helper to get numeric limits
     const getPlanLimit = (resource) => {
-        if (tier === 'free' || tier === 'FREE_TRIAL') {
-            // Free / Trial Limits
-            if (resource === 'max_staff') return 2; // Reduced from 5
-            if (resource === 'max_appointments') return 200; // Reduced from 300
+        if (tier === 'free') {
+            // Free limits (Starter Plan - Trial or Active)
+            if (resource === 'max_staff') return 2;
+            if (resource === 'max_appointments') return 200;
             if (resource === 'inventory') return false;
         } else {
-            // Pro / Enterprise Limits
+            // Pro / Enterprise Limits (Pro Plan - Trial or Active)
             if (resource === 'max_staff') return 999;
             if (resource === 'max_appointments') return 9999;
             if (resource === 'inventory') return true;

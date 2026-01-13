@@ -127,12 +127,15 @@ export default function AuthProvider({ children }) {
         return await supabase.auth.signOut();
     };
 
-    const signUp = async (email, password, fullName) => {
+    const signUp = async (email, password, fullName, planTier = 'pro') => {
         const result = await supabase.auth.signUp({
             email,
             password,
             options: {
-                data: { full_name: fullName } // saved to metadata
+                data: {
+                    full_name: fullName,
+                    plan_tier: planTier // 'free' or 'pro'
+                }
             }
         });
 

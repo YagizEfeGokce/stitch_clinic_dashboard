@@ -2,7 +2,7 @@ import Header from '../components/layout/Header';
 import BottomNav from '../components/layout/BottomNav';
 import Sidebar from '../components/layout/Sidebar';
 import CommandPalette from '../components/CommandPalette';
-import SupportWidget from '../components/SupportWidget';
+import FeedbackWidget from '../components/FeedbackWidget';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -28,7 +28,7 @@ export default function MainLayout({ children }) {
 
 
             </div>
-            <SupportWidget />
+            <FeedbackWidget />
         </div>
     );
 }

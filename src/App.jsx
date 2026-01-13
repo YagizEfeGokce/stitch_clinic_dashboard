@@ -8,6 +8,7 @@ import AuthProvider, { useAuth } from './context/AuthContext';
 import ToastProvider from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { ROLES } from './utils/constants';
+import { initAnalytics, trackPageView } from './lib/analytics';
 
 // Eager Load Core Pages
 import Home from './pages/Home';
@@ -97,6 +98,10 @@ const ProtectedRoute = ({ allowedRoles = [] }) => {
 const AppLayout = () => {
   const location = useLocation();
 
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location]);
+
   return (
     <MainLayout>
       <AnimatePresence mode="wait">
@@ -119,6 +124,10 @@ const RootRedirector = () => {
 };
 
 export default function App() {
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>

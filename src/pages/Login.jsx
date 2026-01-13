@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { translateError } from '../utils/errorHelpers';
+import { trackEvent } from '../lib/analytics';
 
 export default function Login() {
     const [isSignUp, setIsSignUp] = useState(false);
@@ -13,6 +14,9 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const planTier = searchParams.get('plan') || 'pro'; // Default to pro if not specified
+
     const { signIn, signUp } = useAuth();
 
     const handleSubmit = async (e) => {
@@ -22,9 +26,11 @@ export default function Login() {
 
         try {
             if (isSignUp) {
-                const { error } = await signUp(email, password, fullName);
+                // Pass planTier to signUp
+                const { error } = await signUp(email, password, fullName, planTier);
                 if (error) throw error;
 
+                trackEvent('signup_completed', { plan: planTier });
                 navigate('/onboarding');
             } else {
                 // Login

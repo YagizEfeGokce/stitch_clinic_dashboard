@@ -7,7 +7,7 @@
 ALTER TABLE public.clinics 
 ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'FREE_TRIAL', -- FREE_TRIAL, STARTER, PRO, ENTERPRISE
 ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'active',   -- active, past_due, canceled, trialing
-ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMP WITH TIME ZONE DEFAULT (now() + interval '14 days'),
+ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMP WITH TIME ZONE DEFAULT (now() + interval '30 days'),
 ADD COLUMN IF NOT EXISTS current_period_end TIMESTAMP WITH TIME ZONE;
 
 -- 2. Update the 'handle_new_user' generic function to ensure new clinics get a trial
@@ -24,9 +24,9 @@ BEGIN
     INSERT INTO public.clinics (name, subscription_tier, subscription_status, trial_ends_at) 
     VALUES (
         COALESCE(new.raw_user_meta_data->>'clinic_name', 'My New Clinic'),
-        'FREE_TRIAL',
+        COALESCE(new.raw_user_meta_data->>'plan_tier', 'pro'), -- Use selected plan or default to pro
         'trialing',
-        now() + interval '14 days'
+        now() + interval '30 days'
     )
     RETURNING id INTO new_clinic_id;
 
