@@ -81,6 +81,8 @@ export default function AuthProvider({ children }) {
             } catch (error) {
                 console.warn('Auth initialization skipped or timed out:', error.message);
                 if (mounted) setLoading(false);
+            } finally {
+                if (mounted) setLoading(false);
             }
         };
 
@@ -118,6 +120,28 @@ export default function AuthProvider({ children }) {
             subscription.unsubscribe();
         };
     }, []);
+
+    // RECOVERY on Focus (Alt+Tab Fix)
+    // If the browser was suspended, check session state on focus
+    useEffect(() => {
+        const handleFocus = async () => {
+            if (loading) return; // If already loading, let it finish.
+
+            // Only check if we think we have a user but session might be stale?
+            // Actually, Supabase handles auto-refresh.
+            // But if the app was "stuck" in a weird state (e.g. SW failure), we force a check.
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session && user) {
+                // Session lost while inactive?
+                setUser(null);
+                setProfile(null);
+                setClinic(null);
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, [user, loading]);
 
     const signIn = async (email, password) => {
         return await supabase.auth.signInWithPassword({ email, password });
