@@ -113,43 +113,84 @@ ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
 -- RLS POLICIES
 -- ============================================================================
 
+-- Helper Function to avoid RLS recursion
+CREATE OR REPLACE FUNCTION public.get_my_clinic_id()
+RETURNS UUID AS $$
+  SELECT clinic_id FROM public.profiles WHERE id = auth.uid();
+$$ LANGUAGE sql SECURITY DEFINER;
+
 -- CLINICS: Users can view their own clinic
 CREATE POLICY "Users can view own clinic" ON public.clinics
-    FOR SELECT USING (id IN (
-        SELECT clinic_id FROM public.profiles WHERE id = auth.uid()
-    ));
+    FOR SELECT USING (id = public.get_my_clinic_id());
 
 -- PROFILES: Users can view profiles in same clinic
 CREATE POLICY "Users can view members of own clinic" ON public.profiles
-    FOR SELECT USING (clinic_id IN (
-        SELECT clinic_id FROM public.profiles WHERE id = auth.uid()
-    ));
+    FOR SELECT USING (clinic_id = public.get_my_clinic_id());
 
 -- UPDATE PROFILE: Users can update their own profile
 CREATE POLICY "Users can update own profile" ON public.profiles
     FOR UPDATE USING (id = auth.uid());
 
--- GENERIC TENANT POLICY (For Patients, Appts, Inventory, etc.)
--- Allow access if the record's clinic_id matches the user's clinic_id
-CREATE POLICY "Tenant Isolation Policy" ON public.patients
-    FOR ALL USING (clinic_id IN (
-        SELECT clinic_id FROM public.profiles WHERE id = auth.uid()
-    ));
+-- GENERIC TENANT POLICY (Split for Granular Control)
 
-CREATE POLICY "Tenant Isolation Policy" ON public.appointments
-    FOR ALL USING (clinic_id IN (
-        SELECT clinic_id FROM public.profiles WHERE id = auth.uid()
-    ));
+-- 1. PATIENTS
+-- Everyone can View/Add/Edit
+CREATE POLICY "Tenant View/Edit Patients" ON public.patients
+    FOR SELECT USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
+    
+CREATE POLICY "Tenant Add Patients" ON public.patients
+    FOR INSERT WITH CHECK (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
-CREATE POLICY "Tenant Isolation Policy" ON public.inventory
-    FOR ALL USING (clinic_id IN (
-        SELECT clinic_id FROM public.profiles WHERE id = auth.uid()
-    ));
+CREATE POLICY "Tenant Update Patients" ON public.patients
+    FOR UPDATE USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
-CREATE POLICY "Tenant Isolation Policy" ON public.transactions
-    FOR ALL USING (clinic_id IN (
-        SELECT clinic_id FROM public.profiles WHERE id = auth.uid()
-    ));
+-- Only Owner/Admin can Delete
+CREATE POLICY "Owner Delete Patients" ON public.patients
+    FOR DELETE USING (
+        clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid() AND role IN ('owner', 'admin', 'doctor'))
+    );
+
+-- 2. APPOINTMENTS
+CREATE POLICY "Tenant View/Edit Appointments" ON public.appointments
+    FOR SELECT USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
+
+CREATE POLICY "Tenant Add Appointments" ON public.appointments
+    FOR INSERT WITH CHECK (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
+
+CREATE POLICY "Tenant Update Appointments" ON public.appointments
+    FOR UPDATE USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
+
+CREATE POLICY "Owner Delete Appointments" ON public.appointments
+    FOR DELETE USING (
+        clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid() AND role IN ('owner', 'admin', 'doctor'))
+    );
+
+-- 3. INVENTORY
+CREATE POLICY "Tenant View Inventory" ON public.inventory
+    FOR SELECT USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
+
+CREATE POLICY "Tenant Edit Inventory" ON public.inventory
+    FOR INSERT WITH CHECK (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
+
+CREATE POLICY "Tenant Update Inventory" ON public.inventory
+    FOR UPDATE USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
+
+CREATE POLICY "Owner Delete Inventory" ON public.inventory
+    FOR DELETE USING (
+        clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid() AND role IN ('owner', 'admin'))
+    );
+
+-- 4. TRANSACTIONS
+CREATE POLICY "Tenant View Transactions" ON public.transactions
+    FOR SELECT USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
+
+CREATE POLICY "Tenant Edit Transactions" ON public.transactions
+    FOR INSERT WITH CHECK (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
+
+CREATE POLICY "Owner Delete Transactions" ON public.transactions
+    FOR DELETE USING (
+        clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid() AND role IN ('owner', 'admin'))
+    );
 
 -- FEEDBACK POLICIES
 CREATE POLICY "Users can create feedback" ON public.feedback
@@ -200,5 +241,11 @@ CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- STORAGE BUCKETS (If needed)
--- insert into storage.buckets (id, name, public) values ('avatars', 'avatars', true);
+-- STORAGE BUCKETS
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage Policies
+CREATE POLICY "Avatar Public View" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+CREATE POLICY "Avatar User Upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');

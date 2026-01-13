@@ -365,12 +365,12 @@ export default function LandingPage() {
                                     <th className="p-6 border-b border-white/10 text-slate-400 font-medium w-1/3">Özellikler</th>
                                     <th className="p-6 border-b border-white/10 text-white font-bold text-center w-1/5 text-lg">Başlangıç</th>
                                     <th className="p-6 border-b border-primary/30 text-primary font-bold text-center w-1/5 text-xl bg-primary/10">Pro</th>
-                                    <th className="p-6 border-b border-white/10 text-white font-bold text-center w-1/5 text-lg">Enterprise</th>
+                                    <th className="p-6 border-b border-white/10 text-white font-bold text-center w-1/5 text-lg">Kurumsal</th>
                                 </tr>
                             </thead>
                             <tbody className="text-slate-300 divide-y divide-white/5">
                                 {[
-                                    { name: 'Personel Sayısı', free: '2 Kişi', pro: 'Sınırsız', ent: 'Sınırsız' },
+                                    { name: 'Personel Sayısı', free: '2 Personel', pro: 'Sınırsız', ent: 'Sınırsız' },
                                     { name: 'Aylık Randevu', free: '200 Adet', pro: 'Sınırsız', ent: 'Sınırsız' },
                                     { name: 'Hasta Kartı & Arşiv', free: true, pro: true, ent: true },
                                     { name: 'Stok & Envanter Takibi', free: false, pro: true, ent: true },
