@@ -119,80 +119,96 @@ RETURNS UUID AS $$
   SELECT clinic_id FROM public.profiles WHERE id = auth.uid();
 $$ LANGUAGE sql SECURITY DEFINER;
 
--- CLINICS: Users can view their own clinic
+-- CLINICS
+DROP POLICY IF EXISTS "Users can view own clinic" ON public.clinics;
 CREATE POLICY "Users can view own clinic" ON public.clinics
     FOR SELECT USING (id = public.get_my_clinic_id());
 
--- PROFILES: Users can view profiles in same clinic
+-- PROFILES
+DROP POLICY IF EXISTS "Users can view members of own clinic" ON public.profiles;
 CREATE POLICY "Users can view members of own clinic" ON public.profiles
     FOR SELECT USING (clinic_id = public.get_my_clinic_id());
 
--- UPDATE PROFILE: Users can update their own profile
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" ON public.profiles
     FOR UPDATE USING (id = auth.uid());
 
 -- GENERIC TENANT POLICY (Split for Granular Control)
 
 -- 1. PATIENTS
--- Everyone can View/Add/Edit
+DROP POLICY IF EXISTS "Tenant View/Edit Patients" ON public.patients;
 CREATE POLICY "Tenant View/Edit Patients" ON public.patients
     FOR SELECT USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
     
+DROP POLICY IF EXISTS "Tenant Add Patients" ON public.patients;
 CREATE POLICY "Tenant Add Patients" ON public.patients
     FOR INSERT WITH CHECK (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Update Patients" ON public.patients;
 CREATE POLICY "Tenant Update Patients" ON public.patients
     FOR UPDATE USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
--- Only Owner/Admin can Delete
+DROP POLICY IF EXISTS "Owner Delete Patients" ON public.patients;
 CREATE POLICY "Owner Delete Patients" ON public.patients
     FOR DELETE USING (
         clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid() AND role IN ('owner', 'admin', 'doctor'))
     );
 
 -- 2. APPOINTMENTS
+DROP POLICY IF EXISTS "Tenant View/Edit Appointments" ON public.appointments;
 CREATE POLICY "Tenant View/Edit Appointments" ON public.appointments
     FOR SELECT USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Add Appointments" ON public.appointments;
 CREATE POLICY "Tenant Add Appointments" ON public.appointments
     FOR INSERT WITH CHECK (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Update Appointments" ON public.appointments;
 CREATE POLICY "Tenant Update Appointments" ON public.appointments
     FOR UPDATE USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Owner Delete Appointments" ON public.appointments;
 CREATE POLICY "Owner Delete Appointments" ON public.appointments
     FOR DELETE USING (
         clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid() AND role IN ('owner', 'admin', 'doctor'))
     );
 
 -- 3. INVENTORY
+DROP POLICY IF EXISTS "Tenant View Inventory" ON public.inventory;
 CREATE POLICY "Tenant View Inventory" ON public.inventory
     FOR SELECT USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Edit Inventory" ON public.inventory;
 CREATE POLICY "Tenant Edit Inventory" ON public.inventory
     FOR INSERT WITH CHECK (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Update Inventory" ON public.inventory;
 CREATE POLICY "Tenant Update Inventory" ON public.inventory
     FOR UPDATE USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Owner Delete Inventory" ON public.inventory;
 CREATE POLICY "Owner Delete Inventory" ON public.inventory
     FOR DELETE USING (
         clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid() AND role IN ('owner', 'admin'))
     );
 
 -- 4. TRANSACTIONS
+DROP POLICY IF EXISTS "Tenant View Transactions" ON public.transactions;
 CREATE POLICY "Tenant View Transactions" ON public.transactions
     FOR SELECT USING (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Tenant Edit Transactions" ON public.transactions;
 CREATE POLICY "Tenant Edit Transactions" ON public.transactions
     FOR INSERT WITH CHECK (clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid()));
 
+DROP POLICY IF EXISTS "Owner Delete Transactions" ON public.transactions;
 CREATE POLICY "Owner Delete Transactions" ON public.transactions
     FOR DELETE USING (
         clinic_id IN (SELECT clinic_id FROM public.profiles WHERE id = auth.uid() AND role IN ('owner', 'admin'))
     );
 
 -- FEEDBACK POLICIES
+DROP POLICY IF EXISTS "Users can create feedback" ON public.feedback;
 CREATE POLICY "Users can create feedback" ON public.feedback
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
@@ -247,5 +263,8 @@ VALUES ('avatars', 'avatars', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies
+DROP POLICY IF EXISTS "Avatar Public View" ON storage.objects;
 CREATE POLICY "Avatar Public View" ON storage.objects FOR SELECT USING (bucket_id = 'avatars');
+
+DROP POLICY IF EXISTS "Avatar User Upload" ON storage.objects;
 CREATE POLICY "Avatar User Upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
