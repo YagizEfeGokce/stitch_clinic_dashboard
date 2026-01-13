@@ -359,7 +359,7 @@ export default function LandingPage() {
                     <div className="flex gap-8 text-sm font-medium text-slate-500">
                         <a href="/privacy" className="hover:text-primary transition-colors">Gizlilik Politikası</a>
                         <a href="/terms" className="hover:text-primary transition-colors">Kullanım Şartları</a>
-                        <a href="#" className="hover:text-primary">İletişim</a>
+                        <a href="mailto:yagiz.gokce19@gmail.com" className="hover:text-primary">İletişim</a>
                     </div>
                 </div>
             </footer>
