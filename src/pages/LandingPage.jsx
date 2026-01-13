@@ -374,11 +374,9 @@ export default function LandingPage() {
                                     { name: 'Aylık Randevu', free: '200 Adet', pro: 'Sınırsız', ent: 'Sınırsız' },
                                     { name: 'Hasta Kartı & Arşiv', free: true, pro: true, ent: true },
                                     { name: 'Stok & Envanter Takibi', free: false, pro: true, ent: true },
-                                    { name: 'Gelir/Gider Raporları', free: 'Temel', pro: 'Gelişmiş', ent: 'Özel Dashboard' },
-                                    { name: 'SMS & E-posta Bildirim', free: true, pro: true, ent: true },
+                                    { name: 'Gelir/Gider Takibi', free: true, pro: true, ent: true },
+                                    { name: 'Otomatik E-posta Bildirimleri', free: true, pro: true, ent: true },
                                     { name: 'Müşteri Desteği', free: 'E-posta', pro: 'Öncelikli (WhatsApp)', ent: '7/24 Telefon' },
-                                    { name: 'Veri Yedekleme', free: 'Günlük', pro: 'Saatlik', ent: 'Anlık' },
-                                    { name: 'Kurulum & Eğitim', free: false, pro: 'Video Eğitim', ent: 'Yerinde Kurulum' },
                                 ].map((row, i) => (
                                     <tr key={i} className="hover:bg-white/5 transition-colors">
                                         <td className="p-5 font-medium border-r border-white/5">{row.name}</td>
