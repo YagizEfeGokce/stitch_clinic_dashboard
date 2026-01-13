@@ -125,7 +125,7 @@ export default function LandingPage() {
                             onClick={() => navigate('/login')}
                             className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold text-lg rounded-2xl shadow-xl shadow-primary/30 hover:bg-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                         >
-                            14 Gün Ücretsiz Dene
+                            1 Ay Ücretsiz Dene (Beta)
                             <ArrowRight className="w-5 h-5" />
                         </button>
                         <button
@@ -328,8 +328,13 @@ export default function LandingPage() {
                                     ))}
                                 </ul>
                                 <button onClick={() => navigate('/login')} className={`w-full py-4 rounded-xl font-bold transition-all ${plan.popular ? 'bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25' : 'bg-white/10 hover:bg-white/20 text-white'}`}>
-                                    {plan.name === 'Enterprise' ? 'İletişime Geç' : 'Hemen Başla'}
+                                    {plan.name === 'Enterprise' ? 'İletişime Geç' : '1 Ay Ücretsiz Dene'}
                                 </button>
+                                {plan.name !== 'Enterprise' && (
+                                    <p className="text-center text-xs text-slate-400 mt-3 font-medium">
+                                        Kredi kartı gerekmez.
+                                    </p>
+                                )}
                             </motion.div>
                         ))}
                     </div>
@@ -341,7 +346,7 @@ export default function LandingPage() {
                 <div className="absolute inset-0 bg-black/10" />
                 <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
                     <h2 className="text-3xl lg:text-5xl font-black text-white mb-8">Kliniğinizi Büyütmeye Hazır Mısınız?</h2>
-                    <p className="text-white/90 text-xl mb-10 max-w-2xl mx-auto">14 günlük ücretsiz deneme sürecini hemen başlatın, farkı kendi gözlerinizle görün.</p>
+                    <p className="text-white/90 text-xl mb-10 max-w-2xl mx-auto">Beta sürecine özel 1 ay boyunca tüm özellikleri ücretsiz deneyin.</p>
                     <button
                         onClick={() => navigate('/login')}
                         className="px-10 py-5 bg-white text-primary font-bold text-xl rounded-2xl shadow-2xl hover:bg-slate-50 hover:scale-[1.02] transition-all"
