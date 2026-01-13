@@ -97,25 +97,7 @@ export default function AuthProvider({ children }) {
             setLoading(false);
             clearTimeout(failsafeTimer);
         });
-        if (!mounted) return;
 
-        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                await refreshUserData(session.user.id);
-            }
-        } else if (event === 'SIGNED_OUT') {
-            setUser(null);
-            setRole(null);
-            setProfile(null);
-            setClinic(null);
-        } else if (event === 'TOKEN_REFRESHED') {
-            // Just update the user session, do NOT re-fetch profile/clinic data
-            // This prevents "flicker" or "re-fetch" on window focus/tab switch when token auto-refreshes
-            if (session?.user) {
-                setUser(session.user);
-            }
-        }
 
         // Ensure loading is false on any auth change
         setLoading(false);
@@ -128,27 +110,7 @@ export default function AuthProvider({ children }) {
     };
 }, []);
 
-// RECOVERY on Focus (Alt+Tab Fix)
-// If the browser was suspended, check session state on focus
-useEffect(() => {
-    const handleFocus = async () => {
-        if (loading) return; // If already loading, let it finish.
-
-        // Only check if we think we have a user but session might be stale?
-        // Actually, Supabase handles auto-refresh.
-        // But if the app was "stuck" in a weird state (e.g. SW failure), we force a check.
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session && user) {
-            // Session lost while inactive?
-            setUser(null);
-            setProfile(null);
-            setClinic(null);
-        }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-}, [user, loading]);
+// Focus Recovery is handled by Supabase auto-refresh automatically now.
 
 const signIn = async (email, password) => {
     return await supabase.auth.signInWithPassword({ email, password });
