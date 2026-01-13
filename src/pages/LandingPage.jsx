@@ -292,9 +292,27 @@ export default function LandingPage() {
 
                     <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                         {[
-                            { name: 'Başlangıç', price: '₺999', features: ['2 Personel', 'Finansal Raporlama', 'E-posta Desteği'] },
-                            { name: 'Pro', price: '₺2499', features: ['Sınırsız Personel', 'Stok & Envanter Takibi', 'Öncelikli Destek (WhatsApp)'], popular: true },
-                            { name: 'Kurumsal', price: 'Özel', features: ['Atanmış Müşteri Temsilcisi', 'Özel Entegrasyonlar', 'SLA', 'Yerinde Kurulum Opsiyonu'] },
+                            {
+                                name: 'Başlangıç',
+                                price: annualBilling ? '₺8.990' : '₺999',
+                                unit: annualBilling ? '/yıl' : '/ay',
+                                subtext: annualBilling ? '~₺749 / ay' : null,
+                                features: ['2 Personel', 'Finansal Raporlama', 'E-posta Desteği']
+                            },
+                            {
+                                name: 'Pro',
+                                price: annualBilling ? '₺22.490' : '₺2.499',
+                                unit: annualBilling ? '/yıl' : '/ay',
+                                subtext: annualBilling ? '~₺1.874 / ay' : null,
+                                features: ['Sınırsız Personel', 'Stok & Envanter Takibi', 'Öncelikli Destek (WhatsApp)'],
+                                popular: true
+                            },
+                            {
+                                name: 'Kurumsal',
+                                price: 'Özel',
+                                unit: null,
+                                features: ['Atanmış Müşteri Temsilcisi', 'Özel Entegrasyonlar', 'SLA', 'Yerinde Kurulum Opsiyonu']
+                            },
                         ].map((plan, i) => (
                             <motion.div
                                 key={plan.name}
@@ -310,9 +328,12 @@ export default function LandingPage() {
                                     </div>
                                 )}
                                 <h3 className="text-xl font-bold mb-4">{plan.name}</h3>
-                                <div className="flex items-baseline gap-1 mb-8">
-                                    <span className="text-4xl font-black">{plan.price}</span>
-                                    {plan.price !== 'Özel' && <span className="text-slate-400">/ay</span>}
+                                <div className="flex flex-col mb-8">
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-4xl font-black">{plan.price}</span>
+                                        {plan.unit && <span className="text-slate-400">{plan.unit}</span>}
+                                    </div>
+                                    {plan.subtext && <span className="text-xs text-emerald-400 font-bold mt-1">{plan.subtext}</span>}
                                 </div>
                                 <ul className="space-y-4 mb-8">
                                     {plan.features.map((feature, idx) => (
