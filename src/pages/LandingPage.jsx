@@ -44,13 +44,8 @@ export default function LandingPage() {
             {/* Navbar */}
             <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 transition-all">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                            <span className="material-symbols-outlined text-2xl">spa</span>
-                        </div>
-                        <span className="text-xl font-black tracking-tight text-slate-900">
-                            Dermdesk
-                        </span>
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                        <img src="/logo.png" alt="Dermdesk" className="h-14 w-auto object-contain" />
                     </div>
 
                     {/* Desktop Navigation */}
