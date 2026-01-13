@@ -47,21 +47,9 @@ export default function AuthProvider({ children }) {
     };
 
     useEffect(() => {
-        if (!supabase) return; // Skip if no client
+        if (!supabase) return;
 
         let mounted = true;
-
-        // Safety timeout mechanism: Force app to load if Auth takes > 16s
-        const timeoutId = setTimeout(() => {
-            if (mounted && loadingRef.current) {
-                console.warn('Auth init timed out, forcing load.');
-                setLoading(false);
-            }
-        }, TIMEOUTS.AUTH_FAILSAFE);
-
-        // Optimistic Initialization using Event Listener
-        // This prevents the app from hanging on "Loading..." during tab resume (Alt+Tab)
-        // because we don't wait for a potentially stalled network request.
 
         // Failsafe: If event doesn't fire in 3s, kill loading
         const failsafeTimer = setTimeout(() => {
@@ -71,20 +59,16 @@ export default function AuthProvider({ children }) {
             }
         }, 3000);
 
-        // 1. Setup Listener FIRST - This will fire 'INITIAL_SESSION' immediately if cached
+        // Setup Listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (!mounted) return;
-
-            // Debug log
-            // console.log('Auth Event:', event);
 
             if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
                 setUser(session?.user ?? null);
 
                 // Only fetch profile if we actually have a user and it's a relevant event
                 if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-                    // Non-blocking fetch
-                    refreshUserData(session.user.id).catch(e => console.warn('Profile sync warning:', e));
+                    await refreshUserData(session.user.id).catch(e => console.warn('Profile sync warning:', e));
                 }
             } else if (event === 'SIGNED_OUT') {
                 setUser(null);
@@ -98,83 +82,72 @@ export default function AuthProvider({ children }) {
             clearTimeout(failsafeTimer);
         });
 
+        return () => {
+            mounted = false;
+            clearTimeout(failsafeTimer);
+            subscription.unsubscribe();
+        };
+    }, []);
 
-        // Ensure loading is false on any auth change
-        setLoading(false);
-    });
-
-    return () => {
-        mounted = false;
-        clearTimeout(timeoutId);
-        subscription.unsubscribe();
+    const signIn = async (email, password) => {
+        return await supabase.auth.signInWithPassword({ email, password });
     };
-}, []);
 
-// Focus Recovery is handled by Supabase auto-refresh automatically now.
+    const signOut = async () => {
+        return await supabase.auth.signOut();
+    };
 
-const signIn = async (email, password) => {
-    return await supabase.auth.signInWithPassword({ email, password });
-};
-
-const signOut = async () => {
-    return await supabase.auth.signOut();
-};
-
-const signUp = async (email, password, fullName, planTier = 'pro') => {
-    const result = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-            data: {
-                full_name: fullName,
-                plan_tier: planTier // 'free' or 'pro'
+    const signUp = async (email, password, fullName, planTier = 'pro') => {
+        const result = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    full_name: fullName,
+                    plan_tier: planTier // 'free' or 'pro'
+                }
             }
+        });
+
+        // We rely on the DB trigger 'on_auth_user_created' to create the profile and clinic.
+        return result;
+    };
+
+    const [configError, setConfigError] = useState(false);
+
+    useEffect(() => {
+        if (!supabase) {
+            setConfigError(true);
+            setLoading(false);
+            return;
         }
-    });
 
-    // We rely on the DB trigger 'on_auth_user_created' to create the profile and clinic.
-    // No manual upsert needed here.
+        loadingRef.current = loading;
+    }, [loading]);
 
-    return result;
-};
-
-const [configError, setConfigError] = useState(false);
-
-useEffect(() => {
-    if (!supabase) {
-        setConfigError(true);
-        setLoading(false);
-        return;
-    }
-
-    loadingRef.current = loading;
-}, [loading]);
-
-// ... (rest of methods)
-
-if (configError) {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-            <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-red-100 text-center space-y-4">
-                <div className="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
-                    <span className="text-3xl">⚠️</span>
-                </div>
-                <h2 className="text-xl font-bold text-slate-800">Configuration Missing</h2>
-                <p className="text-slate-600">
-                    Please create a <code className="bg-slate-100 px-1 py-0.5 rounded text-sm">.env</code> file in the project root with your Supabase credentials.
-                </p>
-                <div className="text-left bg-slate-900 text-slate-300 p-4 rounded-lg text-xs overflow-x-auto">
-                    <pre>VITE_SUPABASE_URL=your_url</pre>
-                    <pre>VITE_SUPABASE_ANON_KEY=your_key</pre>
+    if (configError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+                <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-red-100 text-center space-y-4">
+                    <div className="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
+                        <span className="text-3xl">⚠️</span>
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-800">Configuration Missing</h2>
+                    <p className="text-slate-600">
+                        Please create a <code className="bg-slate-100 px-1 py-0.5 rounded text-sm">.env</code> file in the project root with your Supabase credentials.
+                    </p>
+                    <div className="text-left bg-slate-900 text-slate-300 p-4 rounded-lg text-xs overflow-x-auto">
+                        <pre>VITE_SUPABASE_URL=your_url</pre>
+                        <pre>VITE_SUPABASE_ANON_KEY=your_key</pre>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
-}
+        );
+    }
 
-return (
-    <AuthContext.Provider value={{ user, role, profile, clinic, setClinic, signIn, signOut, signUp, loading, refreshUserData }}>
-        {children}
-    </AuthContext.Provider>
-);
+    return (
+        <AuthContext.Provider value={{ user, role, profile, clinic, setClinic, signIn, signOut, signUp, loading, refreshUserData }}>
+            {children}
+        </AuthContext.Provider>
+    );
 }
