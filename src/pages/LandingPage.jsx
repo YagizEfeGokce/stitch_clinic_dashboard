@@ -329,7 +329,7 @@ export default function LandingPage() {
                                 </ul>
                                 <button
                                     onClick={() => {
-                                        if (plan.name === 'Enterprise') {
+                                        if (plan.name === 'Kurumsal') {
                                             window.location.href = 'mailto:yagiz.gokce19@gmail.com';
                                         } else {
                                             navigate(`/login?plan=${plan.name === 'Başlangıç' ? 'free' : 'pro'}`);
@@ -337,9 +337,9 @@ export default function LandingPage() {
                                     }}
                                     className={`w-full py-4 rounded-xl font-bold transition-all ${plan.popular ? 'bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25' : 'bg-white/10 hover:bg-white/20 text-white'}`}
                                 >
-                                    {plan.name === 'Enterprise' ? 'İletişime Geç' : '1 Ay Ücretsiz Dene'}
+                                    {plan.name === 'Kurumsal' ? 'İletişime Geç' : '1 Ay Ücretsiz Dene'}
                                 </button>
-                                {plan.name !== 'Enterprise' && (
+                                {plan.name !== 'Kurumsal' && (
                                     <p className="text-center text-xs text-slate-400 mt-3 font-medium">
                                         Kredi kartı gerekmez.
                                     </p>
