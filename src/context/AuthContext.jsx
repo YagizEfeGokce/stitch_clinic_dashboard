@@ -65,7 +65,7 @@ export default function AuthProvider({ children }) {
                 // We reduce the timeout to 1s to prevent "Loading..." hang on wake-up.
                 const sessionPromise = supabase.auth.getSession();
                 const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Auth timeout')), 1000) // Fast fail 1s
+                    setTimeout(() => reject(new Error('Auth timeout')), 2500) // Increased to 2.5s for stability
                 );
 
                 const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
@@ -74,7 +74,9 @@ export default function AuthProvider({ children }) {
                     if (session?.user) {
                         setUser(session.user);
                         // Background fetch - don't block UI if we have basic user
-                        refreshUserData(session.user.id).catch(console.error);
+                        refreshUserData(session.user.id).catch(err => {
+                            console.warn('Background data fetch warning:', err);
+                        });
                     } else {
                         setUser(null);
                     }
