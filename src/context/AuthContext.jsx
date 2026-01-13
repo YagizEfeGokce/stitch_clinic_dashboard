@@ -59,157 +59,160 @@ export default function AuthProvider({ children }) {
             }
         }, TIMEOUTS.AUTH_FAILSAFE);
 
-        const initAuth = async () => {
-            try {
-                // Optimistic: If we have a user in memory/local storage, render fast.
-                // We reduce the timeout to 1s to prevent "Loading..." hang on wake-up.
-                const sessionPromise = supabase.auth.getSession();
-                const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Auth timeout')), 2500) // Increased to 2.5s for stability
-                );
+        // Optimistic Initialization using Event Listener
+        // This prevents the app from hanging on "Loading..." during tab resume (Alt+Tab)
+        // because we don't wait for a potentially stalled network request.
 
-                const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
-
-                if (mounted) {
-                    if (session?.user) {
-                        setUser(session.user);
-                        // Background fetch - don't block UI if we have basic user
-                        refreshUserData(session.user.id).catch(err => {
-                            console.warn('Background data fetch warning:', err);
-                        });
-                    } else {
-                        setUser(null);
-                    }
-                }
-            } catch (error) {
-                console.warn('Auth fast-path failed, checking connectivity:', error.message);
-                // If timed out, we still turn off loading to let the app try to render public pages
-                // or let the ProtectedRoute redirect if needed.
-            } finally {
-                if (mounted) setLoading(false);
+        // Failsafe: If event doesn't fire in 3s, kill loading
+        const failsafeTimer = setTimeout(() => {
+            if (mounted && loadingRef.current) {
+                console.warn('Auth event ignored/delayed, forcing app load.');
+                setLoading(false);
             }
-        };
+        }, 3000);
 
-        initAuth();
-
-        // Listen for changes
+        // 1. Setup Listener FIRST - This will fire 'INITIAL_SESSION' immediately if cached
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (!mounted) return;
 
-            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
+            // Debug log
+            // console.log('Auth Event:', event);
+
+            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
                 setUser(session?.user ?? null);
-                if (session?.user) {
-                    await refreshUserData(session.user.id);
+
+                // Only fetch profile if we actually have a user and it's a relevant event
+                if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+                    // Non-blocking fetch
+                    refreshUserData(session.user.id).catch(e => console.warn('Profile sync warning:', e));
                 }
             } else if (event === 'SIGNED_OUT') {
                 setUser(null);
                 setRole(null);
                 setProfile(null);
                 setClinic(null);
-            } else if (event === 'TOKEN_REFRESHED') {
-                // Just update the user session, do NOT re-fetch profile/clinic data
-                // This prevents "flicker" or "re-fetch" on window focus/tab switch when token auto-refreshes
-                if (session?.user) {
-                    setUser(session.user);
-                }
             }
 
-            // Ensure loading is false on any auth change
+            // Always clear loading on the first meaningful event, cancelling the failsafe
             setLoading(false);
+            clearTimeout(failsafeTimer);
         });
+        if (!mounted) return;
 
-        return () => {
-            mounted = false;
-            clearTimeout(timeoutId);
-            subscription.unsubscribe();
-        };
-    }, []);
-
-    // RECOVERY on Focus (Alt+Tab Fix)
-    // If the browser was suspended, check session state on focus
-    useEffect(() => {
-        const handleFocus = async () => {
-            if (loading) return; // If already loading, let it finish.
-
-            // Only check if we think we have a user but session might be stale?
-            // Actually, Supabase handles auto-refresh.
-            // But if the app was "stuck" in a weird state (e.g. SW failure), we force a check.
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session && user) {
-                // Session lost while inactive?
-                setUser(null);
-                setProfile(null);
-                setClinic(null);
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
+            setUser(session?.user ?? null);
+            if (session?.user) {
+                await refreshUserData(session.user.id);
             }
-        };
-
-        window.addEventListener('focus', handleFocus);
-        return () => window.removeEventListener('focus', handleFocus);
-    }, [user, loading]);
-
-    const signIn = async (email, password) => {
-        return await supabase.auth.signInWithPassword({ email, password });
-    };
-
-    const signOut = async () => {
-        return await supabase.auth.signOut();
-    };
-
-    const signUp = async (email, password, fullName, planTier = 'pro') => {
-        const result = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    full_name: fullName,
-                    plan_tier: planTier // 'free' or 'pro'
-                }
+        } else if (event === 'SIGNED_OUT') {
+            setUser(null);
+            setRole(null);
+            setProfile(null);
+            setClinic(null);
+        } else if (event === 'TOKEN_REFRESHED') {
+            // Just update the user session, do NOT re-fetch profile/clinic data
+            // This prevents "flicker" or "re-fetch" on window focus/tab switch when token auto-refreshes
+            if (session?.user) {
+                setUser(session.user);
             }
-        });
-
-        // We rely on the DB trigger 'on_auth_user_created' to create the profile and clinic.
-        // No manual upsert needed here.
-
-        return result;
-    };
-
-    const [configError, setConfigError] = useState(false);
-
-    useEffect(() => {
-        if (!supabase) {
-            setConfigError(true);
-            setLoading(false);
-            return;
         }
 
-        loadingRef.current = loading;
-    }, [loading]);
+        // Ensure loading is false on any auth change
+        setLoading(false);
+    });
 
-    // ... (rest of methods)
+    return () => {
+        mounted = false;
+        clearTimeout(timeoutId);
+        subscription.unsubscribe();
+    };
+}, []);
 
-    if (configError) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-                <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-red-100 text-center space-y-4">
-                    <div className="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
-                        <span className="text-3xl">⚠️</span>
-                    </div>
-                    <h2 className="text-xl font-bold text-slate-800">Configuration Missing</h2>
-                    <p className="text-slate-600">
-                        Please create a <code className="bg-slate-100 px-1 py-0.5 rounded text-sm">.env</code> file in the project root with your Supabase credentials.
-                    </p>
-                    <div className="text-left bg-slate-900 text-slate-300 p-4 rounded-lg text-xs overflow-x-auto">
-                        <pre>VITE_SUPABASE_URL=your_url</pre>
-                        <pre>VITE_SUPABASE_ANON_KEY=your_key</pre>
-                    </div>
-                </div>
-            </div>
-        );
+// RECOVERY on Focus (Alt+Tab Fix)
+// If the browser was suspended, check session state on focus
+useEffect(() => {
+    const handleFocus = async () => {
+        if (loading) return; // If already loading, let it finish.
+
+        // Only check if we think we have a user but session might be stale?
+        // Actually, Supabase handles auto-refresh.
+        // But if the app was "stuck" in a weird state (e.g. SW failure), we force a check.
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session && user) {
+            // Session lost while inactive?
+            setUser(null);
+            setProfile(null);
+            setClinic(null);
+        }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+}, [user, loading]);
+
+const signIn = async (email, password) => {
+    return await supabase.auth.signInWithPassword({ email, password });
+};
+
+const signOut = async () => {
+    return await supabase.auth.signOut();
+};
+
+const signUp = async (email, password, fullName, planTier = 'pro') => {
+    const result = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                full_name: fullName,
+                plan_tier: planTier // 'free' or 'pro'
+            }
+        }
+    });
+
+    // We rely on the DB trigger 'on_auth_user_created' to create the profile and clinic.
+    // No manual upsert needed here.
+
+    return result;
+};
+
+const [configError, setConfigError] = useState(false);
+
+useEffect(() => {
+    if (!supabase) {
+        setConfigError(true);
+        setLoading(false);
+        return;
     }
 
+    loadingRef.current = loading;
+}, [loading]);
+
+// ... (rest of methods)
+
+if (configError) {
     return (
-        <AuthContext.Provider value={{ user, role, profile, clinic, setClinic, signIn, signOut, signUp, loading, refreshUserData }}>
-            {children}
-        </AuthContext.Provider>
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+            <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-red-100 text-center space-y-4">
+                <div className="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
+                    <span className="text-3xl">⚠️</span>
+                </div>
+                <h2 className="text-xl font-bold text-slate-800">Configuration Missing</h2>
+                <p className="text-slate-600">
+                    Please create a <code className="bg-slate-100 px-1 py-0.5 rounded text-sm">.env</code> file in the project root with your Supabase credentials.
+                </p>
+                <div className="text-left bg-slate-900 text-slate-300 p-4 rounded-lg text-xs overflow-x-auto">
+                    <pre>VITE_SUPABASE_URL=your_url</pre>
+                    <pre>VITE_SUPABASE_ANON_KEY=your_key</pre>
+                </div>
+            </div>
+        </div>
     );
+}
+
+return (
+    <AuthContext.Provider value={{ user, role, profile, clinic, setClinic, signIn, signOut, signUp, loading, refreshUserData }}>
+        {children}
+    </AuthContext.Provider>
+);
 }
