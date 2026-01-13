@@ -61,10 +61,11 @@ export default function AuthProvider({ children }) {
 
         const initAuth = async () => {
             try {
-                // Timeout to prevent infinite hang
+                // Optimistic: If we have a user in memory/local storage, render fast.
+                // We reduce the timeout to 1s to prevent "Loading..." hang on wake-up.
                 const sessionPromise = supabase.auth.getSession();
                 const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Auth getSession 5s timeout')), TIMEOUTS.AUTH_INIT)
+                    setTimeout(() => reject(new Error('Auth timeout')), 1000) // Fast fail 1s
                 );
 
                 const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
@@ -72,15 +73,16 @@ export default function AuthProvider({ children }) {
                 if (mounted) {
                     if (session?.user) {
                         setUser(session.user);
-                        await refreshUserData(session.user.id).catch(e => console.error('Data fetch error:', e));
+                        // Background fetch - don't block UI if we have basic user
+                        refreshUserData(session.user.id).catch(console.error);
                     } else {
                         setUser(null);
                     }
-                    setLoading(false);
                 }
             } catch (error) {
-                console.warn('Auth initialization skipped or timed out:', error.message);
-                if (mounted) setLoading(false);
+                console.warn('Auth fast-path failed, checking connectivity:', error.message);
+                // If timed out, we still turn off loading to let the app try to render public pages
+                // or let the ProtectedRoute redirect if needed.
             } finally {
                 if (mounted) setLoading(false);
             }
