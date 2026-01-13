@@ -297,9 +297,9 @@ export default function LandingPage() {
 
                     <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                         {[
-                            { name: 'Başlangıç', price: '₺999', features: ['2 Personel', 'Temel Raporlama', 'E-posta Desteği'] },
-                            { name: 'Pro', price: '₺2499', features: ['Sınırsız Personel', 'Gelişmiş Analitik', 'Öncelikli Destek', 'API Erişimi'], popular: true },
-                            { name: 'Enterprise', price: 'Özel', features: ['Atanmış Müşteri Temsilcisi', 'Özel Entegrasyonlar', 'SLA', 'Yerinde Kurulum Opsiyonu'] },
+                            { name: 'Başlangıç', price: '₺999', features: ['2 Personel', 'Finansal Raporlama', 'E-posta Desteği'] },
+                            { name: 'Pro', price: '₺2499', features: ['Sınırsız Personel', 'Finansal Raporlama', 'Öncelikli Destek (WhatsApp)'], popular: true },
+                            { name: 'Kurumsal', price: 'Özel', features: ['Atanmış Müşteri Temsilcisi', 'Özel Entegrasyonlar', 'SLA', 'Yerinde Kurulum Opsiyonu'] },
                         ].map((plan, i) => (
                             <motion.div
                                 key={plan.name}
@@ -375,7 +375,6 @@ export default function LandingPage() {
                                     { name: 'Hasta Kartı & Arşiv', free: true, pro: true, ent: true },
                                     { name: 'Stok & Envanter Takibi', free: false, pro: true, ent: true },
                                     { name: 'Gelir/Gider Takibi', free: true, pro: true, ent: true },
-                                    { name: 'Otomatik E-posta Bildirimleri', free: true, pro: true, ent: true },
                                     { name: 'Müşteri Desteği', free: 'E-posta', pro: 'Öncelikli (WhatsApp)', ent: '7/24 Telefon' },
                                 ].map((row, i) => (
                                     <tr key={i} className="hover:bg-white/5 transition-colors">
