@@ -298,7 +298,7 @@ export default function LandingPage() {
                     <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                         {[
                             { name: 'Başlangıç', price: '₺999', features: ['2 Personel', 'Finansal Raporlama', 'E-posta Desteği'] },
-                            { name: 'Pro', price: '₺2499', features: ['Sınırsız Personel', 'Finansal Raporlama', 'Öncelikli Destek (WhatsApp)'], popular: true },
+                            { name: 'Pro', price: '₺2499', features: ['Sınırsız Personel', 'Stok & Envanter Takibi', 'Öncelikli Destek (WhatsApp)'], popular: true },
                             { name: 'Kurumsal', price: 'Özel', features: ['Atanmış Müşteri Temsilcisi', 'Özel Entegrasyonlar', 'SLA', 'Yerinde Kurulum Opsiyonu'] },
                         ].map((plan, i) => (
                             <motion.div
