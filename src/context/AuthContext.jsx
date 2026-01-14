@@ -21,28 +21,43 @@ export default function AuthProvider({ children }) {
 
     const refreshUserData = async (userId, retries = 3) => {
         try {
-            // Fetch Profile AND Clinic
-            const { data, error } = await supabase
+            // 1. Fetch Profile First (Simple query, less likely to fail)
+            const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('id, role, full_name, avatar_url, clinic_id, clinics(id, name, branding_config, settings_config, subscription_tier, subscription_status, trial_ends_at)')
+                .select('*')
                 .eq('id', userId)
                 .maybeSingle();
 
-            if (error) throw error;
+            if (profileError) {
+                console.error('Error fetching profile:', profileError);
+                throw profileError;
+            }
 
-            if (data) {
-                setProfile(data);
-                setRole(data.role);
-                if (data.clinics) {
-                    setClinic(data.clinics);
+            if (profileData) {
+                setProfile(profileData);
+                setRole(profileData.role);
+
+                // 2. Fetch Clinic if we have a clinic_id
+                if (profileData.clinic_id) {
+                    const { data: clinicData, error: clinicError } = await supabase
+                        .from('clinics')
+                        .select('*')
+                        .eq('id', profileData.clinic_id)
+                        .maybeSingle();
+
+                    if (!clinicError && clinicData) {
+                        setClinic(clinicData);
+                    } else if (clinicError) {
+                        console.warn('Error fetching clinic:', clinicError);
+                    }
                 }
             } else if (retries > 0) {
-                // If no profile found (race condition with trigger), retry
+                // Retry logic if profile creation is lagging behind auth
                 console.log(`Profile not found, retrying... (${retries})`);
                 setTimeout(() => refreshUserData(userId, retries - 1), 1000);
             }
         } catch (error) {
-            console.error('Error fetching user data:', error);
+            console.error('Fatal error in refreshUserData:', error);
         }
     };
 

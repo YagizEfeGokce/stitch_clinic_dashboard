@@ -123,8 +123,23 @@ export default function BillingSettings() {
                         {tier.includes('free') && <CheckCircle2 className="w-5 h-5 text-primary" />}
                     </div>
                     <div className="my-4">
-                        <span className="text-3xl font-bold text-slate-900">₺999</span>
-                        <span className="text-slate-500">/ay</span>
+                        {billingCycle === 'monthly' ? (
+                            <>
+                                <span className="text-3xl font-bold text-slate-900">₺999</span>
+                                <span className="text-slate-500">/ay</span>
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex flex-col">
+                                    <span className="text-sm text-slate-400 line-through">₺11.988</span>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-3xl font-bold text-slate-900">₺8.990</span>
+                                        <span className="text-slate-500 text-sm">/yıl</span>
+                                    </div>
+                                    <span className="text-xs text-emerald-600 font-bold mt-1">~₺749 / ay'a gelir</span>
+                                </div>
+                            </>
+                        )}
                     </div>
                     <ul className="space-y-3 mb-6 flex-1">
                         {['Aylık 200 Randevu', '2 Personel', 'Temel Özellikler'].map((f, i) => (
