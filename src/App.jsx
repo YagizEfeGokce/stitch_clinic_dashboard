@@ -2,7 +2,7 @@ import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
-import PageTransition from './components/PageTransition';
+import PageTransition from './components/core/PageTransition';
 import MainLayout from './layouts/MainLayout';
 import AuthProvider, { useAuth } from './context/AuthContext';
 import ToastProvider from './context/ToastContext';

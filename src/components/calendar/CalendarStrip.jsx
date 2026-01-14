@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { getLocalISOString } from '../utils/dateUtils';
+import { getLocalISOString } from '../../utils/dateUtils';
 
 export default function CalendarStrip({ selectedDate, onSelectDate }) {
     const days = useMemo(() => {

@@ -2,9 +2,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getLocalISOString } from '../utils/dateUtils';
-import CalendarStrip from '../components/CalendarStrip';
-import DatePickerTrigger from '../components/DatePickerTrigger';
-import TimelineItem from '../components/TimelineItem';
+import CalendarStrip from '../components/calendar/CalendarStrip';
+import DatePickerTrigger from '../components/calendar/DatePickerTrigger';
+import TimelineItem from '../components/schedule/TimelineItem';
 import AppointmentModal from '../components/schedule/AppointmentModal';
 import QuickAppointmentModal from '../components/schedule/QuickAppointmentModal';
 import MonthView from '../components/schedule/MonthView';
@@ -13,12 +13,12 @@ import DroppableTimeSlot from '../components/schedule/DroppableTimeSlot';
 import HourBlock from '../components/schedule/HourBlock';
 import { useAppointments } from '../hooks/useAppointments';
 
-import TimelineSkeleton from '../components/TimelineSkeleton';
+import TimelineSkeleton from '../components/schedule/TimelineSkeleton';
 
 // DnD Imports
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { useToast } from '../context/ToastContext';
-import ActionCenter from '../components/ActionCenter';
+import ActionCenter from '../components/dashboard/ActionCenter';
 import { useAuth } from '../context/AuthContext';
 import { logActivity } from '../lib/logger';
 import UpcomingSidebar from '../components/schedule/UpcomingSidebar';

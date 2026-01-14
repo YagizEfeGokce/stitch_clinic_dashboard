@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { formatCurrency } from '../utils/formatUtils';
+import { useAuth } from '../../context/AuthContext';
+import { formatCurrency } from '../../utils/formatUtils';
 
 export default function ClientList({ clients, onEdit, onDelete }) {
     const navigate = useNavigate();

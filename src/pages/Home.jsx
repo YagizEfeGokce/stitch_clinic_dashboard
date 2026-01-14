@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { getLocalISOString } from '../utils/dateUtils';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import ActionCenter from '../components/ActionCenter';
+import ActionCenter from '../components/dashboard/ActionCenter';
 
 export default function Home() {
     const { user, profile } = useAuth();

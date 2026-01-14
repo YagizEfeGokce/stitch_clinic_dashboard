@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SupportWidget() {
     const { user } = useAuth();

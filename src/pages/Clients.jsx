@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import ClientList from '../components/ClientList';
+import ClientList from '../components/clients/ClientList';
 import ClientModal from '../components/clients/ClientModal';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { useToast } from '../context/ToastContext';

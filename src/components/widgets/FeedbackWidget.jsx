@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MessageSquarePlus, X, Send, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 export default function FeedbackWidget() {
     const { user, clinic } = useAuth();
@@ -85,8 +85,8 @@ export default function FeedbackWidget() {
                                                 type="button"
                                                 onClick={() => setType(t.id)}
                                                 className={`flex-1 text-xs font-bold py-1.5 rounded-md transition-all ${type === t.id
-                                                        ? 'bg-white text-slate-900 shadow-sm'
-                                                        : 'text-slate-500 hover:text-slate-700'
+                                                    ? 'bg-white text-slate-900 shadow-sm'
+                                                    : 'text-slate-500 hover:text-slate-700'
                                                     }`}
                                             >
                                                 {t.label}
@@ -131,8 +131,8 @@ export default function FeedbackWidget() {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`w-12 h-12 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 ${isOpen
-                        ? 'bg-slate-800 text-white rotate-90'
-                        : 'bg-white text-slate-900 border border-slate-100 hover:border-primary/50'
+                    ? 'bg-slate-800 text-white rotate-90'
+                    : 'bg-white text-slate-900 border border-slate-100 hover:border-primary/50'
                     }`}
             >
                 {isOpen ? (

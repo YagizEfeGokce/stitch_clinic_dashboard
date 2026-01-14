@@ -2,8 +2,8 @@ import { useState } from 'react';
 import Header from '../components/layout/Header';
 // import BottomNav from '../components/layout/BottomNav'; // Removed as user requested Drawer pattern specifically
 import Sidebar from '../components/layout/Sidebar';
-import CommandPalette from '../components/CommandPalette';
-import FeedbackWidget from '../components/FeedbackWidget';
+import CommandPalette from '../components/core/CommandPalette';
+import FeedbackWidget from '../components/widgets/FeedbackWidget';
 import { Menu } from 'lucide-react'; // Hamburger icon
 
 import { useAuth } from '../context/AuthContext';
