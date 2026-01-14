@@ -91,13 +91,19 @@ export default function BrandingSettings() {
             }
 
             // 2. Prepare Payload for 'clinics' table
+            // Merge with existing config to prevent data loss
+            const currentBranding = clinic.branding_config || {};
+            const currentSettings = clinic.settings_config || {};
+
             const brandingConfig = {
+                ...currentBranding,
                 logo_url: logoUrl,
                 primary_color: settings.primary_color,
                 secondary_color: settings.secondary_color
             };
 
             const settingsConfig = {
+                ...currentSettings,
                 address: settings.address,
                 phone: settings.phone,
                 email: settings.email,
@@ -108,7 +114,6 @@ export default function BrandingSettings() {
             };
 
             const payload = {
-                id: clinic.id,
                 name: settings.clinic_name,
                 branding_config: brandingConfig,
                 settings_config: settingsConfig,
@@ -122,25 +127,31 @@ export default function BrandingSettings() {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase Update Error:', error);
+                throw error;
+            }
 
-            toast.success('Ayarlar kaydedildi!');
+            toast.success('Değişiklikler kaydedildi ✓');
             setLogoFile(null);
 
             if (data) {
-                // Update Context
+                // Update Context immediately to reflect changes in UI without refresh
                 if (setClinic) {
                     setClinic(data);
                 }
 
-                await logActivity('Updated Branding Settings', {
-                    name_changed: settings.clinic_name !== clinic.name,
-                    logo_updated: !!logoFile
+                await logActivity('Ayarlar Güncellendi', {
+                    clinic_name: data.name,
+                    updated_by: user?.email
                 });
             }
         } catch (error) {
             console.error('Error saving settings:', error);
-            toast.error('Ayarlar kaydedilemedi: ' + error.message);
+            // Log specific status codes as requested
+            if (error.code) console.error('Error Code:', error.code);
+
+            toast.error('Bir hata oluştu. Lütfen tekrar deneyin.');
         } finally {
             setLoading(false);
         }

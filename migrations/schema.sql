@@ -1,12 +1,12 @@
 -- ============================================================================
--- DERMDESK MASTER SCHEMA (v2.1.0)
--- This file represents the DESIRED state of the database.
+-- DERMDESK MASTER SCHEMA (FINAL)
+-- Single Source of Truth
 -- ============================================================================
 -- ⚠️ WARNING: If creating fresh, this drops everything.
--- If running on existing DB, use the Sync Script instead.
+-- If running on existing DB, use the Sync Script (or careful individual alter commands).
 -- ============================================================================
 
--- 1. PURGE (CLEAN SLATE) - ONLY IF RESETTING
+-- 1. PURGE (CLEAN SLATE)
 -- Drops all tables and functions with CASCADE to remove dependent policies.
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
@@ -60,12 +60,13 @@ CREATE TABLE public.profiles (
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 CREATE INDEX idx_profiles_clinic_id ON public.profiles(clinic_id);
 
--- 5. CLIENTS TABLE (Renamed from patients)
+-- 5. CLIENTS TABLE
 CREATE TABLE public.clients (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     created_at TIMESTAMPTZ DEFAULT now(),
     clinic_id UUID REFERENCES public.clinics(id) ON DELETE CASCADE NOT NULL,
-    full_name TEXT NOT NULL,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
     phone TEXT,
     email TEXT,
     birth_date DATE,
@@ -78,7 +79,7 @@ CREATE TABLE public.clients (
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
 CREATE INDEX idx_clients_clinic_id ON public.clients(clinic_id);
 
--- 6. SERVICES TABLE (New)
+-- 6. SERVICES TABLE
 CREATE TABLE public.services (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     created_at TIMESTAMPTZ DEFAULT now(),
@@ -99,12 +100,12 @@ CREATE TABLE public.appointments (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     created_at TIMESTAMPTZ DEFAULT now(),
     clinic_id UUID REFERENCES public.clinics(id) ON DELETE CASCADE NOT NULL,
-    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE, -- Renamed from patient_id
-    service_id UUID REFERENCES public.services(id) ON DELETE SET NULL, -- New link
-    staff_id UUID REFERENCES public.profiles(id), -- Renamed from doctor_id
+    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
+    service_id UUID REFERENCES public.services(id) ON DELETE SET NULL, 
+    staff_id UUID REFERENCES public.profiles(id),
     title TEXT,
     date DATE NOT NULL,
-    time TEXT, -- Changed from start_time TIME to TEXT for flexibility (or keep time)
+    time TEXT,
     status TEXT DEFAULT 'scheduled', -- 'scheduled', 'completed', 'canceled'
     notes TEXT
 );
@@ -130,7 +131,7 @@ CREATE TABLE public.inventory (
 ALTER TABLE public.inventory ENABLE ROW LEVEL SECURITY;
 CREATE INDEX idx_inventory_clinic_id ON public.inventory(clinic_id);
 
--- 9. TRANSACTIONS TABLE (Finance)
+-- 9. TRANSACTIONS TABLE
 CREATE TABLE public.transactions (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     created_at TIMESTAMPTZ DEFAULT now(),
@@ -140,7 +141,7 @@ CREATE TABLE public.transactions (
     category TEXT,
     description TEXT,
     date DATE DEFAULT CURRENT_DATE,
-    client_id UUID REFERENCES public.clients(id) -- Renamed from related_patient_id
+    client_id UUID REFERENCES public.clients(id)
 );
 
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
@@ -164,10 +165,10 @@ CREATE INDEX idx_feedback_clinic_id ON public.feedback(clinic_id);
 CREATE INDEX idx_feedback_user_id ON public.feedback(user_id);
 
 -- ============================================================================
--- RLS POLICIES
+-- RLS POLICIES (NON-RECURSIVE)
 -- ============================================================================
 
--- Helper Function
+-- Helper Function (SECURITY DEFINER to avoid infinite loops)
 CREATE OR REPLACE FUNCTION public.get_my_clinic_id()
 RETURNS UUID AS $$
   SELECT clinic_id FROM public.profiles WHERE id = auth.uid();
@@ -175,9 +176,14 @@ $$ LANGUAGE sql SECURITY DEFINER;
 
 -- CLINICS
 CREATE POLICY "Users can view own clinic" ON public.clinics FOR SELECT USING (id = public.get_my_clinic_id());
+CREATE POLICY "Users can update own clinic" ON public.clinics FOR UPDATE USING (id = public.get_my_clinic_id());
 
--- PROFILES
-CREATE POLICY "Users can view members of own clinic" ON public.profiles FOR SELECT USING (clinic_id = public.get_my_clinic_id());
+-- PROFILES (Split to avoid recursion)
+-- 1. Can view self (Anchor)
+CREATE POLICY "View Own Profile" ON public.profiles FOR SELECT USING (id = auth.uid());
+-- 2. Can view colleagues (Dependent on Anchor via SECURITY DEFINER logic or simple subquery)
+CREATE POLICY "View Colleagues" ON public.profiles FOR SELECT USING (clinic_id = public.get_my_clinic_id());
+
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (id = auth.uid());
 
 -- CLIENTS

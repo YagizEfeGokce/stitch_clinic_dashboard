@@ -68,7 +68,7 @@ export default function AuthProvider({ children }) {
 
                 // Only fetch profile if we actually have a user and it's a relevant event
                 if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-                    await refreshUserData(session.user.id).catch(e => console.warn('Profile sync warning:', e));
+                    refreshUserData(session.user.id).catch(e => console.warn('Profile sync warning:', e));
                 }
             } else if (event === 'SIGNED_OUT') {
                 setUser(null);

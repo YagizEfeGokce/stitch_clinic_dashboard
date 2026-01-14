@@ -110,7 +110,7 @@ export default function ClientList({ clients, onEdit, onDelete }) {
                                             e.stopPropagation();
                                             onEdit(client);
                                         }}
-                                        className="size-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
+                                        className="size-10 md:size-9 flex items-center justify-center rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
                                         title="Müşteriyi Düzenle"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">edit</span>
@@ -120,7 +120,7 @@ export default function ClientList({ clients, onEdit, onDelete }) {
                                             e.stopPropagation();
                                             onDelete(client.id);
                                         }}
-                                        className="size-8 flex items-center justify-center rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                                        className="size-10 md:size-9 flex items-center justify-center rounded-xl bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
                                         title="Müşteriyi Sil"
                                     >
                                         <span className="material-symbols-outlined text-[20px]">delete</span>

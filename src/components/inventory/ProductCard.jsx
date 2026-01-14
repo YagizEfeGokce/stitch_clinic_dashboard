@@ -138,6 +138,7 @@ export default function ProductCard({ product, onEdit, onDelete }) {
                             onClick={() => saveStock(Math.max(0, stock - 1))}
                             disabled={loading}
                             className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors disabled:opacity-50"
+                            aria-label="Stok Azalt"
                         >
                             <span className="material-symbols-outlined text-[18px]">remove</span>
                         </button>
@@ -149,18 +150,20 @@ export default function ProductCard({ product, onEdit, onDelete }) {
                             onBlur={(e) => saveStock(e.target.value)}
                             onKeyDown={handleKeyDown}
                             className="text-base font-bold text-slate-900 w-12 text-center bg-transparent border-none p-0 focus:ring-0 appearance-none [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none"
+                            aria-label="Stok Miktarı"
                         />
 
                         <button
                             onClick={() => saveStock(stock + 1)}
                             disabled={loading}
                             className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white shadow-sm shadow-primary/30 hover:bg-primary-dark transition-colors disabled:opacity-50"
+                            aria-label="Stok Artır"
                         >
                             <span className="material-symbols-outlined text-[18px]">add</span>
                         </button>
                     </div>
                 )}
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

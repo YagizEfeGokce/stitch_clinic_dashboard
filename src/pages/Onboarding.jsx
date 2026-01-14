@@ -91,11 +91,13 @@ export default function Onboarding() {
 
             if (clinicError) throw clinicError;
 
-            // 4. Force refresh of context data to update Sidebar immediately
+            // 4. Force refresh of context data
             await refreshUserData(user.id);
 
-            // Navigate implies success
-            navigate('/schedule');
+            // 5. Force a hard reload to ensure all application state (Context, RLS checks, etc.) 
+            // is perfectly synced with the new clinic association. 
+            // This prevents "clinic_id undefined" errors on first load.
+            window.location.href = '/schedule';
         } catch (error) {
             console.error(error);
             alert('Failed to update profile: ' + (error.message || 'Unknown error'));

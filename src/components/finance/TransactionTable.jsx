@@ -51,7 +51,7 @@ export default function TransactionTable({ transactions, onRefresh }) {
                     <button className="text-primary text-sm font-bold hover:underline">Tümünü Gör</button>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
+                    <table className="w-full text-left text-sm min-w-[700px]">
                         <thead className="bg-slate-50/50 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
                             <tr>
                                 <th className="px-5 py-3 first:pl-6">İşlem</th>
@@ -95,6 +95,7 @@ export default function TransactionTable({ transactions, onRefresh }) {
                                             onClick={() => handleDeleteClick(t.id)}
                                             disabled={deletingId === t.id}
                                             className="size-8 rounded-full hover:bg-red-50 text-slate-300 hover:text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                                            aria-label="İşlemi Sil"
                                         >
                                             <span className="material-symbols-outlined text-[18px]">
                                                 {deletingId === t.id ? 'progress_activity' : 'delete'}

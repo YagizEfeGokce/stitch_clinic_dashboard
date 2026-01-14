@@ -104,9 +104,12 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
         }
     };
 
+    const [isSuccess, setIsSuccess] = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setIsSuccess(false);
 
         try {
             let clientId = client?.id;
@@ -190,9 +193,16 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                 }
             }
 
+            // Success UI Feedback
+            setIsSuccess(true);
             success(client ? 'Müşteri başarıyla güncellendi' : 'Müşteri başarıyla oluşturuldu');
-            onSuccess();
-            onClose();
+
+            // Wait a moment for the user to see "Saved!", then close
+            setTimeout(() => {
+                onSuccess();
+                onClose();
+            }, 1000);
+
         } catch (error) {
             console.error('Error saving client:', error);
 
@@ -201,8 +211,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
             } else {
                 showError('Müşteri kaydedilemedi. ' + (error.message || ''));
             }
-        } finally {
-            setLoading(false);
+            setLoading(false); // Only stop loading on error (on success we keep it until close)
         }
     };
 
@@ -487,14 +496,25 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                     type="submit"
                                     form="clientForm"
                                     disabled={loading}
-                                    className="px-8 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-2"
+                                    className={`px-8 py-3 rounded-xl font-bold shadow-lg shadow-primary/25 transition-all disabled:opacity-50 flex items-center gap-2
+                                    ${isSuccess ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-primary text-white hover:bg-primary-dark'}`}
                                 >
-                                    {loading ? (
-                                        <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                                    {isSuccess ? (
+                                        <>
+                                            <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                                            Kaydedildi
+                                        </>
+                                    ) : loading ? (
+                                        <>
+                                            <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                                            Değişiklikleri Kaydet
+                                        </>
                                     ) : (
-                                        <span className="material-symbols-outlined text-[20px]">save</span>
+                                        <>
+                                            <span className="material-symbols-outlined text-[20px]">save</span>
+                                            Değişiklikleri Kaydet
+                                        </>
                                     )}
-                                    Değişiklikleri Kaydet
                                 </button>
                             </div>
                         ) : (

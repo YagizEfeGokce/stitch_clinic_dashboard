@@ -22,10 +22,11 @@ export default function ToastProvider({ children }) {
     }, []);
 
     // Convenience helpers
-    const success = (msg, duration) => addToast(msg, 'success', duration);
-    const error = (msg, duration) => addToast(msg, 'error', duration);
-    const info = (msg, duration) => addToast(msg, 'info', duration);
-    const warning = (msg, duration) => addToast(msg, 'warning', duration);
+    // Convenience helpers - Memoized to prevent infinite loops in dependencies
+    const success = useCallback((msg, duration) => addToast(msg, 'success', duration), [addToast]);
+    const error = useCallback((msg, duration) => addToast(msg, 'error', duration), [addToast]);
+    const info = useCallback((msg, duration) => addToast(msg, 'info', duration), [addToast]);
+    const warning = useCallback((msg, duration) => addToast(msg, 'warning', duration), [addToast]);
 
     return (
         <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, info, warning }}>

@@ -58,7 +58,7 @@ export default function Login() {
             }
         } catch (err) {
             console.error('Login error:', err);
-            setError(err.message || 'Authentication failed.');
+            setError(translateError(err.message || 'Authentication failed.'));
             setLoading(false);
         }
     };

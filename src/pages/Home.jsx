@@ -149,7 +149,7 @@ export default function Home() {
                 <div className="flex justify-between items-start">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                            Günaydın, {displayName} 👋
+                            Hoş Geldiniz, {displayName} 👋
                         </h1>
                         <p className="text-slate-500 font-medium">Bugün Dermdesk Klinik'te neler oluyor...</p>
                     </div>

@@ -7,7 +7,7 @@ export function useAppointments(selectedDate, view, selectedStaffId) {
     const [appointments, setAppointments] = useState([]);
     const [upcoming, setUpcoming] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { showError } = useToast();
+    const { error: showError } = useToast();
 
     const fetchUpcoming = useCallback(async () => {
         const today = getLocalISOString();
@@ -98,14 +98,20 @@ export function useAppointments(selectedDate, view, selectedStaffId) {
             setAppointments(mergedData);
             fetchUpcoming();
         } catch (error) {
-            console.error('Critical error loading dashboard:', error);
+            console.error('------- DASHBOARD FETCH ERROR DETAILS -------');
+            console.error('Message:', error.message);
+            console.error('Code:', error.code || 'N/A');
+            console.error('Details:', error.details || 'N/A');
+            console.error('Hint:', error.hint || 'N/A');
+            console.error('Full Error Object:', error);
+            console.error('---------------------------------------------');
 
             const isNetworkError = error.message === 'TIMEOUT' || error.message?.includes('fetch');
             if (isNetworkError && retryCount < 2) {
                 console.warn(`Retry attempt ${retryCount + 1} for dashboard...`);
                 return fetchAppointments(retryCount + 1);
             }
-            showError('Randevular yüklenemedi. Bağlantı hatası.');
+            showError(`Randevular yüklenemedi. Hata: ${error.message}`);
         } finally {
             setLoading(false);
         }

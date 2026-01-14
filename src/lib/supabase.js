@@ -9,5 +9,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = (supabaseUrl && supabaseAnonKey)
-    ? createClient(supabaseUrl, supabaseAnonKey)
+    ? createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            // Prevent Supabase from aggressively parsing the URL on every focus/load
+            // We handle this manually or let the AuthContext event listener handle it.
+            detectSessionInUrl: false,
+            // Keep autoRefreshToken enabled for security, but we won't block UI on it.
+            autoRefreshToken: true,
+            persistSession: true
+        }
+    })
     : null;

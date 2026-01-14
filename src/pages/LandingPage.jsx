@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight, CheckCircle2, LayoutDashboard, Calendar, Users, Shield, Zap, TrendingUp } from 'lucide-react';
@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 export default function LandingPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
+
+    const [annualBilling, setAnnualBilling] = useState(true);
 
     const scrollToSection = (id) => {
         const el = document.getElementById(id);
@@ -285,9 +287,23 @@ export default function LandingPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-20">
                         <h2 className="text-3xl lg:text-4xl font-black mb-4">Basit, Şeffaf Fiyatlandırma</h2>
-                        <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+                        <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
                             Gizli ücret yok. Taahhüt yok. İstediğiniz zaman iptal edin.
                         </p>
+
+                        {/* Pricing Toggle */}
+                        <div className="flex justify-center items-center gap-4 mb-12">
+                            <span className={`text-sm font-medium ${!annualBilling ? 'text-white' : 'text-slate-400'}`}>Aylık</span>
+                            <button
+                                onClick={() => setAnnualBilling(!annualBilling)}
+                                className="w-14 h-8 bg-slate-700 rounded-full relative transition-colors duration-300 focus:outline-none"
+                            >
+                                <div className={`absolute top-1 left-1 w-6 h-6 bg-primary rounded-full transition-transform duration-300 ${annualBilling ? 'translate-x-6' : 'translate-x-0'}`} />
+                            </button>
+                            <span className={`text-sm font-medium ${annualBilling ? 'text-white' : 'text-slate-400'}`}>
+                                Yıllık <span className="text-primary text-xs ml-1">(25% İndirim)</span>
+                            </span>
+                        </div>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">

@@ -44,15 +44,15 @@ export default function CalendarStrip({ selectedDate, onSelectDate }) {
     }, [selectedDate]);
 
     return (
-        <div className="w-full overflow-x-auto hide-scrollbar pb-4 pt-1 px-5">
-            <div className="flex items-center gap-3 min-w-max">
+        <div className="w-full overflow-x-auto hide-scrollbar pb-4 pt-1 px-2 sm:px-5">
+            <div className="flex items-center justify-between gap-0.5 sm:gap-3 w-full">
                 {days.map((item, index) => (
                     <button
                         key={index}
                         onClick={() => onSelectDate(item.fullDate)}
-                        className={`flex flex-col items-center justify-center w-[4.5rem] h-20 rounded-[20px] border transition-all active:scale-95
+                        className={`flex flex-col items-center justify-center flex-1 min-w-[2.7rem] sm:min-w-[4.5rem] h-20 rounded-[14px] sm:rounded-[20px] border transition-all active:scale-95
               ${item.status === 'active'
-                                ? 'bg-primary text-white shadow-lg shadow-primary/30 transform scale-105 border-transparent'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/30 transform scale-105 border-transparent z-10'
                                 : 'bg-white border-slate-100 hover:border-primary/30'
                             }
               ${item.status === 'past' ? 'opacity-60 grayscale' : ''}

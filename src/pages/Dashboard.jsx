@@ -237,12 +237,7 @@ export default function Dashboard() {
             {/* Welcome Header */}
             <div className="px-5 pt-8 pb-2">
                 <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                    {(() => {
-                        const hour = new Date().getHours();
-                        if (hour < 12) return 'Günaydın';
-                        if (hour < 18) return 'Tünaydın';
-                        return 'İyi Akşamlar';
-                    })()}, {userName}
+                    Hoş Geldiniz, {userName}
                 </h1>
                 <p className="text-slate-500 font-medium">Bugünkü programınız burada.</p>
             </div>

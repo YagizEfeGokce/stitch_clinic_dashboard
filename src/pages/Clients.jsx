@@ -53,14 +53,20 @@ export default function Clients() {
             if (error) throw error;
             setClients(data || []);
         } catch (error) {
-            console.error('Error fetching clients:', error);
+            console.error('------- CLIENT FETCH ERROR DETAILS -------');
+            console.error('Message:', error.message);
+            console.error('Code:', error.code || 'N/A');
+            console.error('Details:', error.details || 'N/A');
+            console.error('Hint:', error.hint || 'N/A');
+            console.error('Full Error Object:', error);
+            console.error('------------------------------------------');
 
             const isNetworkError = error.message === 'TIMEOUT' || error.message?.includes('fetch');
             if (isNetworkError && retryCount < 2) {
                 console.warn(`Retry attempt ${retryCount + 1} for clients...`);
                 return fetchClients(retryCount + 1);
             }
-            showError('Failed to load clients. Connection unstable.');
+            showError(`Müşteriler yüklenemedi. Hata: ${error.message}`);
         } finally {
             setLoading(false);
         }
