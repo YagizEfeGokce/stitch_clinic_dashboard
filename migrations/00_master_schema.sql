@@ -1,13 +1,24 @@
 -- ============================================================================
--- DERMDESK MASTER SCHEMA (v2.1.0)
--- This file represents the DESIRED state of the database.
+-- DERMDESK MASTER SCHEMA (v3.0.0)
 -- ============================================================================
--- ⚠️ WARNING: If creating fresh, this drops everything.
--- If running on existing DB, use the Sync Script instead.
+-- This file represents the COMPLETE and FINAL state of the database.
+-- It combines all previous migrations (00-11) into a single optimized script.
+--
+-- INCLUDES:
+-- - Core Tables (Clinics, Profiles, Clients, Services, Appointments, etc.)
+-- - Fixes for Recursive RLS Policies (Timeout issues)
+-- - Storage Buckets (Avatars + Clinic Assets)
+-- - Triggers for User Creation
+-- 
+-- HOW TO USE:
+-- 1. This script is destructive if run on an existing DB (DROP CASCADE).
+-- 2. Use this for fresh installs or resets.
 -- ============================================================================
 
--- 1. PURGE (CLEAN SLATE) - ONLY IF RESETTING
--- Drops all tables and functions with CASCADE to remove dependent policies.
+-- 1. EXTENSIONS
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 2. RESET (Clean Slate)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 DROP FUNCTION IF EXISTS public.get_my_clinic_id() CASCADE;
@@ -17,13 +28,10 @@ DROP TABLE IF EXISTS public.transactions CASCADE;
 DROP TABLE IF EXISTS public.inventory CASCADE;
 DROP TABLE IF EXISTS public.appointments CASCADE;
 DROP TABLE IF EXISTS public.services CASCADE; 
-DROP TABLE IF EXISTS public.clients CASCADE; -- Was patients
-DROP TABLE IF EXISTS public.patients CASCADE;
+DROP TABLE IF EXISTS public.clients CASCADE;
+DROP TABLE IF EXISTS public.patients CASCADE; -- Legacy cleanup
 DROP TABLE IF EXISTS public.profiles CASCADE;
 DROP TABLE IF EXISTS public.clinics CASCADE;
-
--- 2. EXTENSIONS
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 3. CLINICS TABLE (Tenant)
 CREATE TABLE public.clinics (
@@ -51,6 +59,8 @@ CREATE TABLE public.profiles (
     created_at TIMESTAMPTZ DEFAULT now(),
     clinic_id UUID REFERENCES public.clinics(id) ON DELETE SET NULL,
     full_name TEXT,
+    first_name TEXT, 
+    last_name TEXT,
     role TEXT DEFAULT 'staff', -- 'owner', 'doctor', 'staff', 'admin'
     avatar_url TEXT,
     email TEXT,
@@ -65,20 +75,24 @@ CREATE TABLE public.clients (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     created_at TIMESTAMPTZ DEFAULT now(),
     clinic_id UUID REFERENCES public.clinics(id) ON DELETE CASCADE NOT NULL,
-    full_name TEXT NOT NULL,
+    first_name TEXT, -- Split name support
+    last_name TEXT,
+    full_name TEXT GENERATED ALWAYS AS (TRIM(COALESCE(first_name, '') || ' ' || COALESCE(last_name, ''))) STORED,
     phone TEXT,
     email TEXT,
     birth_date DATE,
     gender TEXT,
     notes TEXT,
     status TEXT DEFAULT 'Active',
-    image_url TEXT
+    image_url TEXT,
+    address TEXT,
+    city TEXT
 );
 
 ALTER TABLE public.clients ENABLE ROW LEVEL SECURITY;
 CREATE INDEX idx_clients_clinic_id ON public.clients(clinic_id);
 
--- 6. SERVICES TABLE (New)
+-- 6. SERVICES TABLE
 CREATE TABLE public.services (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     created_at TIMESTAMPTZ DEFAULT now(),
@@ -99,12 +113,11 @@ CREATE TABLE public.appointments (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     created_at TIMESTAMPTZ DEFAULT now(),
     clinic_id UUID REFERENCES public.clinics(id) ON DELETE CASCADE NOT NULL,
-    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE, -- Renamed from patient_id
-    service_id UUID REFERENCES public.services(id) ON DELETE SET NULL, -- New link
-    staff_id UUID REFERENCES public.profiles(id), -- Renamed from doctor_id
-    title TEXT,
+    client_id UUID REFERENCES public.clients(id) ON DELETE CASCADE,
+    service_id UUID REFERENCES public.services(id) ON DELETE SET NULL,
+    staff_id UUID REFERENCES public.profiles(id),
     date DATE NOT NULL,
-    time TEXT, -- Changed from start_time TIME to TEXT for flexibility (or keep time)
+    time TEXT, -- HH:MM format
     status TEXT DEFAULT 'scheduled', -- 'scheduled', 'completed', 'canceled'
     notes TEXT
 );
@@ -112,7 +125,6 @@ CREATE TABLE public.appointments (
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 CREATE INDEX idx_appointments_clinic_id ON public.appointments(clinic_id);
 CREATE INDEX idx_appointments_client_id ON public.appointments(client_id);
-CREATE INDEX idx_appointments_staff_id ON public.appointments(staff_id);
 CREATE INDEX idx_appointments_date ON public.appointments(date);
 
 -- 8. INVENTORY TABLE
@@ -140,7 +152,7 @@ CREATE TABLE public.transactions (
     category TEXT,
     description TEXT,
     date DATE DEFAULT CURRENT_DATE,
-    client_id UUID REFERENCES public.clients(id) -- Renamed from related_patient_id
+    client_id UUID REFERENCES public.clients(id)
 );
 
 ALTER TABLE public.transactions ENABLE ROW LEVEL SECURITY;
@@ -160,48 +172,79 @@ CREATE TABLE public.feedback (
 );
 
 ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
-CREATE INDEX idx_feedback_clinic_id ON public.feedback(clinic_id);
-CREATE INDEX idx_feedback_user_id ON public.feedback(user_id);
 
 -- ============================================================================
--- RLS POLICIES
+-- RLS POLICIES (Consolidated & Optimized)
 -- ============================================================================
 
--- Helper Function
+-- Function: Non-Recursive Helper (Important: SECURITY DEFINER)
 CREATE OR REPLACE FUNCTION public.get_my_clinic_id()
 RETURNS UUID AS $$
   SELECT clinic_id FROM public.profiles WHERE id = auth.uid();
 $$ LANGUAGE sql SECURITY DEFINER;
 
--- CLINICS
-CREATE POLICY "Users can view own clinic" ON public.clinics FOR SELECT USING (id = public.get_my_clinic_id());
+-- 1. CLINICS
+-- View Own
+CREATE POLICY "Users can view own clinic" ON public.clinics 
+    FOR SELECT USING (id = public.get_my_clinic_id());
 
--- PROFILES
-CREATE POLICY "Users can view members of own clinic" ON public.profiles FOR SELECT USING (clinic_id = public.get_my_clinic_id());
-CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (id = auth.uid());
+-- Update Own (Added from migrations)
+CREATE POLICY "Users can update own clinic" ON public.clinics
+    FOR UPDATE USING (id = public.get_my_clinic_id());
 
--- CLIENTS
-CREATE POLICY "Tenant View Clients" ON public.clients FOR SELECT USING (clinic_id = public.get_my_clinic_id());
-CREATE POLICY "Tenant Manage Clients" ON public.clients FOR ALL USING (clinic_id = public.get_my_clinic_id());
+-- 2. PROFILES (Non-Recursive Policies)
+-- Anchor Policy: View yourself
+CREATE POLICY "View Own Profile" ON public.profiles
+    FOR SELECT USING (id = auth.uid());
 
--- SERVICES
-CREATE POLICY "Tenant View Services" ON public.services FOR SELECT USING (clinic_id = public.get_my_clinic_id());
-CREATE POLICY "Tenant Manage Services" ON public.services FOR ALL USING (clinic_id = public.get_my_clinic_id());
+-- Derived Policy: View colleagues
+CREATE POLICY "View Colleagues" ON public.profiles
+    FOR SELECT USING (
+        clinic_id = (SELECT clinic_id FROM public.profiles WHERE id = auth.uid())
+    );
 
--- APPOINTMENTS
-CREATE POLICY "Tenant View Appointments" ON public.appointments FOR SELECT USING (clinic_id = public.get_my_clinic_id());
-CREATE POLICY "Tenant Manage Appointments" ON public.appointments FOR ALL USING (clinic_id = public.get_my_clinic_id());
+-- Update Own
+CREATE POLICY "Users can update own profile" ON public.profiles 
+    FOR UPDATE USING (id = auth.uid());
 
--- INVENTORY
-CREATE POLICY "Tenant View Inventory" ON public.inventory FOR SELECT USING (clinic_id = public.get_my_clinic_id());
-CREATE POLICY "Tenant Manage Inventory" ON public.inventory FOR ALL USING (clinic_id = public.get_my_clinic_id());
+-- 3. CLIENTS
+CREATE POLICY "Tenant View Clients" ON public.clients 
+    FOR SELECT USING (clinic_id = public.get_my_clinic_id());
 
--- TRANSACTIONS
-CREATE POLICY "Tenant View Transactions" ON public.transactions FOR SELECT USING (clinic_id = public.get_my_clinic_id());
-CREATE POLICY "Tenant Manage Transactions" ON public.transactions FOR ALL USING (clinic_id = public.get_my_clinic_id());
+CREATE POLICY "Tenant Manage Clients" ON public.clients 
+    FOR ALL USING (clinic_id = public.get_my_clinic_id());
 
--- FEEDBACK
-CREATE POLICY "Users can create feedback" ON public.feedback FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- 4. SERVICES
+CREATE POLICY "Tenant View Services" ON public.services 
+    FOR SELECT USING (clinic_id = public.get_my_clinic_id());
+
+CREATE POLICY "Tenant Manage Services" ON public.services 
+    FOR ALL USING (clinic_id = public.get_my_clinic_id());
+
+-- 5. APPOINTMENTS
+CREATE POLICY "Tenant View Appointments" ON public.appointments 
+    FOR SELECT USING (clinic_id = public.get_my_clinic_id());
+
+CREATE POLICY "Tenant Manage Appointments" ON public.appointments 
+    FOR ALL USING (clinic_id = public.get_my_clinic_id());
+
+-- 6. INVENTORY
+CREATE POLICY "Tenant View Inventory" ON public.inventory 
+    FOR SELECT USING (clinic_id = public.get_my_clinic_id());
+
+CREATE POLICY "Tenant Manage Inventory" ON public.inventory 
+    FOR ALL USING (clinic_id = public.get_my_clinic_id());
+
+-- 7. TRANSACTIONS
+CREATE POLICY "Tenant View Transactions" ON public.transactions 
+    FOR SELECT USING (clinic_id = public.get_my_clinic_id());
+
+CREATE POLICY "Tenant Manage Transactions" ON public.transactions 
+    FOR ALL USING (clinic_id = public.get_my_clinic_id());
+
+-- 8. FEEDBACK
+CREATE POLICY "Users can create feedback" ON public.feedback 
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- ============================================================================
 -- TRIGGERS & FUNCTIONS
@@ -212,6 +255,7 @@ RETURNS TRIGGER AS $$
 DECLARE
     new_clinic_id UUID;
 BEGIN
+    -- Create Clinic
     INSERT INTO public.clinics (name, subscription_status, trial_ends_at) 
     VALUES (
         COALESCE(new.raw_user_meta_data->>'clinic_name', 'My Clinic'),
@@ -220,6 +264,7 @@ BEGIN
     )
     RETURNING id INTO new_clinic_id;
 
+    -- Create Profile linked to Clinic
     INSERT INTO public.profiles (id, clinic_id, full_name, role, email)
     VALUES (
         new.id, 
@@ -233,13 +278,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger checks
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+-- Trigger
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
+-- ============================================================================
 -- STORAGE BUCKETS
+-- ============================================================================
+
+-- Avatars
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('avatars', 'avatars', true)
 ON CONFLICT (id) DO NOTHING;
@@ -249,3 +297,20 @@ CREATE POLICY "Avatar Public View" ON storage.objects FOR SELECT USING (bucket_i
 
 DROP POLICY IF EXISTS "Avatar User Upload" ON storage.objects;
 CREATE POLICY "Avatar User Upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'avatars' AND auth.role() = 'authenticated');
+
+-- Clinic Assets (Logos)
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('clinic-assets', 'clinic-assets', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Assets Public View" ON storage.objects;
+CREATE POLICY "Assets Public View" ON storage.objects FOR SELECT USING (bucket_id = 'clinic-assets');
+
+DROP POLICY IF EXISTS "Assets User Upload" ON storage.objects;
+CREATE POLICY "Assets User Upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'clinic-assets' AND auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Assets User Update" ON storage.objects;
+CREATE POLICY "Assets User Update" ON storage.objects FOR UPDATE USING (bucket_id = 'clinic-assets' AND auth.uid() = owner);
+
+-- Final Cache Reload
+NOTIFY pgrst, 'reload config';
