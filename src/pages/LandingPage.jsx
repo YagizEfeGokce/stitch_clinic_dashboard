@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ArrowRight, CheckCircle2, LayoutDashboard, Calendar, Users, Shield, Zap, TrendingUp } from 'lucide-react';
@@ -7,8 +7,6 @@ import { motion } from 'framer-motion';
 export default function LandingPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
-
-    const [annualBilling, setAnnualBilling] = useState(true);
 
     const scrollToSection = (id) => {
         const el = document.getElementById(id);
@@ -54,7 +52,6 @@ export default function LandingPage() {
                     <div className="hidden md:flex items-center gap-8">
                         <button onClick={() => scrollToSection('features')} className="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Özellikler</button>
                         <button onClick={() => scrollToSection('workflow')} className="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Nasıl Çalışır?</button>
-                        <button onClick={() => scrollToSection('pricing')} className="text-sm font-bold text-slate-600 hover:text-primary transition-colors">Fiyatlar</button>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -280,162 +277,47 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Pricing Section */}
+            {/* Beta Announcement Section - Pricing will be determined after beta */}
             <section id="pricing" className="py-24 bg-slate-900 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/20 rounded-full blur-[120px] -z-10 translate-x-1/2 -translate-y-1/2" />
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-20">
-                        <h2 className="text-3xl lg:text-4xl font-black mb-4">Basit, Şeffaf Fiyatlandırma</h2>
-                        <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
-                            Gizli ücret yok. Taahhüt yok. İstediğiniz zaman iptal edin.
-                        </p>
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/20 border border-primary/30 mb-8"
+                    >
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-sm font-bold text-primary">Beta Dönemi Aktif</span>
+                    </motion.div>
 
-                        {/* Pricing Toggle */}
-                        <div className="flex justify-center items-center gap-4 mb-12">
-                            <span className={`text-sm font-medium ${!annualBilling ? 'text-white' : 'text-slate-400'}`}>Aylık</span>
-                            <button
-                                onClick={() => setAnnualBilling(!annualBilling)}
-                                className="w-14 h-8 bg-slate-700 rounded-full relative transition-colors duration-300 focus:outline-none"
-                            >
-                                <div className={`absolute top-1 left-1 w-6 h-6 bg-primary rounded-full transition-transform duration-300 ${annualBilling ? 'translate-x-6' : 'translate-x-0'}`} />
-                            </button>
-                            <span className={`text-sm font-medium ${annualBilling ? 'text-white' : 'text-slate-400'}`}>
-                                Yıllık <span className="text-primary text-xs ml-1">(25% İndirim)</span>
-                            </span>
+                    <h2 className="text-3xl lg:text-4xl font-black mb-6">Beta Süresince Ücretsiz!</h2>
+                    <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
+                        Dermdesk şu anda beta aşamasındadır. Tüm özellikler beta süresince <span className="text-white font-semibold">tamamen ücretsiz</span> olarak sunulmaktadır.
+                        Fiyatlandırma politikamız beta testleri tamamlandıktan sonra belirlenecektir.
+                    </p>
+
+                    <div className="bg-slate-800/50 border border-white/10 rounded-2xl p-8 max-w-xl mx-auto">
+                        <div className="flex items-center justify-center gap-3 mb-4">
+                            <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                            <span className="text-xl font-bold">Tüm Pro Özellikler Dahil</span>
                         </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                        {[
-                            {
-                                name: 'Başlangıç',
-                                price: annualBilling ? '₺8.990' : '₺999',
-                                unit: annualBilling ? '/yıl' : '/ay',
-                                subtext: annualBilling ? '~₺749 / ay' : null,
-                                features: ['2 Personel', 'Finansal Raporlama', 'E-posta Desteği']
-                            },
-                            {
-                                name: 'Pro',
-                                price: annualBilling ? '₺22.490' : '₺2.499',
-                                unit: annualBilling ? '/yıl' : '/ay',
-                                subtext: annualBilling ? '~₺1.874 / ay' : null,
-                                features: ['Sınırsız Personel', 'Stok & Envanter Takibi', 'Öncelikli Destek (WhatsApp)'],
-                                popular: true
-                            },
-                            {
-                                name: 'Kurumsal',
-                                price: 'Özel',
-                                unit: null,
-                                features: ['Atanmış Müşteri Temsilcisi', 'Özel Entegrasyonlar', 'SLA', 'Yerinde Kurulum Opsiyonu']
-                            },
-                        ].map((plan, i) => (
-                            <motion.div
-                                key={plan.name}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.2 }}
-                                className={`relative p-8 rounded-3xl border ${plan.popular ? 'bg-slate-800/50 border-primary shadow-2xl shadow-primary/20' : 'bg-slate-800/30 border-white/10'}`}
-                            >
-                                {plan.popular && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-white text-xs font-bold uppercase tracking-wider rounded-full shadow-lg">
-                                        En Popüler
-                                    </div>
-                                )}
-                                <h3 className="text-xl font-bold mb-4">{plan.name}</h3>
-                                <div className="flex flex-col mb-8">
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-4xl font-black">{plan.price}</span>
-                                        {plan.unit && <span className="text-slate-400">{plan.unit}</span>}
-                                    </div>
-                                    {plan.subtext && <span className="text-xs text-emerald-400 font-bold mt-1">{plan.subtext}</span>}
-                                </div>
-                                <ul className="space-y-4 mb-8">
-                                    {plan.features.map((feature, idx) => (
-                                        <li key={idx} className="flex items-center gap-3 text-slate-300">
-                                            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                                            <span className="text-sm font-medium">{feature}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                                <button
-                                    onClick={() => {
-                                        if (plan.name === 'Kurumsal') {
-                                            window.location.href = 'mailto:yagiz.gokce19@gmail.com';
-                                        } else {
-                                            navigate(`/login?plan=${plan.name === 'Başlangıç' ? 'free' : 'pro'}`);
-                                        }
-                                    }}
-                                    className={`w-full py-4 rounded-xl font-bold transition-all ${plan.popular ? 'bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25' : 'bg-white/10 hover:bg-white/20 text-white'}`}
-                                >
-                                    {plan.name === 'Kurumsal' ? 'İletişime Geç' : '1 Ay Ücretsiz Dene'}
-                                </button>
-                                {plan.name !== 'Kurumsal' && (
-                                    <p className="text-center text-xs text-slate-400 mt-3 font-medium">
-                                        Kredi kartı gerekmez.
-                                    </p>
-                                )}
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* COMPARISON TABLE */}
-            <section className="py-24 bg-slate-900 border-t border-white/10 relative">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h3 className="text-2xl font-bold text-white mb-4">Hangi Paket Size Uygun?</h3>
-                        <p className="text-slate-400 text-lg">Özellikleri detaylıca karşılaştırın ve size en uygun olanı seçin.</p>
-                    </div>
-
-                    <div className="overflow-x-auto rounded-3xl border border-white/10 shadow-2xl bg-slate-800/20 backdrop-blur-sm">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr>
-                                    <th className="p-6 border-b border-white/10 text-slate-400 font-medium w-1/3">Özellikler</th>
-                                    <th className="p-6 border-b border-white/10 text-white font-bold text-center w-1/5 text-lg">Başlangıç</th>
-                                    <th className="p-6 border-b border-primary/30 text-primary font-bold text-center w-1/5 text-xl bg-primary/10">Pro</th>
-                                    <th className="p-6 border-b border-white/10 text-white font-bold text-center w-1/5 text-lg">Kurumsal</th>
-                                </tr>
-                            </thead>
-                            <tbody className="text-slate-300 divide-y divide-white/5">
-                                {[
-                                    { name: 'Personel Sayısı', free: '2 Personel', pro: 'Sınırsız', ent: 'Sınırsız' },
-                                    { name: 'Aylık Randevu', free: '200 Adet', pro: 'Sınırsız', ent: 'Sınırsız' },
-                                    { name: 'Hasta Kartı & Arşiv', free: true, pro: true, ent: true },
-                                    { name: 'Stok & Envanter Takibi', free: false, pro: true, ent: true },
-                                    { name: 'Gelir/Gider Takibi', free: true, pro: true, ent: true },
-                                    { name: 'Müşteri Desteği', free: 'E-posta', pro: 'Öncelikli (WhatsApp)', ent: '7/24 Telefon' },
-                                ].map((row, i) => (
-                                    <tr key={i} className="hover:bg-white/5 transition-colors">
-                                        <td className="p-5 font-medium border-r border-white/5">{row.name}</td>
-                                        <td className="p-5 text-center border-r border-white/5">
-                                            {typeof row.free === 'boolean' ? (
-                                                row.free ?
-                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400"><CheckCircle2 className="w-5 h-5" /></div> :
-                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-700/50 text-slate-500"><span className="material-symbols-outlined text-base">close</span></div>
-                                            ) : <span className="text-white font-medium">{row.free}</span>}
-                                        </td>
-                                        <td className="p-5 text-center font-bold text-white bg-primary/5 border-x border-primary/20 relative">
-                                            {typeof row.pro === 'boolean' ? (
-                                                row.pro ?
-                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500 text-slate-900 shadow-lg shadow-emerald-500/30"><CheckCircle2 className="w-5 h-5" /></div> :
-                                                    <span className="material-symbols-outlined text-slate-500">close</span>
-                                            ) : <span className="text-white text-lg">{row.pro}</span>}
-                                        </td>
-                                        <td className="p-5 text-center border-l border-white/5">
-                                            {typeof row.ent === 'boolean' ? (
-                                                row.ent ?
-                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400"><CheckCircle2 className="w-5 h-5" /></div> :
-                                                    <span className="material-symbols-outlined text-slate-500">close</span>
-                                            ) : <span className="text-white font-medium">{row.ent}</span>}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <ul className="space-y-3 text-left max-w-xs mx-auto mb-6">
+                            {['Sınırsız Randevu', 'Sınırsız Personel', 'Stok & Envanter Takibi', 'Finansal Raporlama', 'Öncelikli Destek'].map((f, i) => (
+                                <li key={i} className="flex items-center gap-2 text-slate-300">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                    <span className="text-sm">{f}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="w-full py-4 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25"
+                        >
+                            Hemen Ücretsiz Başla
+                        </button>
+                        <p className="text-xs text-slate-400 mt-3">Kredi kartı gerekmez • Beta süresince ücretsiz</p>
                     </div>
                 </div>
             </section>
