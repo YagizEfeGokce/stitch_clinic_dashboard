@@ -197,7 +197,7 @@ export default function ClientProfile() {
     return (
         <div className="flex flex-col min-h-screen bg-background-light pb-24">
             {/* Header with Back Button */}
-            <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center gap-3">
+            <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex items-center gap-3">
                 <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors">
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>

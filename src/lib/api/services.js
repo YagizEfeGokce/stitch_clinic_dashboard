@@ -24,7 +24,7 @@ class ServicesAPI extends BaseAPI {
      */
     async getActiveServices(clinicId) {
         return this.getAll(clinicId, {
-            filters: { is_active: true },
+            filters: { active: true },
             orderBy: { column: 'name', ascending: true },
         });
     }

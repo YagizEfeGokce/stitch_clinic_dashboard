@@ -43,7 +43,8 @@ export default function Clients() {
             const { data, error } = await clientsAPI.getClients(clinic.id, {
                 select: `
                     id, first_name, last_name, email, phone, status, image_url, created_at,
-                    appointments ( date, status )
+                    appointments ( date, status, services ( price ) ),
+                    transactions ( amount )
                 `,
             });
 
@@ -52,7 +53,28 @@ export default function Clients() {
                 return;
             }
 
-            setClients(data || []);
+            // Compute total_spend and last_visit for each client
+            const clientsWithStats = (data || []).map(client => {
+                // Total spend from transactions (if exists) OR from completed appointments
+                const txTotal = client.transactions?.reduce((sum, t) => sum + (Number(t.amount) || 0), 0) || 0;
+                const aptTotal = client.appointments
+                    ?.filter(a => a.status === 'Completed')
+                    .reduce((sum, a) => sum + (a.services?.price || 0), 0) || 0;
+
+                const total_spend = txTotal > 0 ? txTotal : aptTotal;
+
+                // Last visit date
+                const completedDates = client.appointments
+                    ?.filter(a => a.status === 'Completed')
+                    .map(a => new Date(a.date));
+                const last_visit = completedDates?.length > 0
+                    ? new Date(Math.max(...completedDates)).toISOString().split('T')[0]
+                    : null;
+
+                return { ...client, total_spend, last_visit };
+            });
+
+            setClients(clientsWithStats);
         } catch (error) {
             console.error('Client fetch error:', error);
             showError('Müşteriler yüklenirken bir hata oluştu');

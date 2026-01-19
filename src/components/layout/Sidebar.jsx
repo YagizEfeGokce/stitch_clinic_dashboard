@@ -51,7 +51,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 <div className="flex flex-col h-full">
                     {/* Header */}
                     <div className="p-6 pb-2 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                             {clinic?.branding_config?.logo_url ? (
                                 <div className="size-10 rounded-full overflow-hidden shadow-sm border border-slate-100 bg-white shrink-0">
                                     <img src={clinic.branding_config.logo_url} alt="Logo" className="w-full h-full object-cover" />
@@ -61,8 +61,8 @@ export default function Sidebar({ isOpen, onClose }) {
                                     <img src="/logo.png" alt="Dermdesk Logo" className="w-full h-full object-contain p-1" />
                                 </div>
                             )}
-                            <div className="min-w-0">
-                                <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none truncate">{clinic?.name || 'Dermdesk'}</h1>
+                            <div className="min-w-0 flex-1">
+                                <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-none truncate max-w-[140px]">{clinic?.name || 'Dermdesk'}</h1>
                                 <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Panel</span>
                             </div>
                         </div>

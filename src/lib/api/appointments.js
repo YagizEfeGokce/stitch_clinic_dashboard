@@ -186,7 +186,15 @@ class AppointmentsAPI extends BaseAPI {
         try {
             const { data, error } = await supabase
                 .from('appointments')
-                .select('*')
+                .select(`
+                    *,
+                    services (
+                        id,
+                        name,
+                        price,
+                        duration_min
+                    )
+                `)
                 .eq('client_id', clientId)
                 .order('date', { ascending: false });
 
