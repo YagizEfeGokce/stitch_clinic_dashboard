@@ -1,14 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase'; // Keep for realtime subscription
+import { inventoryAPI } from '../lib/api';
 import InventoryStats from '../components/inventory/InventoryStats';
 import ProductCard from '../components/inventory/ProductCard';
 import ProductModal from '../components/inventory/ProductModal';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
+import { useOptimistic } from '../hooks/useOptimistic';
 import { logActivity } from '../lib/logger';
+import { InventoryPageSkeleton } from '../components/ui/skeletons';
+import { ButtonSpinner } from '../components/ui/Spinner';
 
 
 export default function Inventory() {
+    const { clinic } = useAuth();
     const { success, error: showError } = useToast();
+    const { optimisticUpdate } = useOptimistic();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,44 +28,28 @@ export default function Inventory() {
     const [isDeleting, setIsDeleting] = useState(false);
 
     // Initial Fetch
-    const fetchInventory = useCallback(async (retryCount = 0) => {
-        if (!navigator.onLine) {
+    const fetchInventory = useCallback(async () => {
+        if (!navigator.onLine || !clinic?.id) {
             setLoading(false);
             return;
         }
 
         try {
             setLoading(true);
+            const { data, error } = await inventoryAPI.getInventory(clinic.id);
 
-            // Create a race between data fetch and a timeout
-            const fetchPromise = supabase
-                .from('inventory')
-                .select('*')
-                .order('name', { ascending: true });
-
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('TIMEOUT')), 15000)
-            );
-
-            const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
-
-            if (error) throw error;
+            if (error) {
+                showError(error);
+                return;
+            }
             setProducts(data || []);
         } catch (error) {
             console.error('Error fetching inventory:', error);
-
-            // Auto-Retry on Timeout or Network Error (up to 2 times)
-            const isNetworkError = error.message === 'TIMEOUT' || error.message?.includes('fetch');
-            if (isNetworkError && retryCount < 2) {
-                console.warn(`Retry attempt ${retryCount + 1} for inventory...`);
-                return fetchInventory(retryCount + 1);
-            }
-
-            showError('Connection unstable. Could not load inventory.');
+            showError('Ürünler yüklenirken bir hata oluştu');
         } finally {
             setLoading(false);
         }
-    }, [showError]);
+    }, [clinic?.id, showError]);
 
     // Initial Fetch
     useEffect(() => {
@@ -96,37 +87,43 @@ export default function Inventory() {
         setConfirmDeleteId(id);
     };
 
-    const confirmDelete = async () => {
+    const confirmDelete = useCallback(async () => {
         if (!confirmDeleteId) return;
 
-        try {
-            setIsDeleting(true);
-            const { error } = await supabase
-                .from('inventory')
-                .delete()
-                .eq('id', confirmDeleteId);
+        const deletedProduct = products.find(p => p.id === confirmDeleteId);
+        const deletedIndex = products.findIndex(p => p.id === confirmDeleteId);
 
-            if (error) throw error;
+        // Close modal immediately
+        setConfirmDeleteId(null);
 
-            if (error) throw error;
+        await optimisticUpdate({
+            perform: () => {
+                setProducts(prev => prev.filter(p => p.id !== deletedProduct.id));
+            },
 
-            const deletedItem = products.find(p => p.id === confirmDeleteId);
-            await logActivity('Deleted Inventory Item', {
-                item_id: confirmDeleteId,
-                item_name: deletedItem?.name || 'Unknown Item'
-            });
+            rollback: () => {
+                setProducts(prev => {
+                    const newProducts = [...prev];
+                    newProducts.splice(deletedIndex, 0, deletedProduct);
+                    return newProducts;
+                });
+            },
 
-            success('Product deleted successfully');
-            // Close modal and refresh
-            setConfirmDeleteId(null);
-            fetchInventory();
-        } catch (error) {
-            console.error('Error deleting product:', error);
-            showError('Failed to delete product');
-        } finally {
-            setIsDeleting(false);
-        }
-    };
+            operation: async () => {
+                const result = await inventoryAPI.delete(deletedProduct.id);
+                if (!result.error) {
+                    await logActivity('Ürün Silindi', {
+                        item_id: deletedProduct.id,
+                        item_name: deletedProduct?.name || 'Unknown Item'
+                    });
+                }
+                return result;
+            },
+
+            successMessage: 'Ürün başarıyla silindi',
+            errorMessage: 'Ürün silinirken bir hata oluştu',
+        });
+    }, [confirmDeleteId, products, optimisticUpdate]);
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -214,9 +211,7 @@ export default function Inventory() {
             <div className="flex flex-col gap-4 px-5 mt-6">
                 <h2 className="text-lg font-bold text-slate-900">Ürün Listesi</h2>
                 {loading && products.length === 0 ? (
-                    <div className="flex justify-center p-8">
-                        <span className="material-symbols-outlined animate-spin text-primary">progress_activity</span>
-                    </div>
+                    <InventoryPageSkeleton />
                 ) : (
                     <>
                         {loading && <div className="hidden md:block absolute top-4 right-4 text-xs text-primary font-bold animate-pulse">Senkronize ediliyor...</div>}
@@ -266,7 +261,7 @@ export default function Inventory() {
                                 disabled={isDeleting}
                                 className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 shadow-lg shadow-red-500/20 transition-colors flex items-center justify-center gap-2"
                             >
-                                {isDeleting && <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>}
+                                {isDeleting && <ButtonSpinner />}
                                 Sil
                             </button>
                         </div>

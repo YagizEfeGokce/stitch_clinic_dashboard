@@ -44,7 +44,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 ref={sidebarRef}
                 className={`
                     fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 h-screen transition-transform duration-300 ease-in-out
-                    md:static md:translate-x-0 md:flex md:flex-col
+                    md:sticky md:top-0 md:translate-x-0 md:flex md:flex-col md:shrink-0
                     ${isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
                 `}
             >

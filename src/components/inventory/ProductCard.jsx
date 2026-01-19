@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { useOptimistic } from '../../hooks/useOptimistic';
 
 export default function ProductCard({ product, onEdit, onDelete }) {
     const { role } = useAuth();
+    const { optimisticUpdate } = useOptimistic();
     const [stock, setStock] = useState(product.stock);
     const [loading, setLoading] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
@@ -23,23 +25,35 @@ export default function ProductCard({ product, onEdit, onDelete }) {
             return;
         }
 
-        // Optimistic update
-        setStock(val);
-        setLoading(true);
+        const oldStock = stock;
 
-        try {
-            const { error } = await supabase
-                .from('inventory')
-                .update({ stock: val })
-                .eq('id', product.id);
+        await optimisticUpdate({
+            // Optimistically update UI immediately
+            perform: () => {
+                setStock(val);
+            },
 
-            if (error) throw error;
-        } catch (error) {
-            console.error('Error updating stock:', error);
-            setStock(product.stock); // Revert
-        } finally {
-            setLoading(false);
-        }
+            // Rollback on failure
+            rollback: () => {
+                setStock(oldStock);
+            },
+
+            // Actual API call
+            operation: async () => {
+                const { error } = await supabase
+                    .from('inventory')
+                    .update({ stock: val })
+                    .eq('id', product.id);
+
+                if (error) {
+                    return { error: error.message };
+                }
+                return { data: val };
+            },
+
+            successMessage: 'Stok güncellendi',
+            errorMessage: 'Stok güncellenemedi',
+        });
     };
 
     const handleKeyDown = (e) => {

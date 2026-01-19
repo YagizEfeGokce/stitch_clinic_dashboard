@@ -14,6 +14,7 @@ import HourBlock from '../components/schedule/HourBlock';
 import { useAppointments } from '../hooks/useAppointments';
 
 import TimelineSkeleton from '../components/schedule/TimelineSkeleton';
+import { PageErrorBoundary } from '../components/errors';
 
 // DnD Imports
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -233,7 +234,7 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="pb-24">
+        <PageErrorBoundary pageName="Takvim">
             {/* Welcome Header */}
             <div className="px-5 pt-8 pb-2">
                 <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -473,6 +474,6 @@ export default function Dashboard() {
                 canAssignStaff={role === 'admin' || role === 'doctor' || role === 'owner'}
                 staffList={staffList}
             />
-        </div>
+        </PageErrorBoundary>
     );
 }

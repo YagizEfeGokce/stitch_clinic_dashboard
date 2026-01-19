@@ -2,11 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { useOptimistic } from '../../hooks/useOptimistic';
 import { logActivity } from '../../lib/logger';
+import { ButtonSpinner } from '../ui/Spinner';
 
 export default function BrandingSettings() {
-    const { toast } = useToast();
+    const { success, error: showError } = useToast();
     const { setClinic, clinic } = useAuth();
+    const { optimisticUpdate, isProcessing } = useOptimistic();
     const [loading, setLoading] = useState(false);
     const fileInputRef = useRef(null);
     const [logoFile, setLogoFile] = useState(null);
@@ -57,104 +60,125 @@ export default function BrandingSettings() {
     };
 
     const handleSave = async () => {
-        try {
-            if (!clinic?.id) {
-                toast.error("Kullanıcıya ait klinik bulunamadı.");
+        if (!clinic?.id) {
+            showError("Kullanıcıya ait klinik bulunamadı.");
+            return;
+        }
+
+        // Store old clinic state for rollback
+        const oldClinic = { ...clinic };
+
+        // Upload logo first if selected (must complete before optimistic update)
+        let logoUrl = settings.logo_url;
+        if (logoFile) {
+            try {
+                setLoading(true);
+                const fileExt = logoFile.name.split('.').pop();
+                const fileName = `clinic-logo-${Date.now()}.${fileExt}`;
+                const filePath = `${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('clinic-assets')
+                    .upload(filePath, logoFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from('clinic-assets')
+                    .getPublicUrl(filePath);
+
+                logoUrl = publicUrl;
+                setLoading(false);
+            } catch (uploadError) {
+                console.error('Logo upload error:', uploadError);
+                showError('Logo yüklenemedi.');
+                setLoading(false);
                 return;
             }
+        }
 
-            setLoading(true);
-            let logoUrl = settings.logo_url;
+        // Prepare payload
+        const currentBranding = clinic.branding_config || {};
+        const currentSettings = clinic.settings_config || {};
 
-            // 1. Upload Logo if selected
-            if (logoFile) {
-                try {
-                    const fileExt = logoFile.name.split('.').pop();
-                    const fileName = `clinic-logo-${Date.now()}.${fileExt}`;
-                    const filePath = `${fileName}`;
+        const brandingConfig = {
+            ...currentBranding,
+            logo_url: logoUrl,
+            primary_color: settings.primary_color,
+            secondary_color: settings.secondary_color
+        };
 
-                    const { error: uploadError } = await supabase.storage
-                        .from('clinic-assets')
-                        .upload(filePath, logoFile);
+        const settingsConfig = {
+            ...currentSettings,
+            address: settings.address,
+            phone: settings.phone,
+            email: settings.email,
+            website: settings.website,
+            working_start_hour: settings.working_start_hour,
+            working_end_hour: settings.working_end_hour,
+            working_days: settings.working_days
+        };
 
-                    if (uploadError) throw uploadError;
+        const newClinicData = {
+            ...clinic,
+            name: settings.clinic_name,
+            branding_config: brandingConfig,
+            settings_config: settingsConfig,
+            updated_at: new Date().toISOString()
+        };
 
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('clinic-assets')
-                        .getPublicUrl(filePath);
-
-                    logoUrl = publicUrl;
-                } catch (uploadError) {
-                    console.error('Logo upload error:', uploadError);
-                    toast.error('Logo yüklenemedi.');
-                }
-            }
-
-            // 2. Prepare Payload for 'clinics' table
-            // Merge with existing config to prevent data loss
-            const currentBranding = clinic.branding_config || {};
-            const currentSettings = clinic.settings_config || {};
-
-            const brandingConfig = {
-                ...currentBranding,
-                logo_url: logoUrl,
-                primary_color: settings.primary_color,
-                secondary_color: settings.secondary_color
-            };
-
-            const settingsConfig = {
-                ...currentSettings,
-                address: settings.address,
-                phone: settings.phone,
-                email: settings.email,
-                website: settings.website,
-                working_start_hour: settings.working_start_hour,
-                working_end_hour: settings.working_end_hour,
-                working_days: settings.working_days
-            };
-
-            const payload = {
-                name: settings.clinic_name,
-                branding_config: brandingConfig,
-                settings_config: settingsConfig,
-                updated_at: new Date().toISOString()
-            };
-
-            const { data, error } = await supabase
-                .from('clinics')
-                .update(payload)
-                .eq('id', clinic.id)
-                .select()
-                .single();
-
-            if (error) {
-                console.error('Supabase Update Error:', error);
-                throw error;
-            }
-
-            toast.success('Değişiklikler kaydedildi ✓');
-            setLogoFile(null);
-
-            if (data) {
-                // Update Context immediately to reflect changes in UI without refresh
+        await optimisticUpdate({
+            // Optimistically update UI immediately
+            perform: () => {
                 if (setClinic) {
+                    setClinic(newClinicData);
+                }
+            },
+
+            // Rollback on failure
+            rollback: () => {
+                if (setClinic) {
+                    setClinic(oldClinic);
+                }
+            },
+
+            // Actual API call
+            operation: async () => {
+                const payload = {
+                    name: settings.clinic_name,
+                    branding_config: brandingConfig,
+                    settings_config: settingsConfig,
+                    updated_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('clinics')
+                    .update(payload)
+                    .eq('id', clinic.id)
+                    .select()
+                    .single();
+
+                if (error) {
+                    return { error: error.message };
+                }
+
+                // Update with server response
+                if (data && setClinic) {
                     setClinic(data);
                 }
 
-                await logActivity('Ayarlar Güncellendi', {
-                    clinic_name: data.name,
-                    updated_by: user?.email
-                });
-            }
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            // Log specific status codes as requested
-            if (error.code) console.error('Error Code:', error.code);
+                setLogoFile(null);
 
-            toast.error('Bir hata oluştu. Lütfen tekrar deneyin.');
-        } finally {
-            setLoading(false);
-        }
+                await logActivity('Ayarlar Güncellendi', {
+                    clinic_name: data?.name
+                });
+
+                return { data };
+            },
+
+            successMessage: 'Değişiklikler kaydedildi ✓',
+            errorMessage: 'Kaydetme başarısız. Lütfen tekrar deneyin.',
+        });
     };
 
     const dayMapping = {
@@ -296,10 +320,10 @@ export default function BrandingSettings() {
                 <div className="pt-4">
                     <button
                         onClick={handleSave}
-                        disabled={loading}
+                        disabled={loading || isProcessing}
                         className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl shadow-lg shadow-slate-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                     >
-                        {loading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
+                        {loading && <ButtonSpinner />}
                         Değişiklikleri Kaydet
                     </button>
                 </div>
