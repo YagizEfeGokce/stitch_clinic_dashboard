@@ -12,7 +12,7 @@ import { useToast } from '../context/ToastContext';
 
 export default function Settings() {
     const { user } = useAuth();
-    const { toast } = useToast();
+    const { success, error: showError } = useToast();
     const [activeTab, setActiveTab] = useState(''); // Init verify later
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -71,11 +71,11 @@ export default function Settings() {
     const handlePasswordUpdate = async (e) => {
         e.preventDefault();
         if (passwords.new !== passwords.confirm) {
-            toast.error("Şifreler eşleşmiyor");
+            showError("Şifreler eşleşmiyor");
             return;
         }
         if (passwords.new.length < 6) {
-            toast.error("Şifre en az 6 karakter olmalı");
+            showError("Şifre en az 6 karakter olmalı");
             return;
         }
 
@@ -83,11 +83,11 @@ export default function Settings() {
         try {
             const { error } = await supabase.auth.updateUser({ password: passwords.new });
             if (error) throw error;
-            toast.success("Şifre başarıyla güncellendi");
+            success("Şifre başarıyla güncellendi");
             setPasswords({ new: '', confirm: '' });
         } catch (error) {
             console.error('Error updating password:', error);
-            toast.error("Şifre güncellenemedi");
+            showError("Şifre güncellenemedi");
         } finally {
             setPassLoading(false);
         }

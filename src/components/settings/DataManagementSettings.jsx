@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 
 export default function DataManagementSettings() {
-    const { toast } = useToast();
+    const { success, error: showError } = useToast();
     const [loadingApt, setLoadingApt] = useState(false);
     const [loadingClient, setLoadingClient] = useState(false);
 
@@ -50,10 +50,10 @@ export default function DataManagementSettings() {
 
             const csvContent = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
             downloadCSV(csvContent, `randevu_export_${new Date().toISOString().split('T')[0]}.csv`);
-            toast.success('Randevular başarıyla dışa aktarıldı');
+            success('Randevular başarıyla dışa aktarıldı');
         } catch (err) {
             console.error('Export Error:', err);
-            toast.error('Randevular dışa aktarılamadı');
+            showError('Randevular dışa aktarılamadı');
         } finally {
             setLoadingApt(false);
         }
@@ -81,10 +81,10 @@ export default function DataManagementSettings() {
 
             const csvContent = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
             downloadCSV(csvContent, `musteri_export_${new Date().toISOString().split('T')[0]}.csv`);
-            toast.success('Müşteriler başarıyla dışa aktarıldı');
+            success('Müşteriler başarıyla dışa aktarıldı');
         } catch (err) {
             console.error('Export Error:', err);
-            toast.error('Müşteriler dışa aktarılamadı');
+            showError('Müşteriler dışa aktarılamadı');
         } finally {
             setLoadingClient(false);
         }

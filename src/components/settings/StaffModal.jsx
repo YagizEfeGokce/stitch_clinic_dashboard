@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 
 export default function StaffModal({ isOpen, onClose, staffMember, onSuccess }) {
-    const { toast } = useToast();
+    const { success, error: showError } = useToast();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         full_name: '',
@@ -34,12 +34,12 @@ export default function StaffModal({ isOpen, onClose, staffMember, onSuccess }) 
 
             if (error) throw error;
 
-            toast.success('Personel başarıyla güncellendi');
+            success('Personel başarıyla güncellendi');
             onSuccess();
             onClose();
         } catch (error) {
             console.error('Error updating staff:', error);
-            toast.error('Personel güncellenemedi');
+            showError('Personel güncellenemedi');
         } finally {
             setLoading(false);
         }

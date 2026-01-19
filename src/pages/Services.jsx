@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { useState, useEffect, useCallback } from 'react';
+import { servicesAPI } from '../lib/api';
 import ServiceList from '../components/services/ServiceList';
 import ServiceModal from '../components/services/ServiceModal';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
@@ -7,12 +7,15 @@ import { useToast } from '../context/ToastContext';
 import { logActivity } from '../lib/logger';
 
 import { useAuth } from '../context/AuthContext';
+import { useOptimistic } from '../hooks/useOptimistic';
+import { Spinner } from '../components/ui/Spinner';
 
 export default function Services() {
-    const { role } = useAuth(); // Get Access Role
+    const { role, clinic } = useAuth();
     const isStaff = role === 'staff';
 
     const { success, error: showError } = useToast();
+    const { optimisticUpdate } = useOptimistic();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,12 +43,12 @@ export default function Services() {
     const fetchServices = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('services')
-                .select('*')
-                .order('name', { ascending: true });
+            const { data, error } = await servicesAPI.getServices(clinic?.id);
 
-            if (error) throw error;
+            if (error) {
+                showError(error);
+                return;
+            }
             setServices(data || []);
         } catch (error) {
             console.error('Error fetching services:', error);
@@ -65,34 +68,44 @@ export default function Services() {
         setIsDeleteModalOpen(true);
     };
 
-    const confirmDelete = async () => {
+    const confirmDelete = useCallback(async () => {
         if (!serviceToDelete) return;
-        setDeleteLoading(true);
 
-        try {
-            const { error } = await supabase
-                .from('services')
-                .delete()
-                .eq('id', serviceToDelete.id);
+        const deletedService = serviceToDelete;
+        const deletedIndex = services.findIndex(s => s.id === deletedService.id);
 
-            if (error) throw error;
+        // Close modal immediately
+        setIsDeleteModalOpen(false);
+        setServiceToDelete(null);
 
-            await logActivity('Deleted Service', {
-                service_name: serviceToDelete.name,
-                service_id: serviceToDelete.id
-            });
+        await optimisticUpdate({
+            perform: () => {
+                setServices(prev => prev.filter(s => s.id !== deletedService.id));
+            },
 
-            success('Service deleted successfully');
-            fetchServices();
-            setIsDeleteModalOpen(false);
-            setServiceToDelete(null);
-        } catch (error) {
-            console.error('Error deleting service:', error);
-            showError('Failed to delete service');
-        } finally {
-            setDeleteLoading(false);
-        }
-    };
+            rollback: () => {
+                setServices(prev => {
+                    const newServices = [...prev];
+                    newServices.splice(deletedIndex, 0, deletedService);
+                    return newServices;
+                });
+            },
+
+            operation: async () => {
+                const result = await servicesAPI.delete(deletedService.id);
+                if (!result.error) {
+                    await logActivity('Hizmet Silindi', {
+                        service_name: deletedService.name,
+                        service_id: deletedService.id
+                    });
+                }
+                return result;
+            },
+
+            successMessage: 'Hizmet başarıyla silindi',
+            errorMessage: 'Hizmet silinirken bir hata oluştu',
+        });
+    }, [serviceToDelete, services, optimisticUpdate]);
 
     const handleOpenAddModal = () => {
         setSelectedService(null);
@@ -136,7 +149,7 @@ export default function Services() {
 
             {loading ? (
                 <div className="flex justify-center py-12">
-                    <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+                    <Spinner size="xl" />
                 </div>
             ) : (
                 <ServiceList

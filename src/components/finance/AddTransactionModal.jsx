@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { ButtonSpinner } from '../ui/Spinner';
 
 const CATEGORIES = {
     Income: ['Tedavi', 'Ürün Satışı', 'Muayene', 'Diğer Gelir'],
@@ -224,7 +225,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess }) {
                             disabled={loading}
                             className="w-full mt-4 bg-primary text-white py-3.5 rounded-xl font-bold hover:bg-primary-dark transition-colors disabled:opacity-50 flex justify-center items-center gap-2"
                         >
-                            {loading && <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>}
+                            {loading && <ButtonSpinner />}
                             {formData.type === 'Income' ? 'Gelir Ekle' : 'Gider Ekle'}
                         </button>
                     </form>

@@ -6,6 +6,8 @@ import { logActivity } from '../../lib/logger';
 import { useAuth } from '../../context/AuthContext';
 import { compressImage, uploadImage } from '../../lib/storage-utils';
 import { formatPhoneNumber } from '../../utils/formatUtils';
+import { handleError } from '../../utils/errorHelpers';
+import { Spinner } from '../ui/Spinner';
 
 export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
     const { profile } = useAuth();
@@ -209,7 +211,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
             if (error.message?.includes('clients_email_key') || error.code === '23505') {
                 showError('Bu e-posta adresiyle kayıtlı bir müşteri zaten var.');
             } else {
-                showError('Müşteri kaydedilemedi. ' + (error.message || ''));
+                showError(handleError(error, { operation: 'save_client', client_id: client?.id }));
             }
             setLoading(false); // Only stop loading on error (on success we keep it until close)
         }
@@ -421,7 +423,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
 
                                     {loadingHistory ? (
                                         <div className="flex justify-center py-12">
-                                            <span className="material-symbols-outlined animate-spin text-primary text-3xl">progress_activity</span>
+                                            <Spinner size="lg" />
                                         </div>
                                     ) : history.length === 0 ? (
                                         <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
@@ -506,7 +508,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                         </>
                                     ) : loading ? (
                                         <>
-                                            <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                                            <Spinner size="md" color="white" />
                                             Değişiklikleri Kaydet
                                         </>
                                     ) : (

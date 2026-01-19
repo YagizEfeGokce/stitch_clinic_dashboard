@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
+import { Spinner } from '../ui/Spinner';
 
 export default function ClientGallery({ clientId }) {
     const { success, error: showError } = useToast();
@@ -126,7 +127,7 @@ export default function ClientGallery({ clientId }) {
                         className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl font-bold hover:bg-primary-dark transition-colors disabled:opacity-50"
                     >
                         {uploading ? (
-                            <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                            <Spinner size="md" color="white" />
                         ) : (
                             <span className="material-symbols-outlined text-[20px]">cloud_upload</span>
                         )}
@@ -137,7 +138,7 @@ export default function ClientGallery({ clientId }) {
 
             {loading ? (
                 <div className="flex justify-center py-12">
-                    <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+                    <Spinner size="xl" />
                 </div>
             ) : photos.length === 0 ? (
                 <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">

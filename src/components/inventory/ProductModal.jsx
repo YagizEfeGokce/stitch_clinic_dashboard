@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase'; // Keep for storage operations
+import { inventoryAPI } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
 import { logActivity } from '../../lib/logger';
 import { useAuth } from '../../context/AuthContext';
+import { ButtonSpinner } from '../ui/Spinner';
 
 export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit = null }) {
     const { success, error: showError } = useToast();
@@ -93,49 +95,50 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
 
         try {
             if (productToEdit) {
-                // UPDATE
-                const { error: updateError } = await supabase
-                    .from('inventory')
-                    .update(payload)
-                    .eq('id', productToEdit.id);
+                // UPDATE using API
+                const { error: updateError } = await inventoryAPI.update(productToEdit.id, payload);
 
-                if (updateError) throw updateError;
+                if (updateError) {
+                    showError(updateError);
+                    return;
+                }
 
-                // Log activity for update
-                const changes = Object.keys(payload).filter(key => payload[key] !== productToEdit[key]);
-                await logActivity('Updated Inventory Item', {
+                await logActivity('Ürün Güncellendi', {
                     item_name: formData.name,
                     item_id: productToEdit.id,
-                    changes: changes.length > 0 ? changes : ['No significant changes']
                 });
 
-                success('Product updated successfully');
+                success('Ürün başarıyla güncellendi');
             } else {
-                // CREATE
-                if (!profile?.clinic_id) throw new Error('You are not associated with a clinic.');
+                // CREATE using API
+                if (!profile?.clinic_id) {
+                    showError('Bir kliniğe bağlı değilsiniz.');
+                    return;
+                }
 
-                const { data, error: insertError } = await supabase
-                    .from('inventory')
-                    .insert([payload])
-                    .select(); // Select the inserted data to get the ID
-
-                if (insertError) throw insertError;
-
-                // Log activity for creation
-                await logActivity('Created Inventory Item', {
-                    item_name: formData.name,
-                    item_id: data?.[0]?.id
+                const { data, error: insertError } = await inventoryAPI.create({
+                    ...payload,
+                    clinic_id: profile.clinic_id
                 });
 
-                success('Product created successfully');
-            }
+                if (insertError) {
+                    showError(insertError);
+                    return;
+                }
 
+                await logActivity('Ürün Oluşturuldu', {
+                    item_name: formData.name,
+                    item_id: data?.id
+                });
+
+                success('Ürün başarıyla oluşturuldu');
+            }
 
             onSuccess();
             onClose();
         } catch (error) {
             console.error('Error saving product:', error);
-            showError(`Failed to save product: ${error.message || 'Unknown error'}`);
+            showError('Ürün kaydedilirken bir hata oluştu');
         } finally {
             setLoading(false);
         }
@@ -283,7 +286,7 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
                             disabled={loading || uploading}
                             className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                         >
-                            {loading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
+                            {loading && <ButtonSpinner />}
                             {productToEdit ? 'Değişiklikleri Kaydet' : 'Ürünü Ekle'}
                         </button>
                     </div>

@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext'; // Import useAuth to get current admin's clinic_id
+import { ButtonSpinner } from '../ui/Spinner';
 
 export default function InviteStaffModal({ isOpen, onClose, onStaffAdded }) {
-    const { toast } = useToast();
+    const { success, error: showError } = useToast();
     const { profile } = useAuth(); // Get current user profile
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -19,7 +20,7 @@ export default function InviteStaffModal({ isOpen, onClose, onStaffAdded }) {
         setLoading(true);
 
         if (!profile?.clinic_id) {
-            toast.error('Klinik bilgisi bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
+            showError('Klinik bilgisi bulunamadı. Lütfen sayfayı yenileyip tekrar deneyin.');
             setLoading(false);
             return;
         }
@@ -56,7 +57,7 @@ export default function InviteStaffModal({ isOpen, onClose, onStaffAdded }) {
 
             if (data.user) {
                 // Success! The DB trigger 'handle_new_user' will now handle profile creation correctly.
-                toast.success(`${formData.fullName} için hesap oluşturuldu`);
+                success(`${formData.fullName} için hesap oluşturuldu`);
                 onStaffAdded?.(); // Refresh the list
                 onClose();
                 setFormData({ email: '', password: '', fullName: '', role: 'staff' });
@@ -64,7 +65,7 @@ export default function InviteStaffModal({ isOpen, onClose, onStaffAdded }) {
 
         } catch (error) {
             console.error('Error creating staff:', error);
-            toast.error(error.message || 'Hesap oluşturulamadı');
+            showError(error.message || 'Hesap oluşturulamadı');
         } finally {
             setLoading(false);
         }
@@ -152,7 +153,7 @@ export default function InviteStaffModal({ isOpen, onClose, onStaffAdded }) {
                         >
                             {loading ? (
                                 <>
-                                    <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>
+                                    <ButtonSpinner />
                                     Oluşturuluyor...
                                 </>
                             ) : (

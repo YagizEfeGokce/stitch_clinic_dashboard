@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { servicesAPI } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
 import { logActivity } from '../../lib/logger';
+import { ButtonSpinner } from '../ui/Spinner';
 
 export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
     const { success, error: showError } = useToast();
@@ -35,54 +36,49 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
         e.preventDefault();
         setLoading(true);
 
+        const serviceData = {
+            name: formData.name,
+            duration_min: parseInt(formData.duration_min),
+            price: parseFloat(formData.price),
+            description: formData.description
+        };
+
         try {
             if (service) {
                 // Edit Mode
-                const { error } = await supabase
-                    .from('services')
-                    .update({
-                        name: formData.name,
-                        duration_min: parseInt(formData.duration_min),
-                        price: parseFloat(formData.price),
-                        description: formData.description
-                    })
-                    .eq('id', service.id);
-                if (error) throw error;
+                const { error } = await servicesAPI.update(service.id, serviceData);
+                if (error) {
+                    showError(error);
+                    return;
+                }
 
-                await logActivity('Updated Service', {
+                await logActivity('Hizmet Güncellendi', {
                     service_name: formData.name,
                     service_id: service.id,
-                    changes: Object.keys(formData).filter(k => formData[k] !== service[k])
                 });
 
-                success('Service updated successfully');
+                success('Hizmet başarıyla güncellendi');
             } else {
                 // Create Mode
-                const { data, error } = await supabase
-                    .from('services')
-                    .insert([{
-                        name: formData.name,
-                        duration_min: parseInt(formData.duration_min),
-                        price: parseFloat(formData.price),
-                        description: formData.description
-                    }])
-                    .select(); // Get id
-                if (error) throw error;
+                const { data, error } = await servicesAPI.create(serviceData);
+                if (error) {
+                    showError(error);
+                    return;
+                }
 
-                await logActivity('Created Service', {
+                await logActivity('Hizmet Oluşturuldu', {
                     service_name: formData.name,
-                    service_id: data?.[0]?.id
+                    service_id: data?.id
                 });
 
-                success('Service created successfully');
+                success('Hizmet başarıyla oluşturuldu');
             }
-
 
             onSuccess();
             onClose();
         } catch (error) {
             console.error('Error saving service:', error);
-            showError('Failed to save service. Please try again.');
+            showError('Hizmet kaydedilirken bir hata oluştu');
         } finally {
             setLoading(false);
         }
@@ -165,7 +161,7 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
                             disabled={loading}
                             className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                         >
-                            {loading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
+                            {loading && <ButtonSpinner />}
                             {service ? 'Değişiklikleri Kaydet' : 'Hizmeti Ekle'}
                         </button>
                     </div>

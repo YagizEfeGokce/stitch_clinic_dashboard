@@ -1,3 +1,5 @@
+import { ButtonSpinner } from './Spinner';
+
 export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', type = 'danger', loading = false }) {
     if (!isOpen) return null;
 
@@ -18,17 +20,17 @@ export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, m
                             onClick={onClose}
                             className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors"
                         >
-                            Cancel
+                            İptal
                         </button>
                         <button
                             onClick={onConfirm}
                             disabled={loading}
                             className={`flex-1 py-2.5 rounded-xl text-white font-bold shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 ${type === 'danger'
-                                    ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
-                                    : 'bg-primary hover:bg-primary-dark shadow-primary/20'
+                                ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20'
+                                : 'bg-primary hover:bg-primary-dark shadow-primary/20'
                                 }`}
                         >
-                            {loading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
+                            {loading && <ButtonSpinner />}
                             {confirmText}
                         </button>
                     </div>

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { translateError } from '../utils/errorHelpers';
 import { trackEvent } from '../lib/analytics';
+import { Spinner } from '../components/ui/Spinner';
 
 export default function Login() {
     const [isSignUp, setIsSignUp] = useState(false);
@@ -169,7 +170,7 @@ export default function Login() {
                         >
                             {loading ? (
                                 <>
-                                    <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span>
+                                    <Spinner size="md" color="white" />
                                     <span>İşleniyor...</span>
                                 </>
                             ) : (

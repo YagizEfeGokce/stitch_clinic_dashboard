@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getLocalISOString } from '../utils/dateUtils';
 import { useToast } from '../context/ToastContext';
+import { handleError } from '../utils/errorHelpers';
 
 export function useAppointments(selectedDate, view, selectedStaffId) {
     const [appointments, setAppointments] = useState([]);
@@ -111,7 +112,7 @@ export function useAppointments(selectedDate, view, selectedStaffId) {
                 console.warn(`Retry attempt ${retryCount + 1} for dashboard...`);
                 return fetchAppointments(retryCount + 1);
             }
-            showError(`Randevular yüklenemedi. Hata: ${error.message}`);
+            showError(handleError(error, { operation: 'fetch_appointments', view }));
         } finally {
             setLoading(false);
         }

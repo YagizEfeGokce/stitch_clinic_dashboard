@@ -3,7 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 
 export default function AddReviewModal({ isOpen, onClose, onSuccess }) {
-    const { toast } = useToast();
+    const { success, error: showError } = useToast();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         patient_name: '',
@@ -25,7 +25,7 @@ export default function AddReviewModal({ isOpen, onClose, onSuccess }) {
 
             if (error) throw error;
 
-            toast.success('Review added successfully');
+            success('Review added successfully');
             onSuccess();
             onClose();
             setFormData({
@@ -38,7 +38,7 @@ export default function AddReviewModal({ isOpen, onClose, onSuccess }) {
             });
         } catch (error) {
             console.error('Error adding review:', error);
-            toast.error('Failed to add review');
+            showError('Failed to add review');
         } finally {
             setLoading(false);
         }

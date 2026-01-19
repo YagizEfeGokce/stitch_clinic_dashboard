@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
+import { Spinner } from '../ui/Spinner';
 import ClientSelection from './ClientSelection';
 import ServiceSelection from './ServiceSelection';
 import DateTimeSelection from './DateTimeSelection';
@@ -50,12 +51,12 @@ export default function BookingWizard() {
 
             if (error) throw error;
 
-            success('Appointment booked successfully!');
+            success('Randevu başarıyla oluşturuldu!');
             // Redirect to the SPECIFIC DATE of the booking
             navigate(`/schedule?date=${data.date}`);
         } catch (err) {
             console.error('Booking failed:', err);
-            toastError(`Failed to book appointment: ${err.message}`);
+            toastError(`Randevu oluşturulamadı: ${err.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -77,8 +78,8 @@ export default function BookingWizard() {
                     <span className="material-symbols-outlined">arrow_back</span>
                 </button>
                 <div className="flex-1">
-                    <h1 className="text-lg font-bold text-slate-900 leading-none">New Appointment</h1>
-                    <p className="text-xs text-slate-500 font-medium">Step {step} of 4</p>
+                    <h1 className="text-lg font-bold text-slate-900 leading-none">Yeni Randevu</h1>
+                    <p className="text-xs text-slate-500 font-medium">Adım {step} / 4</p>
                 </div>
                 <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden">
                     <div
@@ -96,8 +97,8 @@ export default function BookingWizard() {
                 {step === 4 && (
                     isSubmitting ?
                         <div className="flex flex-col items-center justify-center h-full">
-                            <span className="material-symbols-outlined animate-spin text-4xl text-primary mb-4">progress_activity</span>
-                            <p className="font-bold text-slate-500">Confirming Appointment...</p>
+                            <Spinner size="xl" />
+                            <p className="font-bold text-slate-500 mt-4">Randevu Onaylanıyor...</p>
                         </div> :
                         <BookingSummary data={data} onConfirm={handleConfirm} />
                 )}

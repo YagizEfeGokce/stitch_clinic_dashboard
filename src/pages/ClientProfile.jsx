@@ -1,12 +1,14 @@
 // No changes needed
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase'; // Keep for notes operations
+import { clientsAPI, appointmentsAPI, transactionsAPI } from '../lib/api';
 import ClientModal from '../components/clients/ClientModal';
 import ClientGallery from '../components/clients/ClientGallery';
 import ClientHistoryTimeline from '../components/clients/ClientHistoryTimeline';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { useToast } from '../context/ToastContext';
+import { Spinner } from '../components/ui/Spinner';
 
 export default function ClientProfile() {
     const { id } = useParams();
@@ -46,50 +48,32 @@ export default function ClientProfile() {
         try {
             setLoading(true);
 
-            // 1. Fetch Client Details
-            const { data: clientData, error: clientError } = await supabase
-                .from('clients')
-                .select('*')
-                .eq('id', id)
-                .single();
+            // 1. Fetch Client Details using API
+            const { data: clientData, error: clientError } = await clientsAPI.getById(id);
 
             if (clientError || !clientData) {
                 console.error('Client not found or access denied:', clientError);
-                // IDOR / RLS Protection: Redirect immediately if data is missing
                 navigate('/clients', { replace: true });
                 return;
             }
             setClient(clientData);
 
-            // 2. Fetch Appointments
-            const { data: appointmentData, error: appError } = await supabase
-                .from('appointments')
-                .select(`
-                    id, 
-                    client_id,
-                    date, 
-                    time, 
-                    status, 
-                    services (name, duration_min, price)
-                `)
-                .eq('client_id', id)
-                .order('date', { ascending: false });
+            // 2. Fetch Appointments using API
+            const { data: appointmentData, error: appError } = await appointmentsAPI.getClientAppointments(id);
+            if (!appError) {
+                setAppointments(appointmentData || []);
+            }
 
-            if (appError) throw appError;
-            setAppointments(appointmentData || []);
-
-            // 3. Fetch Transactions
-            // Real Data: Fetches from public.transactions table linked by client_id
+            // 3. Fetch Transactions - using supabase directly since it's client-specific
             const { data: transactionData, error: txError } = await supabase
                 .from('transactions')
                 .select('*')
                 .eq('client_id', id)
                 .order('date', { ascending: false });
 
-            if (txError && txError.code !== 'PGRST116') {
-                console.warn('Could not fetch transactions', txError);
+            if (!txError) {
+                setTransactions(transactionData || []);
             }
-            setTransactions(transactionData || []);
 
         } catch (error) {
             console.error('Error fetching client profile:', error);
@@ -127,7 +111,7 @@ export default function ClientProfile() {
             success('Not eklendi');
         } catch (error) {
             console.error('Error adding note:', error);
-            showError('Not eklenemedi');
+            showError('Not eklenirken bir hata oluştu');
         } finally {
             setAddingNote(false);
         }
@@ -154,7 +138,7 @@ export default function ClientProfile() {
             success('Not güncellendi');
         } catch (error) {
             console.error('Error updating note:', error);
-            showError('Not güncellenemedi');
+            showError('Not güncellenirken bir hata oluştu');
         }
     };
 
@@ -179,7 +163,7 @@ export default function ClientProfile() {
             setNoteToDeleteId(null);
         } catch (error) {
             console.error('Error deleting note:', error);
-            showError('Not silinemedi');
+            showError('Not silinirken bir hata oluştu');
         } finally {
             setDeleteLoading(false);
         }
@@ -188,7 +172,7 @@ export default function ClientProfile() {
     if (loading && !client) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50">
-                <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+                <Spinner size="xl" />
             </div>
         );
     }

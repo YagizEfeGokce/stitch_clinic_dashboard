@@ -4,7 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }) {
-    const toast = useToast();
+    const { success, error: showError } = useToast();
     const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [fullName, setFullName] = useState(profile?.full_name || '');
@@ -51,7 +51,7 @@ export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }
                     avatarUrl = publicUrl;
                 } catch (uploadError) {
                     console.error('Avatar upload error:', uploadError);
-                    toast.error('Failed to upload avatar. Please check storage permissions.');
+                    showError('Failed to upload avatar. Please check storage permissions.');
                     setLoading(false);
                     return; // Stop execution if upload fails
                 }
@@ -68,12 +68,12 @@ export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }
 
             if (updateError) throw updateError;
 
-            toast.success('Profil başarıyla güncellendi');
+            success('Profil başarıyla güncellendi');
             onSuccess();
             onClose();
         } catch (error) {
             console.error('Error updating profile:', error);
-            toast.error('Profil güncellenemedi');
+            showError('Profil güncellenemedi');
         } finally {
             setLoading(false);
         }

@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../lib/supabase';
+import { staffAPI } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 import StaffModal from './StaffModal';
 import InviteStaffModal from './InviteStaffModal';
 import ConfirmationModal from '../ui/ConfirmationModal';
+import { Spinner } from '../ui/Spinner';
 
 export default function StaffList({ searchTerm }) {
-    const { toast } = useToast();
+    const { clinic } = useAuth();
+    const { success, error: showError } = useToast();
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedStaff, setSelectedStaff] = useState(null);
@@ -19,22 +22,24 @@ export default function StaffList({ searchTerm }) {
     const [deleteLoading, setDeleteLoading] = useState(false);
 
     const fetchStaff = useCallback(async () => {
+        if (!clinic?.id) return;
+
         try {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .order('full_name', { ascending: true });
+            const { data, error } = await staffAPI.getStaff(clinic.id);
 
-            if (error) throw error;
+            if (error) {
+                showError(error);
+                return;
+            }
             setStaff(data || []);
         } catch (error) {
             console.error('Error fetching staff:', error);
-            toast.error('Personel listesi yüklenemedi');
+            showError('Personel listesi yüklenirken bir hata oluştu');
         } finally {
             setLoading(false);
         }
-    }, [toast]);
+    }, [clinic?.id, showError]);
 
     useEffect(() => {
         fetchStaff();
@@ -55,20 +60,23 @@ export default function StaffList({ searchTerm }) {
         setDeleteLoading(true);
 
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .delete()
-                .eq('id', staffToDelete.id);
+            // Note: Deleting profiles requires caution - this might need admin privileges
+            const { error } = await staffAPI.updateStaffMember(staffToDelete.id, {
+                clinic_id: null // Remove from clinic instead of deleting
+            });
 
-            if (error) throw error;
+            if (error) {
+                showError(error);
+                return;
+            }
 
-            toast.success('Personel silindi');
+            success('Personel kaldırıldı');
             fetchStaff();
             setIsDeleteModalOpen(false);
             setStaffToDelete(null);
         } catch (error) {
             console.error('Error removing staff:', error);
-            toast.error('Personel silinemedi. Yetkiniz olmayabilir.');
+            showError('Personel kaldırılırken bir hata oluştu');
         } finally {
             setDeleteLoading(false);
         }
@@ -94,7 +102,7 @@ export default function StaffList({ searchTerm }) {
 
             {loading ? (
                 <div className="flex justify-center p-8">
-                    <span className="material-symbols-outlined animate-spin text-primary">progress_activity</span>
+                    <Spinner size="lg" />
                 </div>
             ) : (
                 <div className="space-y-3">

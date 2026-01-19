@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase'; // Keep for auth and conflict check
+import { clientsAPI, servicesAPI, appointmentsAPI } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
-// import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 import { checkWorkingHours } from '../../lib/availability';
 import { logActivity } from '../../lib/logger';
+import { ButtonSpinner } from '../ui/Spinner';
 
 export default function QuickAppointmentModal({
     isOpen,
@@ -16,8 +18,8 @@ export default function QuickAppointmentModal({
     canAssignStaff = false,
     staffList = []
 }) {
+    const { clinic } = useAuth();
     const { success, error: showError } = useToast();
-    // const { profile } = useAuth(); // Unused
     const [loading, setLoading] = useState(false);
     const [clients, setClients] = useState([]);
     const [services, setServices] = useState([]);
@@ -52,11 +54,15 @@ export default function QuickAppointmentModal({
     }, [formData.date, formData.time, formData.staff_id, formData.service_id]);
 
     const fetchOptions = async () => {
-        const { data: clientsData } = await supabase.from('clients').select('id, first_name, last_name, phone').order('first_name');
-        const { data: servicesData } = await supabase.from('services').select('id, name, duration_min, price').order('name');
+        if (!clinic?.id) return;
 
-        if (clientsData) setClients(clientsData);
-        if (servicesData) setServices(servicesData);
+        const [clientsResult, servicesResult] = await Promise.all([
+            clientsAPI.getClients(clinic.id),
+            servicesAPI.getActiveServices(clinic.id)
+        ]);
+
+        if (clientsResult.data) setClients(clientsResult.data);
+        if (servicesResult.data) setServices(servicesResult.data);
     };
 
     const handleSubmit = async (e) => {
@@ -130,23 +136,24 @@ export default function QuickAppointmentModal({
                 client_id: formData.client_id,
                 service_id: formData.service_id,
                 staff_id: targetStaffId,
-                // service_name: selectedService?.name, // Removed as per schema check
+                clinic_id: clinic?.id,
                 date: formData.date,
                 time: formData.time,
                 status: 'Scheduled',
                 notes: formData.notes
             };
 
-            const { error: insertError } = await supabase
-                .from('appointments')
-                .insert([payload]);
+            const { data: newAppointment, error: insertError } = await appointmentsAPI.create(payload);
 
-            if (insertError) throw insertError;
+            if (insertError) {
+                showError(insertError);
+                setLoading(false);
+                return;
+            }
 
             success('Randevu başarıyla planlandı');
 
-            // Log Activity
-            await logActivity('Created Appointment', {
+            await logActivity('Randevu Oluşturuldu', {
                 client_id: formData.client_id,
                 service_id: formData.service_id,
                 staff_id: targetStaffId,
@@ -158,7 +165,7 @@ export default function QuickAppointmentModal({
             onClose();
         } catch (err) {
             console.error('Error creating appointment:', err);
-            showError('Randevu oluşturulamadı');
+            showError('Randevu oluşturulurken bir hata oluştu');
         } finally {
             setLoading(false);
         }
@@ -283,7 +290,7 @@ export default function QuickAppointmentModal({
                                 : 'bg-primary text-white shadow-primary/25 hover:bg-primary-dark'
                                 }`}
                         >
-                            {loading && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
+                            {loading && <ButtonSpinner />}
                             {ignoreConflict ? 'Zorla Planla' : 'Planla'}
                         </button>
                     </div>

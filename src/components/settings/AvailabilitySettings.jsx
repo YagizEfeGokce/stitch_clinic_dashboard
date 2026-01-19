@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase'; // Keep for availability upsert
+import { clinicsAPI } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { logActivity } from '../../lib/logger';
+import { Spinner, ButtonSpinner } from '../ui/Spinner';
 
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 export default function AvailabilitySettings() {
-    const { user } = useAuth();
-    const { toast } = useToast();
+    const { user, clinic } = useAuth();
+    const { success, error: showError } = useToast();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [availability, setAvailability] = useState([]);
@@ -27,10 +29,12 @@ export default function AvailabilitySettings() {
     }, [user]);
 
     const fetchClinicSettings = async () => {
+        if (!clinic?.id) return;
+
         try {
-            const response = await supabase.from('clinics').select('settings_config').single();
-            if (response && response.data?.settings_config) {
-                setClinicSettings(response.data.settings_config);
+            const { data, error } = await clinicsAPI.getClinic(clinic.id);
+            if (!error && data?.settings_config) {
+                setClinicSettings(data.settings_config);
             }
         } catch (error) {
             console.error('Error fetching clinic settings:', error);
@@ -69,7 +73,7 @@ export default function AvailabilitySettings() {
             setAvailability(initializedData);
         } catch (error) {
             console.error('Error fetching availability:', error);
-            toast.error('Could not load schedule');
+            showError('Program yüklenirken bir hata oluştu');
         }
     };
 
@@ -90,13 +94,13 @@ export default function AvailabilitySettings() {
                     if (day.is_working) {
                         if (working_start_hour && working_end_hour) {
                             if (day.start_time < working_start_hour || day.end_time > working_end_hour) {
-                                toast.error(`Invalid hours for ${day.day_of_week}. Must be between ${working_start_hour} - ${working_end_hour}`);
+                                showError(`${day.day_of_week} için geçersiz saat. Klinik saatleri: ${working_start_hour} - ${working_end_hour}`);
                                 setSaving(false);
                                 return;
                             }
                         }
                         if (day.start_time >= day.end_time) {
-                            toast.error(`Invalid time range for ${day.day_of_week}. Start time must be before End time.`);
+                            showError(`${day.day_of_week} için geçersiz saat aralığı. Başlangıç bitiş saatinden önce olmalı.`);
                             setSaving(false);
                             return;
                         }
@@ -129,20 +133,19 @@ export default function AvailabilitySettings() {
                 throw error;
             }
 
-            await logActivity('Updated Availability', { count: payload.length });
-            toast.success('Schedule updated successfully');
+            await logActivity('Program Güncellendi', { count: payload.length });
+            success('Program başarıyla güncellendi');
 
             await fetchAvailability();
         } catch (error) {
             console.error('Error saving availability:', error);
-            const msg = error.message || 'Unknown error occurred';
-            toast.error('Failed to save: ' + msg);
+            showError('Program kaydedilirken bir hata oluştu');
         } finally {
             setSaving(false);
         }
     };
 
-    if (loading) return <div className="p-8 text-center"><span className="material-symbols-outlined animate-spin text-primary">progress_activity</span></div>;
+    if (loading) return <div className="p-8 text-center"><Spinner size="lg" /></div>;
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -207,7 +210,7 @@ export default function AvailabilitySettings() {
                         disabled={saving}
                         className="bg-slate-900 text-white font-bold py-2.5 px-6 rounded-xl shadow-lg shadow-slate-900/10 hover:bg-slate-800 transition-colors flex items-center gap-2"
                     >
-                        {saving && <span className="material-symbols-outlined animate-spin text-sm">progress_activity</span>}
+                        {saving && <ButtonSpinner />}
                         Save Changes
                     </button>
                 </div>

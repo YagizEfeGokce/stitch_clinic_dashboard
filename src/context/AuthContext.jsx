@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { TIMEOUTS } from '../utils/constants';
+import { setSentryUser, clearSentryUser, setContext } from '../lib/sentry';
 
 const AuthContext = createContext({});
 
@@ -36,6 +37,14 @@ export default function AuthProvider({ children }) {
             if (profileData) {
                 setProfile(profileData);
                 setRole(profileData.role);
+
+                // Set Sentry user context for better error tracking
+                setSentryUser({
+                    id: userId,
+                    email: profileData.email || '',
+                    full_name: profileData.full_name,
+                });
+
 
                 // 2. Fetch Clinic if we have a clinic_id
                 if (profileData.clinic_id) {
@@ -90,6 +99,7 @@ export default function AuthProvider({ children }) {
                 setRole(null);
                 setProfile(null);
                 setClinic(null);
+                clearSentryUser(); // Clear Sentry user context on logout
             }
 
             // Always clear loading on the first meaningful event, cancelling the failsafe

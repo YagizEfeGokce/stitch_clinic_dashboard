@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import FeedbackStats from '../components/reviews/FeedbackStats';
 import ReviewCard from '../components/reviews/ReviewCard';
 import AddReviewModal from '../components/reviews/AddReviewModal';
-import { supabase } from '../lib/supabase';
+import { reviewsAPI } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
+import { Spinner } from '../components/ui/Spinner';
 
 export default function Reviews() {
+    const { clinic } = useAuth();
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState('All');
@@ -15,15 +18,16 @@ export default function Reviews() {
     }, []);
 
     const fetchReviews = async () => {
+        if (!clinic?.id) return;
+
         try {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('reviews')
-                .select('*')
-                .order('date', { ascending: false })
-                .limit(50);
+            const { data, error } = await reviewsAPI.getReviews(clinic.id);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Error fetching reviews:', error);
+                return;
+            }
             setReviews(data || []);
         } catch (error) {
             console.error('Error fetching reviews:', error);
@@ -105,7 +109,7 @@ export default function Reviews() {
             <div className="flex flex-col gap-4 p-6">
                 {loading ? (
                     <div className="flex justify-center py-10">
-                        <span className="material-symbols-outlined animate-spin text-primary text-3xl">progress_activity</span>
+                        <Spinner size="lg" />
                     </div>
                 ) : filteredReviews.length > 0 ? (
                     filteredReviews.map(review => (
