@@ -1,33 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { appointmentsAPI, inventoryAPI } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 
 const ActionCenter = () => {
     const [actions, setActions] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     useEffect(() => {
-        fetchActions();
-    }, []);
+        if (user?.clinic_id) {
+            fetchActions();
+        }
+    }, [user?.clinic_id]);
 
     const fetchActions = async () => {
         try {
             // Parallel Fetching for "Actionable Items"
-            const [pendingApts, lowStock] = await Promise.all([
-                // 1. Pending Appointments
-                supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-                // 2. Low Stock Items (quantity < 10)
-                supabase.from('inventory').select('*', { count: 'exact', head: true }).lt('quantity', 10)
+            const [pendingRes, statsRes] = await Promise.all([
+                appointmentsAPI.getPendingCount(user.clinic_id),
+                inventoryAPI.getInventoryStats(user.clinic_id)
             ]);
 
             const newActions = [];
 
-            if (pendingApts.count > 0) {
+            // 1. Pending Appointments
+            if (pendingRes.count > 0) {
                 newActions.push({
                     id: 'pending-apts',
                     icon: 'calendar_clock',
-                    title: `${pendingApts.count} Bekleyen Randevu`,
+                    title: `${pendingRes.count} Bekleyen Randevu`,
                     subtitle: 'Onay gerekiyor',
                     color: 'text-amber-600',
                     bg: 'bg-amber-50',
@@ -35,11 +38,13 @@ const ActionCenter = () => {
                 });
             }
 
-            if (lowStock.count > 0) {
+            // 2. Low Stock Items
+            const lowStockCount = statsRes.data?.lowStockCount || 0;
+            if (lowStockCount > 0) {
                 newActions.push({
                     id: 'low-stock',
                     icon: 'inventory_2',
-                    title: `${lowStock.count} Düşük Stoklu Ürün`,
+                    title: `${lowStockCount} Düşük Stoklu Ürün`,
                     subtitle: 'Sipariş gerekli',
                     color: 'text-rose-600',
                     bg: 'bg-rose-50',

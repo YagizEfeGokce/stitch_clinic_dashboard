@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { appointmentsAPI, transactionsAPI } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
 
 /**
@@ -29,10 +29,7 @@ export default function CompactTimelineCard({
         e.stopPropagation();
         setUpdating(true);
         try {
-            const { error } = await supabase
-                .from('appointments')
-                .update({ status: 'Confirmed' })
-                .eq('id', appointment.id);
+            const { error } = await appointmentsAPI.updateStatus(appointment.id, 'Confirmed');
 
             if (error) throw error;
             success('Randevu onaylandı');
@@ -49,21 +46,17 @@ export default function CompactTimelineCard({
         setUpdating(true);
         try {
             // 1. Update appointment status
-            const { error } = await supabase
-                .from('appointments')
-                .update({ status: 'Completed' })
-                .eq('id', appointment.id);
+            const { error } = await appointmentsAPI.updateStatus(appointment.id, 'Completed');
 
             if (error) throw error;
 
             // 2. Auto-add transaction (revenue) for the service
             const servicePrice = services?.price || 0;
             if (servicePrice > 0 && clients?.id) {
-                await supabase.from('transactions').insert({
+                await transactionsAPI.createIncome({
                     clinic_id: appointment.clinic_id,
                     client_id: clients.id,
                     amount: servicePrice,
-                    type: 'income',
                     category: 'Hizmet Geliri',
                     description: `${serviceName} - ${clientName}`,
                     date: appointment.date,

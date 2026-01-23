@@ -7,7 +7,7 @@ import {
     Users, Calendar, TrendingUp, DollarSign
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
+import { superAdminAPI } from '../lib/api';
 import Finance from '../pages/Finance';
 import Performance from '../pages/Performance';
 
@@ -111,14 +111,7 @@ function FeedbackPanel() {
     const fetchFeedbacks = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('feedback')
-                .select(`
-                    *,
-                    profiles:user_id ( full_name, email ),
-                    clinics:clinic_id ( name )
-                `)
-                .order('created_at', { ascending: false });
+            const { data, error } = await superAdminAPI.getFeedbacks();
 
             if (error) throw error;
             setFeedbacks(data || []);
@@ -131,7 +124,7 @@ function FeedbackPanel() {
 
     const updateStatus = async (id, status) => {
         try {
-            await supabase.from('feedback').update({ status }).eq('id', id);
+            await superAdminAPI.updateFeedbackStatus(id, status);
             fetchFeedbacks();
         } catch (err) {
             console.error('Status update error:', err);
@@ -257,17 +250,7 @@ function ClinicsPanel() {
         setLoading(true);
         try {
             // Fetch all clinics with their data
-            const { data: clinicsData, error: clinicsError } = await supabase
-                .from('clinics')
-                .select(`
-                    id,
-                    name,
-                    created_at,
-                    clients ( id ),
-                    appointments ( id, status ),
-                    transactions ( amount, type )
-                `)
-                .order('created_at', { ascending: false });
+            const { data: clinicsData, error: clinicsError } = await superAdminAPI.getClinicsOverview();
 
             if (clinicsError) throw clinicsError;
 

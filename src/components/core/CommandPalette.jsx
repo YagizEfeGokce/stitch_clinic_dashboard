@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { clientsAPI, inventoryAPI } from '../../lib/api';
+import { useAuth } from '../../context/AuthContext';
 
 const CommandPalette = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -9,6 +10,7 @@ const CommandPalette = () => {
     const [activeIndex, setActiveIndex] = useState(0);
     const inputRef = useRef(null);
     const navigate = useNavigate();
+    const { user } = useAuth(); // Get user for clinic_id
 
     // Toggle with Ctrl+K
     useEffect(() => {
@@ -38,15 +40,15 @@ const CommandPalette = () => {
     // Search Logic
     useEffect(() => {
         const delayDebounce = setTimeout(async () => {
-            if (searchTerm.length < 2) {
+            if (searchTerm.length < 2 || !user?.clinic_id) {
                 setResults([]);
                 return;
             }
 
             // Parallel Search
             const [clientsRes, inventoryRes] = await Promise.all([
-                supabase.from('clients').select('id, first_name, last_name, image_url').ilike('first_name', `%${searchTerm}%`).limit(3),
-                supabase.from('inventory').select('id, name').ilike('name', `%${searchTerm}%`).limit(3)
+                clientsAPI.searchClients(user.clinic_id, searchTerm),
+                inventoryAPI.search(user.clinic_id, searchTerm, ['name'])
             ]);
 
             const staticPages = [
@@ -60,8 +62,18 @@ const CommandPalette = () => {
 
             const combined = [
                 ...staticPages,
-                ...(clientsRes.data || []).map(c => ({ ...c, type: 'client', title: `${c.first_name} ${c.last_name}`, path: `/clients/${c.id}` })),
-                ...(inventoryRes.data || []).map(i => ({ ...i, type: 'product', title: i.name, path: '/inventory' }))
+                ...(clientsRes.data || []).slice(0, 3).map(c => ({
+                    id: c.id,
+                    type: 'client',
+                    title: `${c.first_name} ${c.last_name}`,
+                    path: `/clients/${c.id}`
+                })),
+                ...(inventoryRes.data || []).slice(0, 3).map(i => ({
+                    id: i.id,
+                    type: 'product',
+                    title: i.name,
+                    path: '/inventory'
+                }))
             ];
 
             setResults(combined);
@@ -69,7 +81,7 @@ const CommandPalette = () => {
         }, 300);
 
         return () => clearTimeout(delayDebounce);
-    }, [searchTerm]);
+    }, [searchTerm, user?.clinic_id]);
 
     // Navigation Logic
     const handleSelect = (item) => {

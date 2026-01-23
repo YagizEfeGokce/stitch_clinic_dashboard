@@ -23,6 +23,7 @@ export { inventoryAPI } from './inventory';
 export { transactionsAPI } from './transactions';
 export { clinicsAPI, staffAPI } from './clinics';
 export { reviewsAPI } from './reviews';
+export { superAdminAPI } from './superAdmin';
 
 // Re-export BaseAPI for custom extensions
 export { default as BaseAPI } from './baseClient';
