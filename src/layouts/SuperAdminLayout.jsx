@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { ResponsiveTable, createColumn } from '../components/ui/ResponsiveTable';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
     Shield, MessageSquare, Building2, LogOut, Loader2,
@@ -7,6 +8,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import Finance from '../pages/Finance';
+import Performance from '../pages/Performance';
 
 // Only these emails can access Super Admin
 const SUPER_ADMIN_EMAILS = [
@@ -34,7 +37,10 @@ export default function SuperAdminLayout() {
 
     const navItems = [
         { id: 'feedback', label: 'Geri Bildirimler', icon: MessageSquare },
+        { id: 'betawaitlist', label: 'Beta Bekleme Listesi', icon: Users },
         { id: 'clinics', label: 'Klinikler', icon: Building2 },
+        { id: 'finance', label: 'Finans', icon: DollarSign },
+        { id: 'performance', label: 'Performans', icon: TrendingUp },
     ];
 
     return (
@@ -54,8 +60,8 @@ export default function SuperAdminLayout() {
                             key={item.id}
                             onClick={() => setActivePage(item.id)}
                             className={`w-full px-4 py-3 rounded-xl flex items-center gap-3 transition-colors ${activePage === item.id
-                                    ? 'bg-red-600/10 text-red-400 border border-red-600/20'
-                                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                ? 'bg-red-600/10 text-red-400 border border-red-600/20'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
                                 }`}
                         >
                             <item.icon className="w-5 h-5" />
@@ -82,7 +88,10 @@ export default function SuperAdminLayout() {
             <main className="flex-1 overflow-auto">
                 <div className="p-8">
                     {activePage === 'feedback' && <FeedbackPanel />}
+                    {activePage === 'betawaitlist' && <BetaWaitlistPanel />}
                     {activePage === 'clinics' && <ClinicsPanel />}
+                    {activePage === 'finance' && <Finance />}
+                    {activePage === 'performance' && <Performance />}
                 </div>
             </main>
         </div>
@@ -172,7 +181,7 @@ function FeedbackPanel() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <StatCard value={stats.total} label="Toplam" color="slate" />
                 <StatCard value={stats.new} label="Bekleyen" color="blue" />
                 <StatCard value={stats.resolved} label="Çözülen" color="green" />
@@ -317,7 +326,7 @@ function ClinicsPanel() {
             </div>
 
             {/* Global Stats */}
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 <div className="p-5 bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl text-white">
                     <Building2 className="w-8 h-8 mb-3 text-slate-400" />
                     <p className="text-3xl font-bold">{stats.totalClinics}</p>
@@ -349,49 +358,53 @@ function ClinicsPanel() {
                     <p className="text-slate-500 font-medium">Henüz klinik yok</p>
                 </div>
             ) : (
-                <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100">
-                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Klinik</th>
-                                <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Müşteriler</th>
-                                <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Randevular</th>
-                                <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Tamamlanan</th>
-                                <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Ciro</th>
-                                <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Kayıt Tarihi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {clinics.map(clinic => (
-                                <tr key={clinic.id} className="hover:bg-slate-50 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                                                <Building2 className="w-5 h-5 text-primary" />
-                                            </div>
-                                            <span className="font-bold text-slate-900">{clinic.name}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <span className="font-bold text-slate-900">{clinic.clientCount}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <span className="font-bold text-slate-900">{clinic.appointmentCount}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <span className="font-bold text-green-600">{clinic.completedCount}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <span className="font-bold text-emerald-600">{formatCurrency(clinic.revenue)}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-right text-sm text-slate-500">
-                                        {new Date(clinic.created_at).toLocaleDateString('tr-TR')}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <ResponsiveTable
+                    columns={[
+                        createColumn({
+                            key: 'name',
+                            label: 'Klinik',
+                            primary: true,
+                            render: (value) => (
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                                        <Building2 className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <span className="font-bold text-slate-900">{value}</span>
+                                </div>
+                            ),
+                        }),
+                        createColumn({
+                            key: 'clientCount',
+                            label: 'Müşteriler',
+                            render: (value) => <span className="font-bold text-slate-900">{value}</span>,
+                        }),
+                        createColumn({
+                            key: 'appointmentCount',
+                            label: 'Randevular',
+                            hideOnMobile: true,
+                            render: (value) => <span className="font-bold text-slate-900">{value}</span>,
+                        }),
+                        createColumn({
+                            key: 'completedCount',
+                            label: 'Tamamlanan',
+                            render: (value) => <span className="font-bold text-green-600">{value}</span>,
+                        }),
+                        createColumn({
+                            key: 'revenue',
+                            label: 'Ciro',
+                            render: (value) => <span className="font-bold text-emerald-600">{formatCurrency(value)}</span>,
+                        }),
+                        createColumn({
+                            key: 'created_at',
+                            label: 'Kayıt Tarihi',
+                            hideOnMobile: true,
+                            render: (value) => new Date(value).toLocaleDateString('tr-TR'),
+                        }),
+                    ]}
+                    data={clinics}
+                    keyField="id"
+                    emptyMessage="Henüz klinik yok"
+                />
             )}
         </div>
     );
@@ -410,4 +423,11 @@ function StatCard({ value, label, color }) {
             <p className="text-sm text-slate-500 font-medium mt-1">{label}</p>
         </div>
     );
+}
+
+// ==================== BETA WAITLIST PANEL ====================
+import BetaWaitlist from '../pages/admin/BetaWaitlist';
+
+function BetaWaitlistPanel() {
+    return <BetaWaitlist />;
 }

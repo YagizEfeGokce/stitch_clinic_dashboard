@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { ResponsiveTable, createColumn } from '../ui/ResponsiveTable';
 
 export default function TransactionTable({ transactions, onRefresh }) {
     const [deletingId, setDeletingId] = useState(null);
@@ -31,17 +32,69 @@ export default function TransactionTable({ transactions, onRefresh }) {
         }
     };
 
-    if (!transactions || transactions.length === 0) {
-        return (
-            <div className="p-8 text-center bg-white rounded-3xl border border-dashed border-slate-200">
-                <div className="size-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4 text-slate-300">
-                    <span className="material-symbols-outlined text-3xl">receipt_long</span>
+    // Column definitions for ResponsiveTable
+    const columns = [
+        createColumn({
+            key: 'description',
+            label: 'İşlem',
+            primary: true,
+            render: (value, row) => (
+                <div className="flex items-center gap-3">
+                    <div className={`size-10 rounded-full flex items-center justify-center shrink-0 ${row.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                        }`}>
+                        <span className="material-symbols-outlined text-[20px]">
+                            {row.type === 'income' ? 'arrow_downward' : 'arrow_upward'}
+                        </span>
+                    </div>
+                    <div>
+                        <p className="text-slate-900 font-bold">{value}</p>
+                        <p className="text-[11px] text-slate-400 font-bold uppercase">{row.payment_method}</p>
+                    </div>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">İşlem Bulunamadı</h3>
-                <p className="text-slate-500 text-sm mt-1">Başlamak için ilk gelir veya giderinizi ekleyin.</p>
-            </div>
-        );
-    }
+            ),
+        }),
+        createColumn({
+            key: 'category',
+            label: 'Kategori',
+            hideOnMobile: true,
+            render: (value) => (
+                <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold">
+                    {value}
+                </span>
+            ),
+        }),
+        createColumn({
+            key: 'date',
+            label: 'Tarih',
+            render: (value) => new Date(value).toLocaleDateString('tr-TR'),
+        }),
+        createColumn({
+            key: 'amount',
+            label: 'Miktar',
+            render: (value, row) => (
+                <span className={`font-bold text-[15px] ${row.type === 'income' ? 'text-green-600' : 'text-slate-900'}`}>
+                    {row.type === 'income' ? '+' : '-'}₺{parseFloat(value).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                </span>
+            ),
+        }),
+    ];
+
+    // Render action buttons
+    const renderActions = (row) => (
+        <button
+            onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteClick(row.id);
+            }}
+            disabled={deletingId === row.id}
+            className="size-9 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors"
+            aria-label="İşlemi Sil"
+        >
+            <span className="material-symbols-outlined text-[18px]">
+                {deletingId === row.id ? 'progress_activity' : 'delete'}
+            </span>
+        </button>
+    );
 
     return (
         <>
@@ -50,62 +103,15 @@ export default function TransactionTable({ transactions, onRefresh }) {
                     <h3 className="font-bold text-slate-900 text-lg">Son İşlemler</h3>
                     <button className="text-primary text-sm font-bold hover:underline">Tümünü Gör</button>
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm min-w-[700px]">
-                        <thead className="bg-slate-50/50 text-slate-500 font-bold uppercase text-[11px] tracking-wider">
-                            <tr>
-                                <th className="px-5 py-3 first:pl-6">İşlem</th>
-                                <th className="px-5 py-3">Kategori</th>
-                                <th className="px-5 py-3">Tarih</th>
-                                <th className="px-5 py-3">Miktar</th>
-                                <th className="px-5 py-3 text-right first:pr-6">İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50 text-slate-600 font-medium">
-                            {transactions.map((t) => (
-                                <tr key={t.id} className="hover:bg-slate-50/50 transition-colors group">
-                                    <td className="px-5 py-4 first:pl-6">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`size-10 rounded-full flex items-center justify-center ${t.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                                                }`}>
-                                                <span className="material-symbols-outlined text-[20px]">
-                                                    {t.type === 'income' ? 'arrow_downward' : 'arrow_upward'}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <p className="text-slate-900 font-bold">{t.description}</p>
-                                                <p className="text-[11px] text-slate-400 font-bold uppercase">{t.payment_method}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-5 py-4">
-                                        <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold">
-                                            {t.category}
-                                        </span>
-                                    </td>
-                                    <td className="px-5 py-4 text-slate-500">
-                                        {new Date(t.date).toLocaleDateString('tr-TR')}
-                                    </td>
-                                    <td className={`px-5 py-4 font-bold text-[15px] ${t.type === 'income' ? 'text-green-600' : 'text-slate-900'
-                                        }`}>
-                                        {t.type === 'income' ? '+' : '-'}₺{parseFloat(t.amount).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-                                    </td>
-                                    <td className="px-5 py-4 text-right first:pr-6">
-                                        <button
-                                            onClick={() => handleDeleteClick(t.id)}
-                                            disabled={deletingId === t.id}
-                                            className="size-8 rounded-full hover:bg-red-50 text-slate-300 hover:text-red-500 flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
-                                            aria-label="İşlemi Sil"
-                                        >
-                                            <span className="material-symbols-outlined text-[18px]">
-                                                {deletingId === t.id ? 'progress_activity' : 'delete'}
-                                            </span>
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+
+                <div className="p-4">
+                    <ResponsiveTable
+                        columns={columns}
+                        data={transactions || []}
+                        renderActions={renderActions}
+                        emptyMessage="Başlamak için ilk gelir veya giderinizi ekleyin."
+                        keyField="id"
+                    />
                 </div>
             </div>
 

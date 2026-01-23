@@ -3,6 +3,7 @@ export const ROLES = {
     OWNER: 'owner',
     DOCTOR: 'doctor',
     STAFF: 'staff',
+    SUPER_ADMIN: 'super_admin',
 };
 
 export const TIMEOUTS = {

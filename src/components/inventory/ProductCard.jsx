@@ -109,7 +109,7 @@ export default function ProductCard({ product, onEdit, onDelete }) {
                                     >
                                         <span className="material-symbols-outlined text-[16px]">edit</span> Düzenle
                                     </button>
-                                    {(role === 'admin' || role === 'owner' || role === 'doctor') && (
+                                    {(role === 'admin' || role === 'owner' || role === 'doctor' || role === 'super_admin') && (
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();

@@ -46,7 +46,7 @@ export default function MonthView({ currentDate, appointments, onSelectDate }) {
         return map;
     }, [appointments]);
 
-    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekDays = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -99,7 +99,7 @@ export default function MonthView({ currentDate, appointments, onSelectDate }) {
                                 ))}
                                 {apts.length > 3 && (
                                     <div className="text-[10px] text-slate-400 pl-1">
-                                        + {apts.length - 3} more
+                                        + {apts.length - 3} daha
                                     </div>
                                 )}
                             </div>

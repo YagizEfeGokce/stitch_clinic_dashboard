@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { servicesAPI } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
+import { useOptimistic } from '../../hooks/useOptimistic';
 import { logActivity } from '../../lib/logger';
 import { ButtonSpinner } from '../ui/Spinner';
 
 export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
     const { success, error: showError } = useToast();
-    const [loading, setLoading] = useState(false);
+    const { optimisticUpdate, isProcessing } = useOptimistic();
     const [formData, setFormData] = useState({
         name: '',
         duration_min: 30,
@@ -34,7 +35,6 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
 
         const serviceData = {
             name: formData.name,
@@ -43,45 +43,52 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
             description: formData.description
         };
 
-        try {
-            if (service) {
-                // Edit Mode
-                const { error } = await servicesAPI.update(service.id, serviceData);
-                if (error) {
-                    showError(error);
-                    return;
+        // Close modal immediately for better UX
+        onClose();
+
+        await optimisticUpdate({
+            perform: () => {
+                // Trigger parent refresh optimistically
+                onSuccess();
+            },
+
+            rollback: () => {
+                // Nothing to rollback in the modal itself
+                // Parent will need to refetch on error
+            },
+
+            operation: async () => {
+                if (service) {
+                    // Edit Mode
+                    const result = await servicesAPI.update(service.id, serviceData);
+                    if (!result.error) {
+                        await logActivity('Hizmet Güncellendi', {
+                            service_name: formData.name,
+                            service_id: service.id,
+                        });
+                    }
+                    return result;
+                } else {
+                    // Create Mode
+                    const result = await servicesAPI.create(serviceData);
+                    if (!result.error && result.data) {
+                        await logActivity('Hizmet Oluşturuldu', {
+                            service_name: formData.name,
+                            service_id: result.data?.id
+                        });
+                    }
+                    return result;
                 }
+            },
 
-                await logActivity('Hizmet Güncellendi', {
-                    service_name: formData.name,
-                    service_id: service.id,
-                });
+            successMessage: service ? 'Hizmet başarıyla güncellendi' : 'Hizmet başarıyla oluşturuldu',
+            errorMessage: 'Hizmet kaydedilirken bir hata oluştu',
 
-                success('Hizmet başarıyla güncellendi');
-            } else {
-                // Create Mode
-                const { data, error } = await servicesAPI.create(serviceData);
-                if (error) {
-                    showError(error);
-                    return;
-                }
-
-                await logActivity('Hizmet Oluşturuldu', {
-                    service_name: formData.name,
-                    service_id: data?.id
-                });
-
-                success('Hizmet başarıyla oluşturuldu');
+            onError: () => {
+                // Refetch to get correct state
+                onSuccess();
             }
-
-            onSuccess();
-            onClose();
-        } catch (error) {
-            console.error('Error saving service:', error);
-            showError('Hizmet kaydedilirken bir hata oluştu');
-        } finally {
-            setLoading(false);
-        }
+        });
     };
 
     if (!isOpen) return null;

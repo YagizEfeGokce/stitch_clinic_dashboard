@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase'; // Keep for storage operations
 import { inventoryAPI } from '../../lib/api';
 import { useToast } from '../../context/ToastContext';
+import { useOptimistic } from '../../hooks/useOptimistic';
 import { logActivity } from '../../lib/logger';
 import { useAuth } from '../../context/AuthContext';
 import { ButtonSpinner } from '../ui/Spinner';
@@ -9,7 +10,7 @@ import { ButtonSpinner } from '../ui/Spinner';
 export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit = null }) {
     const { success, error: showError } = useToast();
     const { profile } = useAuth();
-    const [loading, setLoading] = useState(false);
+    const { optimisticUpdate } = useOptimistic();
     const [uploading, setUploading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -81,7 +82,6 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
 
         const payload = {
             name: formData.name,
@@ -93,55 +93,57 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
             image_url: formData.image_url
         };
 
-        try {
-            if (productToEdit) {
-                // UPDATE using API
-                const { error: updateError } = await inventoryAPI.update(productToEdit.id, payload);
+        // Close modal immediately for better UX
+        onClose();
 
-                if (updateError) {
-                    showError(updateError);
-                    return;
+        await optimisticUpdate({
+            perform: () => {
+                onSuccess();
+            },
+
+            rollback: () => {
+                // Parent will refetch on error
+            },
+
+            operation: async () => {
+                if (productToEdit) {
+                    // UPDATE
+                    const result = await inventoryAPI.update(productToEdit.id, payload);
+                    if (!result.error) {
+                        await logActivity('Ürün Güncellendi', {
+                            item_name: formData.name,
+                            item_id: productToEdit.id,
+                        });
+                    }
+                    return result;
+                } else {
+                    // CREATE
+                    if (!profile?.clinic_id) {
+                        return { error: 'Bir kliniğe bağlı değilsiniz.' };
+                    }
+
+                    const result = await inventoryAPI.create({
+                        ...payload,
+                        clinic_id: profile.clinic_id
+                    });
+
+                    if (!result.error && result.data) {
+                        await logActivity('Ürün Oluşturuldu', {
+                            item_name: formData.name,
+                            item_id: result.data?.id
+                        });
+                    }
+                    return result;
                 }
+            },
 
-                await logActivity('Ürün Güncellendi', {
-                    item_name: formData.name,
-                    item_id: productToEdit.id,
-                });
+            successMessage: productToEdit ? 'Ürün başarıyla güncellendi' : 'Ürün başarıyla oluşturuldu',
+            errorMessage: 'Ürün kaydedilirken bir hata oluştu',
 
-                success('Ürün başarıyla güncellendi');
-            } else {
-                // CREATE using API
-                if (!profile?.clinic_id) {
-                    showError('Bir kliniğe bağlı değilsiniz.');
-                    return;
-                }
-
-                const { data, error: insertError } = await inventoryAPI.create({
-                    ...payload,
-                    clinic_id: profile.clinic_id
-                });
-
-                if (insertError) {
-                    showError(insertError);
-                    return;
-                }
-
-                await logActivity('Ürün Oluşturuldu', {
-                    item_name: formData.name,
-                    item_id: data?.id
-                });
-
-                success('Ürün başarıyla oluşturuldu');
+            onError: () => {
+                onSuccess(); // Refetch to get correct state
             }
-
-            onSuccess();
-            onClose();
-        } catch (error) {
-            console.error('Error saving product:', error);
-            showError('Ürün kaydedilirken bir hata oluştu');
-        } finally {
-            setLoading(false);
-        }
+        });
     };
 
     if (!isOpen) return null;

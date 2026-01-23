@@ -6,16 +6,23 @@ export default function RevenueChart({ transactions = [] }) {
     const chartData = useMemo(() => {
         const incomeTxns = transactions.filter(t => t.type === 'income');
 
-        // Group by date
+        // Group by date with raw date for sorting
         const grouped = incomeTxns.reduce((acc, t) => {
-            const date = new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            acc[date] = (acc[date] || 0) + parseFloat(t.amount);
+            const rawDate = new Date(t.date);
+            const dateKey = rawDate.toISOString().split('T')[0]; // YYYY-MM-DD for sorting
+            const displayName = rawDate.toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' });
+
+            if (!acc[dateKey]) {
+                acc[dateKey] = { name: displayName, value: 0, sortKey: dateKey };
+            }
+            acc[dateKey].value += parseFloat(t.amount);
             return acc;
         }, {});
 
-        // Convert to array and sort by date (simplified logic for demo)
-        // ideally we would fill in missing dates with 0
-        return Object.entries(grouped).map(([name, value]) => ({ name, value }));
+        // Convert to array and sort by date (oldest to newest - left to right)
+        return Object.values(grouped)
+            .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+            .map(({ name, value }) => ({ name, value }));
     }, [transactions]);
 
     const totalRevenue = transactions

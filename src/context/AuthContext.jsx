@@ -14,6 +14,7 @@ export default function AuthProvider({ children }) {
     const [profile, setProfile] = useState(null);
     const [clinic, setClinic] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [profileLoading, setProfileLoading] = useState(false);
     const loadingRef = useRef(true);
 
     useEffect(() => {
@@ -21,6 +22,7 @@ export default function AuthProvider({ children }) {
     }, [loading]);
 
     const refreshUserData = async (userId, retries = 3) => {
+        setProfileLoading(true);
         try {
             // 1. Fetch Profile First (Simple query, less likely to fail)
             const { data: profileData, error: profileError } = await supabase
@@ -67,6 +69,8 @@ export default function AuthProvider({ children }) {
             }
         } catch (error) {
             console.error('Fatal error in refreshUserData:', error);
+        } finally {
+            setProfileLoading(false);
         }
     };
 
@@ -171,7 +175,7 @@ export default function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, role, profile, clinic, setClinic, signIn, signOut, signUp, loading, refreshUserData }}>
+        <AuthContext.Provider value={{ user, role, profile, clinic, setClinic, signIn, signOut, signUp, loading, profileLoading, refreshUserData }}>
             {children}
         </AuthContext.Provider>
     );

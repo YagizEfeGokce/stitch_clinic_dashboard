@@ -1,22 +1,91 @@
 {
-    "name": "Dermdesk CRM",
+    "name": "Dermdesk - Klinik Yönetim Paneli",
     "short_name": "Dermdesk",
-    "description": "Premium Clinic Management System",
+    "description": "Estetik klinikler için profesyonel yönetim paneli. Randevu, hasta takibi ve stok yönetimi.",
     "start_url": "/",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#7c3aed",
+    "theme_color": "#0D9488",
     "orientation": "portrait-primary",
+    "lang": "tr",
+    "categories": [
+        "business",
+        "productivity",
+        "medical"
+    ],
     "icons": [
         {
             "src": "/logo.png",
+            "sizes": "72x72",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "96x96",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "128x128",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/logo.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "384x384",
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "/logo.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
-    ]
+    ],
+    "screenshots": [
+        {
+            "src": "/dashboard_preview.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Dermdesk Dashboard"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Randevular",
+            "short_name": "Randevular",
+            "description": "Randevu takvimini aç",
+            "url": "/schedule",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Müşteriler",
+            "short_name": "Müşteriler",
+            "description": "Müşteri listesini aç",
+            "url": "/clients",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "prefer_related_applications": false
 }

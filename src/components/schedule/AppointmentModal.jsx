@@ -35,7 +35,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
 
     // Fetch Staff List (Admin/Doctor Only)
     useEffect(() => {
-        if ((role === 'admin' || role === 'doctor' || role === 'owner') && staffList.length === 0) {
+        if ((role === 'admin' || role === 'doctor' || role === 'owner' || role === 'super_admin') && staffList.length === 0) {
             const fetchStaff = async () => {
                 const { data } = await supabase
                     .from('profiles')
@@ -354,7 +354,7 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                     </div>
 
                     {/* Staff Reassignment (Admin/Doctor/Owner Only) */}
-                    {(role === 'admin' || role === 'doctor' || role === 'owner') && (
+                    {(role === 'admin' || role === 'doctor' || role === 'owner' || role === 'super_admin') && (
                         <div className="flex items-center gap-3 p-4 bg-purple-50/50 rounded-xl border border-purple-100 mb-6 relative group">
                             <div className="size-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
                                 <span className="material-symbols-outlined">stethoscope</span>

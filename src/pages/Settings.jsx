@@ -125,7 +125,7 @@ export default function Settings() {
                         <p className="text-primary text-sm font-medium leading-normal capitalize">
                             {(() => {
                                 const r = profile?.role?.toLowerCase();
-                                if (r === 'admin' || r === 'owner') return 'Yönetici';
+                                if (r === 'admin' || r === 'owner' || r === 'super_admin') return 'Yönetici';
                                 if (r === 'doctor') return 'Doktor';
                                 if (r === 'staff') return 'Personel';
                                 if (r === 'receptionist') return 'Resepsiyonist';

@@ -1,0 +1,14 @@
+# Dermdesk Robots.txt
+User-agent: *
+Allow: /
+Disallow: /schedule
+Disallow: /clients
+Disallow: /inventory
+Disallow: /services
+Disallow: /finance
+Disallow: /performance
+Disallow: /settings
+Disallow: /super-admin
+
+# Sitemap
+Sitemap: https://dermdesk.net/sitemap.xml

@@ -58,7 +58,7 @@ export default function Header() {
     const name = profile?.full_name || user?.user_metadata?.full_name || 'Dr. Ray';
 
     return (
-        <header className="flex items-center justify-between px-8 py-5 bg-white border-b border-slate-100 relative z-30">
+        <header className="flex items-center justify-between px-8 py-5 bg-white border-b border-slate-100 relative z-50">
             <div className="flex items-center gap-3">
                 <div className="flex items-center gap-3">
                     {/* Removed Profile/Date Header as per user request */}
@@ -78,7 +78,7 @@ export default function Header() {
 
                 {/* Notification Dropdown */}
                 {showNotifications && (
-                    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
+                    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-[100]">
                         <div className="p-4 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
                             <h3 className="font-bold text-slate-800">Bildirimler</h3>
                             <span className="text-xs font-medium text-slate-400">{allNotifications.length} Yeni</span>

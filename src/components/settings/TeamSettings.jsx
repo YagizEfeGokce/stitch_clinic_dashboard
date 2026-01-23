@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { useTeam } from '../../hooks/useTeam';
+import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../utils/constants';
 import { User, Mail, Trash2, Shield, UserPlus, X, Check } from 'lucide-react';
+import ConfirmationModal from '../ui/ConfirmationModal';
 
 export default function TeamSettings() {
-    const { members, invitations, loading, inviteMember, cancelInvitation } = useTeam();
+    const { members, invitations, loading, inviteMember, cancelInvitation, removeMember } = useTeam();
+    const { user } = useAuth();
     const [inviteEmail, setInviteEmail] = useState('');
     const [inviteRole, setInviteRole] = useState(ROLES.STAFF);
     const [isInviting, setIsInviting] = useState(false);
+
+    // Delete confirmation state
+    const [memberToRemove, setMemberToRemove] = useState(null);
+    const [isRemoving, setIsRemoving] = useState(false);
 
     const handleInvite = async (e) => {
         e.preventDefault();
@@ -23,23 +30,36 @@ export default function TeamSettings() {
         }
     };
 
+    const handleRemoveMember = async () => {
+        if (!memberToRemove) return;
+        setIsRemoving(true);
+        try {
+            await removeMember(memberToRemove.id);
+            setMemberToRemove(null);
+        } catch (error) {
+            // Toast handled in hook
+        } finally {
+            setIsRemoving(false);
+        }
+    };
+
     if (loading) {
-        return <div className="p-8 text-center text-slate-400">Yükleniyor...</div>;
+        return <div className="p-8 text-center text-slate-400">Yukleniyor...</div>;
     }
 
     return (
         <div className="space-y-8">
             {/* Header */}
             <div>
-                <h2 className="text-2xl font-black text-slate-800 tracking-tight">Ekip Yönetimi</h2>
-                <p className="text-slate-500 font-medium">Kliniğinize doktor ve asistan ekleyin.</p>
+                <h2 className="text-2xl font-black text-slate-800 tracking-tight">Ekip Yonetimi</h2>
+                <p className="text-slate-500 font-medium">Kliniginize doktor ve asistan ekleyin.</p>
             </div>
 
             {/* Invite Form */}
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
                 <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
                     <UserPlus className="w-5 h-5 text-primary" />
-                    Yeni Kişi Davet Et
+                    Yeni Kisi Davet Et
                 </h3>
                 <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-4 items-end">
                     <div className="flex-1 w-full">
@@ -62,7 +82,7 @@ export default function TeamSettings() {
                         >
                             <option value={ROLES.STAFF}>Asistan / Personel</option>
                             <option value={ROLES.DOCTOR}>Doktor</option>
-                            <option value={ROLES.ADMIN}>Yönetici</option>
+                            <option value={ROLES.ADMIN}>Yonetici</option>
                         </select>
                     </div>
                     <button
@@ -70,7 +90,7 @@ export default function TeamSettings() {
                         disabled={isInviting || !inviteEmail}
                         className="w-full sm:w-auto px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-dark hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                        {isInviting ? 'Gönderiliyor...' : 'Davet Gönder'}
+                        {isInviting ? 'Gonderiliyor...' : 'Davet Gonder'}
                     </button>
                 </form>
             </div>
@@ -85,7 +105,7 @@ export default function TeamSettings() {
                     <div className="space-y-3">
                         {members.length === 0 ? (
                             <div className="p-4 rounded-xl border border-slate-100 bg-white text-center text-slate-400 text-sm">
-                                Henüz personel yok.
+                                Henuz personel yok.
                             </div>
                         ) : (
                             members.map((member) => (
@@ -94,19 +114,28 @@ export default function TeamSettings() {
                                         {member.full_name ? member.full_name[0].toUpperCase() : '?'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="font-bold text-slate-800 truncate">{member.full_name || 'İsimsiz Kullanıcı'}</h4>
+                                        <h4 className="font-bold text-slate-800 truncate">{member.full_name || 'Isimsiz Kullanici'}</h4>
                                         <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
                                             <span className={`px-2 py-0.5 rounded-full ${member.role === ROLES.OWNER ? 'bg-purple-100 text-purple-700' :
-                                                    member.role === ROLES.DOCTOR ? 'bg-blue-100 text-blue-700' :
-                                                        'bg-slate-100 text-slate-600'
+                                                member.role === ROLES.DOCTOR ? 'bg-blue-100 text-blue-700' :
+                                                    'bg-slate-100 text-slate-600'
                                                 }`}>
                                                 {member.role === ROLES.OWNER ? 'Sahip' :
                                                     member.role === ROLES.DOCTOR ? 'Doktor' :
-                                                        member.role === ROLES.ADMIN ? 'Yönetici' : 'Personel'}
+                                                        member.role === ROLES.ADMIN ? 'Yonetici' : 'Personel'}
                                             </span>
                                         </div>
                                     </div>
-                                    {/* Actions could go here (Edit/Remove) - future scope */}
+                                    {/* Remove button - don't show for self or owner */}
+                                    {member.id !== user?.id && member.role !== ROLES.OWNER && (
+                                        <button
+                                            onClick={() => setMemberToRemove(member)}
+                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                            title="Personeli Kaldir"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    )}
                                 </div>
                             ))
                         )}
@@ -150,6 +179,18 @@ export default function TeamSettings() {
                     </div>
                 </div>
             </div>
+
+            {/* Remove Member Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={!!memberToRemove}
+                onClose={() => setMemberToRemove(null)}
+                onConfirm={handleRemoveMember}
+                title="Personeli Kaldir"
+                message={`${memberToRemove?.full_name || 'Bu personeli'} klinikten kaldirmak istediginizden emin misiniz?`}
+                confirmText="Kaldir"
+                type="danger"
+                loading={isRemoving}
+            />
         </div>
     );
 }

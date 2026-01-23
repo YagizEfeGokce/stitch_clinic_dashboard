@@ -1,69 +1,56 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { translateError } from '../utils/errorHelpers';
-import { trackEvent } from '../lib/analytics';
 import { Spinner } from '../components/ui/Spinner';
 
 export default function Login() {
-    const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [fullName, setFullName] = useState(''); // Only for Sign Up
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const planTier = searchParams.get('plan') || 'pro'; // Default to pro if not specified
+    const { signIn } = useAuth();
 
-    const { signIn, signUp } = useAuth();
-
-    const handleSubmit = async (e) => {
+    // Handle regular login
+    const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
         try {
-            if (isSignUp) {
-                // Pass planTier to signUp
-                const { error } = await signUp(email, password, fullName, planTier);
-                if (error) throw error;
+            const { data, error } = await signIn(email, password);
+            if (error) throw error;
 
-                trackEvent('signup_completed', { plan: planTier });
-                navigate('/onboarding');
-            } else {
-                // Login
-                const { data, error } = await signIn(email, password);
-                if (error) throw error;
+            // Check role for redirect
+            if (data?.user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', data.user.id)
+                    .single();
 
-                // Check role for redirect
-                if (data?.user) {
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', data.user.id)
-                        .single();
-
-                    const role = profile?.role;
-                    if (role === 'admin' || role === 'owner' || role === 'doctor') {
-                        navigate('/');
-                    } else {
-                        // Default for Staff, Clients, or unknown roles
-                        navigate('/schedule');
-                    }
+                const role = profile?.role;
+                if (role === 'super_admin') {
+                    navigate('/super-admin');
+                } else if (role === 'admin' || role === 'owner' || role === 'doctor' || role === 'super_admin') {
+                    navigate('/overview');
                 } else {
                     navigate('/schedule');
                 }
+            } else {
+                navigate('/schedule');
             }
         } catch (err) {
             console.error('Login error:', err);
-            setError(translateError(err.message || 'Authentication failed.'));
+            setError(translateError(err.message || 'Giriş yapılamadı.'));
             setLoading(false);
         }
     };
 
+    // Login Screen
     return (
         <div className="min-h-screen flex bg-white">
             {/* Left Side - Image Board */}
@@ -86,7 +73,7 @@ export default function Login() {
                         </p>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-slate-400 font-medium">
-                        <span>&copy; 2025 Dermdesk</span>
+                        <span>&copy; 2026 Dermdesk</span>
                     </div>
                 </div>
             </div>
@@ -101,10 +88,10 @@ export default function Login() {
                         </div>
 
                         <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                            {isSignUp ? 'Hesap Oluştur' : 'Hoş Geldiniz'}
+                            Hoş Geldiniz
                         </h2>
                         <p className="text-slate-500 font-medium mt-2">
-                            {isSignUp ? 'Premium denemenizi başlatın.' : 'Giriş yapmak için bilgilerinizi girin.'}
+                            Giriş yapmak için bilgilerinizi girin.
                         </p>
                     </div>
 
@@ -115,24 +102,7 @@ export default function Login() {
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        {isSignUp && (
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">Ad Soyad</label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-[20px]">person</span>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={fullName}
-                                        onChange={(e) => setFullName(e.target.value)}
-                                        className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none font-bold text-slate-900 placeholder:font-medium placeholder:text-slate-400"
-                                        placeholder="Dr. Ahmet Yılmaz"
-                                    />
-                                </div>
-                            </div>
-                        )}
-
+                    <form onSubmit={handleLogin} className="space-y-5">
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">E-posta Adresi</label>
                             <div className="relative">
@@ -163,6 +133,15 @@ export default function Login() {
                             </div>
                         </div>
 
+                        <div className="text-right">
+                            <Link
+                                to="/forgot-password"
+                                className="text-sm text-slate-500 hover:text-primary font-medium transition-colors"
+                            >
+                                Şifremi Unuttum
+                            </Link>
+                        </div>
+
                         <button
                             type="submit"
                             disabled={loading}
@@ -174,21 +153,19 @@ export default function Login() {
                                     <span>İşleniyor...</span>
                                 </>
                             ) : (
-                                <span>{isSignUp ? 'Hesap Oluştur' : 'Giriş Yap'}</span>
+                                <span>Giriş Yap</span>
                             )}
                         </button>
                     </form>
 
-                    <div className="mt-8 pt-8 border-t border-slate-100 text-center">
-                        <p className="text-slate-500 font-medium mb-3">
-                            {isSignUp ? 'Zaten hesabınız var mı?' : "Hesabınız yok mu?"}
+                    {/* Waitlist Link */}
+                    <div className="mt-6 text-center">
+                        <p className="text-sm text-slate-500">
+                            Henüz davet almadınız mı?{' '}
+                            <Link to="/" className="text-primary font-semibold hover:underline">
+                                Bekleme listesine katılın
+                            </Link>
                         </p>
-                        <button
-                            onClick={() => setIsSignUp(!isSignUp)}
-                            className="text-primary font-bold hover:text-primary-dark hover:underline decoration-2 underline-offset-4 transition-all"
-                        >
-                            {isSignUp ? 'Mevcut hesaba giriş yap' : 'Yeni hesap oluştur'}
-                        </button>
                     </div>
                 </div>
             </div>

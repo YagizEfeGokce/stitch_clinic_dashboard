@@ -41,7 +41,7 @@ export default function Dashboard() {
     const [selectedStaffId, setSelectedStaffId] = useState(user?.id); // Default to current user
 
     useEffect(() => {
-        if (role === 'admin' || role === 'doctor' || role === 'owner') {
+        if (role === 'admin' || role === 'doctor' || role === 'owner' || role === 'super_admin') {
             const fetchStaff = async () => {
                 const { data, error } = await supabase
                     .from('profiles')
@@ -241,7 +241,7 @@ export default function Dashboard() {
                 onSuccess={fetchAppointments}
                 preselectedDate={selectedDate}
                 preselectedStaffId={selectedStaffId === 'all' ? user?.id : selectedStaffId}
-                canAssignStaff={role === 'admin' || role === 'doctor' || role === 'owner'}
+                canAssignStaff={role === 'admin' || role === 'doctor' || role === 'owner' || role === 'super_admin'}
                 staffList={staffList}
             />
         </PageErrorBoundary>

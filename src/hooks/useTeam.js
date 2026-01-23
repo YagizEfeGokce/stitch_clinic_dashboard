@@ -32,8 +32,8 @@ export function useTeam() {
             if (profilesError) throw profilesError;
             setMembers(profilesData || []);
 
-            // 2. Fetch pending invitations (only if admin/owner)
-            if (role === ROLES.OWNER || role === ROLES.ADMIN) {
+            // 2. Fetch pending invitations (only if admin/owner/super_admin)
+            if (role === ROLES.OWNER || role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN) {
                 const { data: invitesData, error: invitesError } = await supabase
                     .from('invitations')
                     .select('*')
@@ -90,20 +90,26 @@ export function useTeam() {
             setInvitations(prev => [data, ...prev]);
 
             // --- TRIGGER EMAIL SENDING (EDGE FUNCTION) ---
-            // We don't block UI for email sending failure, we just log it.
-            // In a real production app, we might want to handle this more robustly.
             const inviteLink = `${window.location.origin}/signup?invite=${data.token}`;
 
+            const emailPayload = {
+                email,
+                clinicName: clinic?.name || 'Klinik',
+                inviteLink,
+                inviterName: 'Yonetici'
+            };
+
+            console.log('Sending email with payload:', JSON.stringify(emailPayload));
+
             supabase.functions.invoke('send-invite', {
-                body: {
-                    email,
-                    clinicName: clinic.name,
-                    inviteLink,
-                    inviterName: 'Yönetici' // Could fetch current user name
+                body: emailPayload
+            }).then(({ data: responseData, error }) => {
+                if (error) {
+                    console.error('Email sending failed:', error);
+                    console.error('Response:', responseData);
+                } else {
+                    console.log('Email sent successfully:', responseData);
                 }
-            }).then(({ data, error }) => {
-                if (error) console.error('Email sending failed:', error);
-                else console.log('Email sent:', data);
             });
             // ---------------------------------------------
 
@@ -134,6 +140,25 @@ export function useTeam() {
         }
     };
 
+    const removeMember = async (memberId) => {
+        try {
+            // Remove member from clinic by setting clinic_id to null
+            const { error } = await supabase
+                .from('profiles')
+                .update({ clinic_id: null })
+                .eq('id', memberId)
+                .eq('clinic_id', clinic.id); // Security: only remove from own clinic
+
+            if (error) throw error;
+
+            setMembers(prev => prev.filter(m => m.id !== memberId));
+            addToast('Personel klinikten cikarildi.', 'success');
+        } catch (err) {
+            console.error('Remove member error:', err);
+            addToast('Personel kaldirilirken hata olustu.', 'error');
+        }
+    };
+
     useEffect(() => {
         fetchTeamData();
     }, [fetchTeamData]);
@@ -145,6 +170,7 @@ export function useTeam() {
         error,
         inviteMember,
         cancelInvitation,
+        removeMember,
         refreshTeam: fetchTeamData
     };
 }
