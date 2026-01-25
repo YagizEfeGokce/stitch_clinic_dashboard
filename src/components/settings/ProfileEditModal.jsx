@@ -51,7 +51,7 @@ export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }
                     avatarUrl = publicUrl;
                 } catch (uploadError) {
                     console.error('Avatar upload error:', uploadError);
-                    showError('Failed to upload avatar. Please check storage permissions.');
+                    showError('Profil resmi yüklenemedi. Lütfen depolama izinlerini kontrol edin.');
                     setLoading(false);
                     return; // Stop execution if upload fails
                 }

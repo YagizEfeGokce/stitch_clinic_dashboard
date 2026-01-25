@@ -223,11 +223,45 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
     const isNewClient = !client;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl h-[85vh] flex overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center md:p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white md:rounded-2xl shadow-xl w-full md:max-w-4xl h-full md:h-[85vh] flex flex-col md:flex-row overflow-hidden animate-in slide-in-from-bottom md:zoom-in-95 duration-300">
 
-                {/* Sidebar / Tabs */}
-                <div className="w-64 bg-slate-50 border-r border-slate-100 flex flex-col">
+                {/* Mobile Header */}
+                <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-100 bg-white sticky top-0 z-10">
+                    <button
+                        onClick={onClose}
+                        className="p-2 -ml-2 rounded-xl text-slate-500 hover:bg-slate-100 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    >
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                    <h2 className="font-bold text-lg text-slate-900">
+                        {isNewClient ? 'Yeni Hasta' : `${client?.first_name || ''} ${client?.last_name || ''}`}
+                    </h2>
+                    <div className="w-[44px]"></div>
+                </div>
+
+                {/* Mobile Horizontal Tabs */}
+                <div className="md:hidden flex border-b border-slate-100 bg-slate-50 overflow-x-auto">
+                    {['Profile', 'History', 'Gallery'].map(tab => (
+                        <button
+                            key={tab}
+                            disabled={isNewClient && tab !== 'Profile'}
+                            onClick={() => setActiveTab(tab)}
+                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold transition-all min-h-[48px] whitespace-nowrap ${activeTab === tab
+                                ? 'text-primary border-b-2 border-primary bg-white'
+                                : 'text-slate-500'
+                                } ${isNewClient && tab !== 'Profile' ? 'opacity-50' : ''}`}
+                        >
+                            <span className="material-symbols-outlined text-[18px]">
+                                {tab === 'Profile' ? 'id_card' : tab === 'History' ? 'history' : 'photo_library'}
+                            </span>
+                            <span className="hidden sm:inline">{tab === 'Profile' ? 'Profil' : tab === 'History' ? 'Geçmiş' : 'Galeri'}</span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* Desktop Sidebar / Tabs */}
+                <div className="hidden md:flex w-64 bg-slate-50 border-r border-slate-100 flex-col">
                     <div className="p-6 border-b border-slate-100">
                         {isNewClient ? (
                             <div className="flex flex-col items-center gap-3">
@@ -283,10 +317,10 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                 key={tab}
                                 disabled={isNewClient && tab !== 'Profile'}
                                 onClick={() => setActiveTab(tab)}
-                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === tab
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all min-h-[44px] ${activeTab === tab
                                     ? 'bg-white text-primary shadow-sm ring-1 ring-slate-100'
                                     : 'text-slate-500 hover:bg-slate-100'
-                                    } ${isNewClient && tab !== 'Profile' ? 'opacity-50 cursor-not-allowed' : ''} `}
+                                    } ${isNewClient && tab !== 'Profile' ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 <span className="material-symbols-outlined">
                                     {tab === 'Profile' ? 'id_card' : tab === 'History' ? 'history' : 'photo_library'}
@@ -298,7 +332,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
 
                     {/* Footer Close Button */}
                     <div className="p-4 border-t border-slate-100">
-                        <button onClick={onClose} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 px-4 py-2 transition-colors">
+                        <button onClick={onClose} className="flex items-center gap-2 text-slate-400 hover:text-slate-600 px-4 py-2 transition-colors min-h-[44px]">
                             <span className="material-symbols-outlined text-[20px]">logout</span>
                             <span className="text-sm font-bold">Kapat</span>
                         </button>
@@ -307,7 +341,7 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
-                    <div className="flex-1 overflow-y-auto p-8">
+                    <div className="flex-1 overflow-y-auto p-4 md:p-8">
 
                         {/* PROFILE TAB */}
                         {activeTab === 'Profile' && (
@@ -315,8 +349,8 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                 <div className="flex items-center justify-between mb-4">
                                     <h2 className="text-2xl font-bold text-slate-900">Kişisel Bilgiler</h2>
                                 </div>
-                                <form id="clientForm" onSubmit={handleSubmit} className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-5">
+                                <form id="clientForm" onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
                                         <div>
                                             <label className="block text-sm font-bold text-slate-700 mb-1.5">Ad <span className="text-xs font-normal text-slate-400">(İsteğe Bağlı)</span></label>
                                             <input

@@ -66,9 +66,7 @@ export default function BillingSettings() {
                             </span>
                         </div>
                         <p className="text-slate-500 text-sm">
-                            {daysRemaining > 0
-                                ? `Beta sürecinin bitmesine ${daysRemaining} gün kaldı.`
-                                : 'Beta süreci devam ediyor. Fiyatlandırma yakında belirlenecek.'}
+                            Beta süresince tüm Pro özellikleri ücretsiz kullanabilirsiniz.
                         </p>
                     </div>
                 </div>

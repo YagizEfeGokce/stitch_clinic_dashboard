@@ -38,3 +38,24 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Safe area utilities for iOS notch/home indicator */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.h-safe-area-bottom {
+  height: env(safe-area-inset-bottom, 0px);
+}
+
+/* Touch target utility - ensures minimum 44x44px tap targets */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Prevent text selection on touch for nav items */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}

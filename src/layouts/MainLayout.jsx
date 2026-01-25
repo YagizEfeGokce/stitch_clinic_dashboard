@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Header from '../components/layout/Header';
-// import BottomNav from '../components/layout/BottomNav'; // Removed as user requested Drawer pattern specifically
+import BottomNav from '../components/layout/BottomNav';
 import Sidebar from '../components/layout/Sidebar';
 import CommandPalette from '../components/core/CommandPalette';
 import FeedbackWidget from '../components/widgets/FeedbackWidget';
@@ -26,7 +26,7 @@ export default function MainLayout({ children }) {
                     <div className="flex items-center gap-4 flex-1 min-w-0 pr-4">
                         <button
                             onClick={() => setIsSidebarOpen(true)}
-                            className="p-2 -ml-2 rounded-xl text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors shrink-0"
+                            className="p-2 -ml-2 rounded-xl text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center"
                         >
                             <Menu size={24} />
                         </button>
@@ -43,11 +43,17 @@ export default function MainLayout({ children }) {
                     <Header />
                 </div>
 
-                <main className="relative flex flex-col w-full max-w-7xl mx-auto p-4 md:p-8">
+                {/* Main content with bottom padding for mobile nav */}
+                <main className="relative flex flex-col w-full max-w-7xl mx-auto p-4 md:p-8 pb-24 md:pb-8">
                     {children}
                 </main>
             </div>
+
+            {/* Mobile Bottom Navigation */}
+            <BottomNav />
+
             <FeedbackWidget />
         </div>
     );
 }
+
