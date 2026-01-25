@@ -10,8 +10,9 @@ import { ButtonSpinner } from '../ui/Spinner';
 export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit = null }) {
     const { success, error: showError } = useToast();
     const { profile } = useAuth();
-    const { optimisticUpdate } = useOptimistic();
+    const { optimisticUpdate, isProcessing } = useOptimistic();
     const [uploading, setUploading] = useState(false);
+
     const [formData, setFormData] = useState({
         name: '',
         category: '',
@@ -285,10 +286,10 @@ export default function ProductModal({ isOpen, onClose, onSuccess, productToEdit
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || uploading}
+                            disabled={isProcessing || uploading}
                             className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                         >
-                            {loading && <ButtonSpinner />}
+                            {isProcessing && <ButtonSpinner />}
                             {productToEdit ? 'Değişiklikleri Kaydet' : 'Ürünü Ekle'}
                         </button>
                     </div>

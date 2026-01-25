@@ -62,6 +62,7 @@ export default function ClientGrowthChart({ clients }) {
                         <Tooltip
                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                             cursor={{ stroke: '#10b981', strokeWidth: 1, strokeDasharray: '4 4' }}
+                            formatter={(value) => [value, 'Yeni Müşteri']}
                         />
                         <Area
                             type="monotone"

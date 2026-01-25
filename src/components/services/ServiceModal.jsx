@@ -165,10 +165,10 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
                         </button>
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={isProcessing}
                             className="flex-1 py-3 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/25 hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                         >
-                            {loading && <ButtonSpinner />}
+                            {isProcessing && <ButtonSpinner />}
                             {service ? 'Değişiklikleri Kaydet' : 'Hizmeti Ekle'}
                         </button>
                     </div>

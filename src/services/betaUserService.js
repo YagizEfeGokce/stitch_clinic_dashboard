@@ -65,17 +65,11 @@ export async function sendBetaInvitation(waitlistId, email, metadata = {}) {
         const result = await response.json();
 
         if (!response.ok) {
-            throw new Error(result.error || 'Invitation sending failed');
+            const errorMessage = result.details
+                ? `${result.error}: ${result.details}`
+                : result.error || 'Invitation sending failed';
+            throw new Error(errorMessage);
         }
-
-        // Update waitlist status
-        await supabase
-            .from('beta_waitlist')
-            .update({
-                status: 'approved',
-                approved_at: new Date().toISOString(),
-            })
-            .eq('id', waitlistId);
 
         return { success: true, data: result };
     } catch (error) {
@@ -129,6 +123,7 @@ export async function handleInvitationAccepted(userId, email, waitlistId = null)
                 .update({
                     status: 'converted',
                     converted_at: new Date().toISOString(),
+                    invite_token: null // Invalidate token
                 })
                 .eq('id', waitlistId);
         }
@@ -188,5 +183,41 @@ export async function getBetaUserDetails(userId) {
     } catch (err) {
         console.error('[betaUserService] Get details failed:', err);
         return null;
+    }
+}
+
+/**
+ * Complete beta signup via Edge Function
+ * This handles user creation (confirmed) and data linking securely on server side.
+ */
+export async function completeBetaSignup(token, email, password, metadata) {
+    try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/complete-beta-signup`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseAnonKey}`,
+            },
+            body: JSON.stringify({
+                token,
+                email,
+                password,
+                metadata
+            }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Signup failed');
+        }
+
+        return { success: true, userId: result.userId };
+    } catch (error) {
+        console.error('[betaUserService] Complete signup error:', error);
+        return { success: false, error: error.message };
     }
 }

@@ -48,6 +48,7 @@ const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const AcceptInvite = lazy(() => import('./pages/AcceptInvite'));
 const AuthConfirm = lazy(() => import('./pages/AuthConfirm'));
 const BetaLanding = lazy(() => import('./pages/BetaLanding'));
+const BetaSignup = lazy(() => import('./pages/BetaSignup'));
 const BetaAccessDenied = lazy(() => import('./pages/BetaAccessDenied'));
 
 // Sentry Error Boundary Fallback UI
@@ -75,6 +76,10 @@ const ErrorFallback = ({ error, componentStack, resetError }) => (
   </div>
 );
 
+import { LogoSpinner } from './components/ui/LogoSpinner';
+
+// ... (existing imports)
+
 // Loading Screen Component with Failsafe
 const LoadingScreen = () => {
   const [showRetry, setShowRetry] = useState(false);
@@ -86,8 +91,8 @@ const LoadingScreen = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="flex flex-col items-center gap-4">
-        <Spinner size="xl" />
-        <p className="text-slate-400 font-medium animate-pulse">Yükleniyor...</p>
+        <LogoSpinner size="xl" />
+        {/* <p className="text-slate-400 font-medium animate-pulse">Yükleniyor...</p> */}
         {showRetry && (
           <button onClick={() => window.location.reload()} className="mt-4 px-6 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg shadow-sm hover:bg-slate-50 font-semibold transition-colors animate-in fade-in cursor-pointer">Taking too long? Reload</button>
         )}
@@ -208,6 +213,7 @@ function App() {
                 <Route path="/verify-email" element={<VerifyEmail />} />
                 <Route path="/signup" element={<AcceptInvite />} />
                 <Route path="/beta" element={<BetaLanding />} />
+                <Route path="/beta-signup" element={<BetaSignup />} />
 
                 {/* Protected Routes - Beta Access Required */}
                 <Route element={<BetaProtectedRoute />}>

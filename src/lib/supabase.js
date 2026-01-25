@@ -16,7 +16,9 @@ export const supabase = (supabaseUrl && supabaseAnonKey)
             detectSessionInUrl: false,
             // Keep autoRefreshToken enabled for security, but we won't block UI on it.
             autoRefreshToken: true,
-            persistSession: true
+            persistSession: true,
+            storageKey: 'dermdesk_auth',
+            flowType: 'pkce'
         }
     })
     : null;

@@ -27,62 +27,34 @@ serve(async (req) => {
             { auth: { autoRefreshToken: false, persistSession: false } }
         )
 
-        // Check if user already exists
-        const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers()
-        const userExists = existingUser?.users?.some(u => u.email === email)
+        // Generate Custom Invite Token (UUID)
+        const inviteToken = crypto.randomUUID();
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7); // 7 Days validity
 
-        let userId
-        let isNewUser = false
-
-        if (userExists) {
-            const user = existingUser.users.find(u => u.email === email)
-            userId = user.id
-        } else {
-            // Create user directly (NOT inviteUserByEmail to avoid Supabase email)
-            const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-                email: email,
-                email_confirm: false, // User will confirm via our custom flow
-                user_metadata: {
-                    is_beta_user: true,
-                    beta_waitlist_id: waitlistId,
-                    clinic_name: metadata?.clinic_name || '',
-                    owner_name: metadata?.owner_name || '',
-                }
+        // Update Waitlist Table with Token
+        const { error: updateError } = await supabaseAdmin
+            .from('beta_waitlist')
+            .update({
+                invite_token: inviteToken,
+                token_expires_at: expiresAt.toISOString(),
+                status: 'approved',
+                approved_at: new Date().toISOString()
             })
+            .eq('id', waitlistId);
 
-            if (createError) {
-                console.error('User creation error:', createError)
-                return new Response(
-                    JSON.stringify({ error: createError.message }),
-                    { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-                )
-            }
-
-            userId = newUser.user.id
-            isNewUser = true
+        if (updateError) {
+            console.error('Update beta_waitlist error:', updateError);
+            throw new Error(`DB Error: ${updateError.message} (${updateError.code}) - ${updateError.details || ''}`);
         }
 
-        // Generate a secure one-time token for password setup
-        const { data: tokenData, error: tokenError } = await supabaseAdmin.auth.admin.generateLink({
-            type: 'invite',
-            email: email,
-            options: {
-                redirectTo: `${req.headers.get('origin') || 'http://localhost:5173'}/auth/confirm`
-            }
-        })
+        // Construct Custom Signup URL
+        const origin = req.headers.get('origin') || 'https://dermdesk.net'; // Fallback to prod or use ENV
+        const signupUrl = `${origin}/beta-signup?token=${inviteToken}`;
 
-        if (tokenError) {
-            console.error('Token generation error:', tokenError)
-            return new Response(
-                JSON.stringify({ error: tokenError.message }),
-                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            )
-        }
+        console.log('Generated Signup URL:', signupUrl);
 
-        // Extract properties URL from the verification link
-        const inviteUrl = tokenData.properties.action_link
-
-        // Send ONLY custom email via Resend (no Supabase email)
+        // Send Email via Resend
         const resendApiKey = Deno.env.get('RESEND_API_KEY')
 
         try {
@@ -105,10 +77,10 @@ serve(async (req) => {
               <p style="color: #334155; font-size: 16px; line-height: 1.6; margin-bottom: 16px;">Dermdesk Beta programına davet edildiniz! 🎉</p>
               <p style="color: #334155; font-size: 16px; line-height: 1.6; margin-bottom: 32px;"><strong>${metadata?.clinic_name || 'Kliniğiniz'}</strong> için hesabınızı oluşturmak ve hemen başlamak için aşağıdaki butona tıklayın:</p>
               <div style="text-align: center; margin: 40px 0;">
-                <a href="${inviteUrl}" style="background: #0d9488; color: white; padding: 16px 32px; text-decoration: none; border-radius: 12px; display: inline-block; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(13, 148, 136, 0.2);">Hesap Oluştur</a>
+                <a href="${signupUrl}" style="background: #0d9488; color: white; padding: 16px 32px; text-decoration: none; border-radius: 12px; display: inline-block; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(13, 148, 136, 0.2);">Hesap Oluştur</a>
               </div>
               <div style="background: #f0fdfa; border-left: 4px solid #0d9488; padding: 16px; margin: 32px 0; border-radius: 8px;">
-                <p style="color: #115e59; font-size: 14px; margin: 0; line-height: 1.6;"><strong>📌 Önemli:</strong> Bu link 24 saat geçerlidir.</p>
+                <p style="color: #115e59; font-size: 14px; margin: 0; line-height: 1.6;"><strong>📌 Önemli:</strong> Bu link 7 gün geçerlidir.</p>
               </div>
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
               <p style="color: #94a3b8; font-size: 12px; line-height: 1.6; text-align: center;">Dermdesk Ekibi<br /><a href="https://dermdesk.net" style="color: #0d9488;">dermdesk.net</a></p>
@@ -120,12 +92,14 @@ serve(async (req) => {
             if (!emailResponse.ok) {
                 const errorText = await emailResponse.text()
                 console.error('Resend error:', errorText)
+                // We don't fail the whole request if email fails but DB update succeeded, 
+                // but we should probably warn or retry. For now just log it.
                 throw new Error('Email sending failed')
             }
         } catch (emailError) {
             console.error('Email error:', emailError)
             return new Response(
-                JSON.stringify({ error: 'User created but email failed to send' }),
+                JSON.stringify({ error: 'Token generated but email failed to send' }),
                 { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
@@ -133,9 +107,7 @@ serve(async (req) => {
         return new Response(
             JSON.stringify({
                 success: true,
-                userId,
-                isNewUser,
-                message: 'Davet başarıyla gönderildi'
+                message: 'Davet maili gönderildi'
             }),
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
@@ -148,4 +120,3 @@ serve(async (req) => {
         )
     }
 })
-

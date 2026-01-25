@@ -1,3 +1,13 @@
+// Role translations
+const ROLE_LABELS = {
+    owner: 'Klinik Sahibi',
+    admin: 'Yönetici',
+    doctor: 'Doktor',
+    staff: 'Personel',
+    receptionist: 'Resepsiyonist',
+    super_admin: 'Süper Admin'
+};
+
 export default function StaffAvailability({ staffList, appointments }) {
     // Calculate Occupancy for each staff
     // Mock capacity: 40 hours/week * 4 = 160 hours/month standard
@@ -49,7 +59,7 @@ export default function StaffAvailability({ staffList, appointments }) {
                                 </div>
                                 <div>
                                     <p className="text-sm font-bold text-slate-900">{staff.full_name}</p>
-                                    <p className="text-[10px] text-slate-500 font-medium">{staff.role || 'Personel'}</p>
+                                    <p className="text-[10px] text-slate-500 font-medium">{ROLE_LABELS[staff.role] || staff.role || 'Personel'}</p>
                                 </div>
                             </div>
                             <div className="text-right">
