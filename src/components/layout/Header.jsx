@@ -49,7 +49,7 @@ export default function Header() {
         ...lowStockItems.map(item => ({
             id: `stock-${item.id}`,
             type: 'warning',
-            message: `Low Stock: ${item.name} (${item.stock} left)`,
+            message: `Stok Uyarısı: ${item.name} (${item.stock} adet kaldı)`,
             action: () => navigate('/inventory')
         }))
     ];
