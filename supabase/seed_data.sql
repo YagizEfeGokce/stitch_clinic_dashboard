@@ -1,12 +1,18 @@
 -- ============================================================================
--- DERMDESK COMPREHENSIVE SEED DATA
+-- DERMDESK COMPREHENSIVE SEED DATA (EXPANDED)
 -- Realistic Turkish Aesthetic Clinic Data
 -- ============================================================================
--- Run this AFTER your schema is set up
--- This will create a demo clinic with 6 months of history
+-- This script safely populates:
+-- 1. Demo Clinic
+-- 2. Services (Treatments)
+-- 3. Clients (~150 Turkish profiles)
+-- 4. Inventory (Products & Stock)
+-- 5. Appointments (Historical & Future)
+-- 6. Transactions (Financial Records)
+-- 7. Reviews
+-- 8. User Linking (yagizefegokce2416@gmail.com)
 -- ============================================================================
 
--- Start transaction
 BEGIN;
 
 -- ============================================================================
@@ -43,257 +49,132 @@ INSERT INTO public.clinics (
     settings_config = EXCLUDED.settings_config;
 
 -- ============================================================================
--- 2. PROFILES (SKIPPED - requires auth.users)
--- ============================================================================
--- NOTE: Profiles are created automatically when users sign up via Supabase Auth.
--- You cannot seed fake profiles without first creating users in auth.users.
--- After running this seed, create a user via the app's signup flow, then run:
---
--- UPDATE public.profiles 
--- SET clinic_id = '11111111-1111-1111-1111-111111111111', role = 'owner'
--- WHERE id = 'YOUR_USER_UUID_HERE';
---
-
--- ============================================================================
--- 3. CREATE SERVICES
+-- 2. CREATE SERVICES
 -- ============================================================================
 
-INSERT INTO public.services (
-    id,
-    clinic_id,
-    name,
-    description,
-    duration_min,
-    price,
-    color,
-    active,
-    created_at
-) VALUES
+INSERT INTO public.services (id, clinic_id, name, description, duration_min, price, color, active, created_at) VALUES
 -- Yüz Bakımı
 ('a0000001-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Hydrafacial', 'Derin temizlik ve nemlendirme tedavisi', 60, 1500.00, '#3b82f6', true, now() - interval '2 years'),
 ('a0000002-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'Medikal Cilt Bakımı', 'Kişiye özel cilt analizi ve bakım', 45, 800.00, '#06b6d4', true, now() - interval '2 years'),
 ('a0000003-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', 'Altın Yüz Bakımı', 'Premium altın içerikli anti-aging bakım', 90, 2500.00, '#f59e0b', true, now() - interval '2 years'),
--- Dolgu & Botox
-('a0000004-0000-0000-0000-000000000004', '11111111-1111-1111-1111-111111111111', 'Botox (Alın)', 'Botulinum toksin uygulaması - alın bölgesi', 20, 2000.00, '#8b5cf6', true, now() - interval '2 years'),
-('a0000005-0000-0000-0000-000000000005', '11111111-1111-1111-1111-111111111111', 'Dudak Dolgusu', 'Hyalüronik asit ile dudak dolgusu', 30, 3500.00, '#ec4899', true, now() - interval '2 years'),
-('a0000006-0000-0000-0000-000000000006', '11111111-1111-1111-1111-111111111111', 'Yanak Dolgusu', 'Yüz hatlarını belirginleştirme', 40, 4000.00, '#f97316', true, now() - interval '2 years'),
--- Lazer Tedaviler
-('a0000007-0000-0000-0000-000000000007', '11111111-1111-1111-1111-111111111111', 'Lazer Epilasyon (Tüm Vücut)', 'Diode lazer ile kalıcı epilasyon', 120, 1200.00, '#ef4444', true, now() - interval '2 years'),
-('a0000008-0000-0000-0000-000000000008', '11111111-1111-1111-1111-111111111111', 'Lazer Epilasyon (Bacak)', 'Bacak bölgesi lazer epilasyon', 45, 500.00, '#dc2626', true, now() - interval '2 years'),
-('a0000009-0000-0000-0000-000000000009', '11111111-1111-1111-1111-111111111111', 'Akne İzi Tedavisi', 'Fraksiyonel lazer ile akne izi giderme', 60, 2200.00, '#10b981', true, now() - interval '2 years'),
--- Cilt Gençleştirme
-('a0000010-0000-0000-0000-000000000010', '11111111-1111-1111-1111-111111111111', 'PRP Tedavisi', 'Kendi kanınızdan elde edilen plazma ile gençleştirme', 60, 1800.00, '#14b8a6', true, now() - interval '2 years'),
-('a0000011-0000-0000-0000-000000000011', '11111111-1111-1111-1111-111111111111', 'Mezoterapi', 'Vitamin kokteylli cilt gençleştirme', 45, 1200.00, '#06b6d4', true, now() - interval '2 years'),
-('a0000012-0000-0000-0000-000000000012', '11111111-1111-1111-1111-111111111111', 'İpek Kirpik', 'Kalıcı kirpik uzatma', 90, 800.00, '#a855f7', true, now() - interval '1 year'),
--- Vücut Bakımı
-('a0000013-0000-0000-0000-000000000013', '11111111-1111-1111-1111-111111111111', 'Bölgesel Zayıflama', 'Kavitasyon ile bölgesel incelme', 60, 1000.00, '#f97316', true, now() - interval '2 years'),
-('a0000014-0000-0000-0000-000000000014', '11111111-1111-1111-1111-111111111111', 'G5 Masajı', 'Selülit ve sıkılaştırma masajı', 45, 600.00, '#84cc16', true, now() - interval '2 years'),
-('a0000015-0000-0000-0000-000000000015', '11111111-1111-1111-1111-111111111111', 'Radyofrekans', 'Cilt sıkılaştırma tedavisi', 60, 1500.00, '#eab308', true, now() - interval '2 years')
+('a0000004-0000-0000-0000-000000000004', '11111111-1111-1111-1111-111111111111', 'Dermapen', 'Mikro iğneleme ile cilt yenileme', 45, 1200.00, '#ef4444', true, now() - interval '2 years'),
+('a0000005-0000-0000-0000-000000000005', '11111111-1111-1111-1111-111111111111', 'Kimyasal Peeling', 'Leke ve iz tedavisi için soyma işlemi', 30, 900.00, '#8b5cf6', true, now() - interval '2 years'),
+
+-- Enjeksiyonlar
+('a0000010-0000-0000-0000-000000000010', '11111111-1111-1111-1111-111111111111', 'Botox (Tüm Yüz)', 'Alın, kaş arası ve göz çevresi', 30, 3500.00, '#8b5cf6', true, now() - interval '2 years'),
+('a0000011-0000-0000-0000-000000000011', '11111111-1111-1111-1111-111111111111', 'Dudak Dolgusu', '1ml Hyalüronik asit dolgu', 30, 4500.00, '#ec4899', true, now() - interval '2 years'),
+('a0000012-0000-0000-0000-000000000012', '11111111-1111-1111-1111-111111111111', 'Çene Dolgusu', 'Jawline hattı belirginleştirme', 45, 5000.00, '#f97316', true, now() - interval '2 years'),
+('a0000013-0000-0000-0000-000000000013', '11111111-1111-1111-1111-111111111111', 'Göz Altı Işık Dolgusu', 'Göz altı morlukları için tedavi', 45, 4000.00, '#10b981', true, now() - interval '2 years'),
+('a0000014-0000-0000-0000-000000000014', '11111111-1111-1111-1111-111111111111', 'PRP Yüz', 'Kendi kanınızla cilt gençleştirme', 60, 2000.00, '#14b8a6', true, now() - interval '2 years'),
+('a0000015-0000-0000-0000-000000000015', '11111111-1111-1111-1111-111111111111', 'Mezoterapi (Gençlik Aşısı)', 'Vitamin ve mineral kokteyli', 45, 2500.00, '#06b6d4', true, now() - interval '2 years'),
+('a0000016-0000-0000-0000-000000000016', '11111111-1111-1111-1111-111111111111', 'Saç Mezoterapisi', 'Saç dökülmesine karşı tedavi', 45, 1500.00, '#a855f7', true, now() - interval '2 years'),
+
+-- Lazer & Vücut
+('a0000020-0000-0000-0000-000000000020', '11111111-1111-1111-1111-111111111111', 'Lazer Epilasyon (Tüm Vücut)', 'Alexandra/Diode hibrit lazer', 90, 1500.00, '#ef4444', true, now() - interval '2 years'),
+('a0000021-0000-0000-0000-000000000021', '11111111-1111-1111-1111-111111111111', 'Bölgesel Zayıflama (G5)', 'Selülit masajı', 45, 600.00, '#f59e0b', true, now() - interval '2 years'),
+('a0000022-0000-0000-0000-000000000022', '11111111-1111-1111-1111-111111111111', 'Soğuk Lipoliz', 'Yağ dondurma işlemi', 60, 2000.00, '#3b82f6', true, now() - interval '2 years')
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
--- 4. CREATE CLIENTS (60 realistic Turkish clients)
+-- 3. CREATE CLIENTS (~150 Profiles)
 -- ============================================================================
 
-INSERT INTO public.clients (
-    id,
-    clinic_id,
-    first_name,
-    last_name,
-    phone,
-    email,
-    birth_date,
-    gender,
-    notes,
-    status,
-    created_at
-) VALUES
--- VIP Müşteriler (ilk 10)
-('c0000001-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Aylin', 'Özkan', '0532 456 7890', 'aylin.ozkan@email.com', '1985-03-15', 'Kadın', 'VIP müşteri - Aylık düzenli bakım', 'Active', now() - interval '18 months'),
-('c0000002-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'Selin', 'Arslan', '0533 567 8901', 'selin.arslan@email.com', '1990-07-22', 'Kadın', 'Hydrafacial ve botox tercih ediyor', 'Active', now() - interval '16 months'),
-('c0000003-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', 'Deniz', 'Yıldız', '0534 678 9012', 'deniz.yildiz@email.com', '1988-11-30', 'Kadın', 'Lazer epilasyon paketi', 'Active', now() - interval '15 months'),
-('c0000004-0000-0000-0000-000000000004', '11111111-1111-1111-1111-111111111111', 'Elif', 'Kara', '0535 789 0123', 'elif.kara@email.com', '1992-05-18', 'Kadın', 'Cilt bakımı ve dolgu', 'Active', now() - interval '14 months'),
-('c0000005-0000-0000-0000-000000000005', '11111111-1111-1111-1111-111111111111', 'Zeynep', 'Demirtaş', '0536 890 1234', 'zeynep.demirtas@email.com', '1987-09-25', 'Kadın', 'Anti-aging programı', 'Active', now() - interval '13 months'),
-('c0000006-0000-0000-0000-000000000006', '11111111-1111-1111-1111-111111111111', 'Burcu', 'Aydın', '0537 901 2345', 'burcu.aydin@email.com', '1991-01-12', 'Kadın', 'Mezoterapi seansları', 'Active', now() - interval '12 months'),
-('c0000007-0000-0000-0000-000000000007', '11111111-1111-1111-1111-111111111111', 'Canan', 'Şen', '0538 012 3456', 'canan.sen@email.com', '1989-04-08', 'Kadın', 'Lazer ve cilt bakımı', 'Active', now() - interval '11 months'),
-('c0000008-0000-0000-0000-000000000008', '11111111-1111-1111-1111-111111111111', 'Gamze', 'Polat', '0539 123 4567', 'gamze.polat@email.com', '1993-06-14', 'Kadın', 'Dudak dolgusu takibi', 'Active', now() - interval '10 months'),
-('c0000009-0000-0000-0000-000000000009', '11111111-1111-1111-1111-111111111111', 'Hande', 'Çelik', '0541 234 5678', 'hande.celik@email.com', '1986-12-20', 'Kadın', 'Botox ve PRP kombinasyonu', 'Active', now() - interval '9 months'),
-('c0000010-0000-0000-0000-000000000010', '11111111-1111-1111-1111-111111111111', 'İpek', 'Koç', '0542 345 6789', 'ipek.koc@email.com', '1994-02-28', 'Kadın', 'Kirpik ve cilt bakımı', 'Active', now() - interval '8 months'),
--- Düzenli Müşteriler (11-30)
-('c0000011-0000-0000-0000-000000000011', '11111111-1111-1111-1111-111111111111', 'Merve', 'Aksoy', '0543 456 7891', 'merve.aksoy@email.com', '1990-08-10', 'Kadın', 'Aylık yüz bakımı', 'Active', now() - interval '7 months'),
-('c0000012-0000-0000-0000-000000000012', '11111111-1111-1111-1111-111111111111', 'Seda', 'Yavuz', '0544 567 8902', 'seda.yavuz@email.com', '1988-03-22', 'Kadın', 'Lazer epilasyon', 'Active', now() - interval '6 months'),
-('c0000013-0000-0000-0000-000000000013', '11111111-1111-1111-1111-111111111111', 'Aslı', 'Öztürk', '0545 678 9013', 'asli.ozturk@email.com', '1992-11-05', 'Kadın', NULL, 'Active', now() - interval '6 months'),
-('c0000014-0000-0000-0000-000000000014', '11111111-1111-1111-1111-111111111111', 'Gizem', 'Kurt', '0546 789 0124', 'gizem.kurt@email.com', '1991-07-18', 'Kadın', 'Cilt bakımı', 'Active', now() - interval '5 months'),
-('c0000015-0000-0000-0000-000000000015', '11111111-1111-1111-1111-111111111111', 'Esra', 'Özdemir', '0547 890 1235', 'esra.ozdemir@email.com', '1989-01-30', 'Kadın', NULL, 'Active', now() - interval '5 months'),
-('c0000016-0000-0000-0000-000000000016', '11111111-1111-1111-1111-111111111111', 'Dilek', 'Şahin', '0548 901 2346', 'dilek.sahin@email.com', '1987-09-12', 'Kadın', 'G5 masajı tercih ediyor', 'Active', now() - interval '4 months'),
-('c0000017-0000-0000-0000-000000000017', '11111111-1111-1111-1111-111111111111', 'Ayşe', 'Yılmaz', '0549 012 3457', 'ayse.yilmaz@email.com', '1993-05-25', 'Kadın', NULL, 'Active', now() - interval '4 months'),
-('c0000018-0000-0000-0000-000000000018', '11111111-1111-1111-1111-111111111111', 'Fatma', 'Kaya', '0531 123 4568', 'fatma.kaya@email.com', '1990-12-08', 'Kadın', NULL, 'Active', now() - interval '4 months'),
-('c0000019-0000-0000-0000-000000000019', '11111111-1111-1111-1111-111111111111', 'Hacer', 'Demir', '0532 234 5679', 'hacer.demir@email.com', '1986-04-15', 'Kadın', 'Akne tedavisi', 'Active', now() - interval '3 months'),
-('c0000020-0000-0000-0000-000000000020', '11111111-1111-1111-1111-111111111111', 'Sibel', 'Çetin', '0533 345 6780', 'sibel.cetin@email.com', '1994-10-20', 'Kadın', NULL, 'Active', now() - interval '3 months'),
-('c0000021-0000-0000-0000-000000000021', '11111111-1111-1111-1111-111111111111', 'Tülay', 'Erdem', '0534 456 7891', 'tulay.erdem@email.com', '1988-06-03', 'Kadın', 'Bölgesel zayıflama programı', 'Active', now() - interval '3 months'),
-('c0000022-0000-0000-0000-000000000022', '11111111-1111-1111-1111-111111111111', 'Oya', 'Acar', '0535 567 8902', 'oya.acar@email.com', '1992-02-18', 'Kadın', NULL, 'Active', now() - interval '3 months'),
-('c0000023-0000-0000-0000-000000000023', '11111111-1111-1111-1111-111111111111', 'Pınar', 'Güneş', '0536 678 9013', 'pinar.gunes@email.com', '1991-08-28', 'Kadın', NULL, 'Active', now() - interval '2 months'),
-('c0000024-0000-0000-0000-000000000024', '11111111-1111-1111-1111-111111111111', 'Nihan', 'Bulut', '0537 789 0124', 'nihan.bulut@email.com', '1989-12-11', 'Kadın', 'Hydrafacial seansları', 'Active', now() - interval '2 months'),
-('c0000025-0000-0000-0000-000000000025', '11111111-1111-1111-1111-111111111111', 'Özge', 'Aslan', '0538 890 1235', 'ozge.aslan@email.com', '1987-04-24', 'Kadın', NULL, 'Active', now() - interval '2 months'),
-('c0000026-0000-0000-0000-000000000026', '11111111-1111-1111-1111-111111111111', 'Fulya', 'Keskin', '0539 901 2346', 'fulya.keskin@email.com', '1993-01-07', 'Kadın', NULL, 'Active', now() - interval '2 months'),
-('c0000027-0000-0000-0000-000000000027', '11111111-1111-1111-1111-111111111111', 'Derya', 'Taş', '0541 012 3457', 'derya.tas@email.com', '1990-09-19', 'Kadın', 'Radyofrekans tedavisi', 'Active', now() - interval '2 months'),
-('c0000028-0000-0000-0000-000000000028', '11111111-1111-1111-1111-111111111111', 'Yeşim', 'Korkmaz', '0542 123 4568', 'yesim.korkmaz@email.com', '1986-05-02', 'Kadın', NULL, 'Active', now() - interval '1 month'),
-('c0000029-0000-0000-0000-000000000029', '11111111-1111-1111-1111-111111111111', 'Serap', 'Doğan', '0543 234 5679', 'serap.dogan@email.com', '1994-11-16', 'Kadın', NULL, 'Active', now() - interval '1 month'),
-('c0000030-0000-0000-0000-000000000030', '11111111-1111-1111-1111-111111111111', 'Berna', 'Çakır', '0544 345 6780', 'berna.cakir@email.com', '1988-07-29', 'Kadın', 'PRP ve mezoterapi', 'Active', now() - interval '1 month'),
--- Yeni Müşteriler (31-50)
-('c0000031-0000-0000-0000-000000000031', '11111111-1111-1111-1111-111111111111', 'Nilüfer', 'Erdoğan', '0545 456 7891', 'nilufer.erdogan@email.com', '1992-03-13', 'Kadın', NULL, 'Active', now() - interval '3 weeks'),
-('c0000032-0000-0000-0000-000000000032', '11111111-1111-1111-1111-111111111111', 'Ayla', 'Yurt', '0546 567 8902', 'ayla.yurt@email.com', '1991-10-26', 'Kadın', NULL, 'Active', now() - interval '3 weeks'),
-('c0000033-0000-0000-0000-000000000033', '11111111-1111-1111-1111-111111111111', 'Sevgi', 'Tekin', '0547 678 9013', 'sevgi.tekin@email.com', '1989-06-09', 'Kadın', NULL, 'Active', now() - interval '2 weeks'),
-('c0000034-0000-0000-0000-000000000034', '11111111-1111-1111-1111-111111111111', 'Nuray', 'Aydın', '0548 789 0124', 'nuray.aydin2@email.com', '1987-02-21', 'Kadın', 'Kirpik uygulaması', 'Active', now() - interval '2 weeks'),
-('c0000035-0000-0000-0000-000000000035', '11111111-1111-1111-1111-111111111111', 'Gül', 'Kılıç', '0549 890 1235', 'gul.kilic@email.com', '1993-08-04', 'Kadın', NULL, 'Active', now() - interval '2 weeks'),
-('c0000036-0000-0000-0000-000000000036', '11111111-1111-1111-1111-111111111111', 'Serpil', 'Özer', '0531 901 2346', 'serpil.ozer@email.com', '1990-04-17', 'Kadın', NULL, 'Active', now() - interval '1 week'),
-('c0000037-0000-0000-0000-000000000037', '11111111-1111-1111-1111-111111111111', 'Meral', 'Bal', '0532 012 3457', 'meral.bal@email.com', '1986-12-30', 'Kadın', NULL, 'Active', now() - interval '1 week'),
-('c0000038-0000-0000-0000-000000000038', '11111111-1111-1111-1111-111111111111', 'Işıl', 'Uzun', '0533 123 4569', 'isil.uzun@email.com', '1994-08-13', 'Kadın', NULL, 'Active', now() - interval '1 week'),
-('c0000039-0000-0000-0000-000000000039', '11111111-1111-1111-1111-111111111111', 'Ceyda', 'Akgün', '0534 234 5670', 'ceyda.akgun@email.com', '1988-04-26', 'Kadın', NULL, 'Active', now() - interval '5 days'),
-('c0000040-0000-0000-0000-000000000040', '11111111-1111-1111-1111-111111111111', 'Meltem', 'Sönmez', '0535 345 6781', 'meltem.sonmez@email.com', '1992-01-09', 'Kadın', 'İlk randevu', 'Active', now() - interval '5 days'),
-('c0000041-0000-0000-0000-000000000041', '11111111-1111-1111-1111-111111111111', 'Banu', 'Ay', '0536 456 7892', 'banu.ay@email.com', '1991-09-22', 'Kadın', NULL, 'Active', now() - interval '3 days'),
-('c0000042-0000-0000-0000-000000000042', '11111111-1111-1111-1111-111111111111', 'Ebru', 'Can', '0537 567 8903', 'ebru.can@email.com', '1989-05-05', 'Kadın', NULL, 'Active', now() - interval '3 days'),
-('c0000043-0000-0000-0000-000000000043', '11111111-1111-1111-1111-111111111111', 'Ece', 'Dal', '0538 678 9014', 'ece.dal@email.com', '1987-01-18', 'Kadın', NULL, 'Active', now() - interval '2 days'),
-('c0000044-0000-0000-0000-000000000044', '11111111-1111-1111-1111-111111111111', 'Funda', 'Er', '0539 789 0125', 'funda.er@email.com', '1993-11-01', 'Kadın', NULL, 'Active', now() - interval '2 days'),
-('c0000045-0000-0000-0000-000000000045', '11111111-1111-1111-1111-111111111111', 'Gonca', 'Efe', '0541 890 1236', 'gonca.efe@email.com', '1990-07-14', 'Kadın', NULL, 'Active', now() - interval '1 day'),
-('c0000046-0000-0000-0000-000000000046', '11111111-1111-1111-1111-111111111111', 'Hülya', 'Fikri', '0542 901 2347', 'hulya.fikri@email.com', '1986-03-27', 'Kadın', NULL, 'Active', now() - interval '1 day'),
-('c0000047-0000-0000-0000-000000000047', '11111111-1111-1111-1111-111111111111', 'İlknur', 'Gül', '0543 012 3458', 'ilknur.gul@email.com', '1994-12-10', 'Kadın', NULL, 'Active', now() - interval '12 hours'),
-('c0000048-0000-0000-0000-000000000048', '11111111-1111-1111-1111-111111111111', 'Jale', 'Han', '0544 123 4569', 'jale.han@email.com', '1988-08-23', 'Kadın', NULL, 'Active', now() - interval '6 hours'),
-('c0000049-0000-0000-0000-000000000049', '11111111-1111-1111-1111-111111111111', 'Kübra', 'İnal', '0545 234 5671', 'kubra.inal@email.com', '1992-04-06', 'Kadın', NULL, 'Active', now() - interval '3 hours'),
-('c0000050-0000-0000-0000-000000000050', '11111111-1111-1111-1111-111111111111', 'Yasemin', 'Ulu', '0546 345 6782', 'yasemin.ulu@email.com', '1989-06-29', 'Kadın', NULL, 'Active', now() - interval '1 hour')
-ON CONFLICT (id) DO NOTHING;
-
--- ============================================================================
--- 5. CREATE INVENTORY ITEMS
--- ============================================================================
--- Schema from master_schema_v5_complete.sql:
--- id, clinic_id, name, description, sku, barcode, stock, min_stock_alert, unit, 
--- price, cost_price, sale_price, category, supplier, expiry_date, image_url, notes, status
-
-INSERT INTO public.inventory (
-    id,
-    clinic_id,
-    name,
-    stock,
-    min_stock_alert,
-    unit,
-    price,
-    category,
-    status,
-    created_at
-) VALUES
--- Cilt Bakım Ürünleri
-('b0000001-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Hydrafacial Serum', 25, 5, 'adet', 300.00, 'Cilt Bakım', 'In Stock', now() - interval '6 months'),
-('b0000002-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'Hyalüronik Asit Dolgu 1ml', 40, 10, 'adet', 1500.00, 'Dolgu', 'In Stock', now() - interval '6 months'),
-('b0000003-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', 'Botox 50 Ünite', 30, 8, 'adet', 1200.00, 'Botox', 'In Stock', now() - interval '6 months'),
-('b0000004-0000-0000-0000-000000000004', '11111111-1111-1111-1111-111111111111', 'PRP Kiti', 20, 5, 'adet', 400.00, 'PRP', 'In Stock', now() - interval '6 months'),
-('b0000005-0000-0000-0000-000000000005', '11111111-1111-1111-1111-111111111111', 'Mezoterapi Kokteyl', 35, 8, 'adet', 250.00, 'Mezoterapi', 'In Stock', now() - interval '6 months'),
-('b0000006-0000-0000-0000-000000000006', '11111111-1111-1111-1111-111111111111', 'Lazer Jeli', 50, 10, 'adet', 60.00, 'Lazer', 'In Stock', now() - interval '6 months'),
-('b0000007-0000-0000-0000-000000000007', '11111111-1111-1111-1111-111111111111', 'Altın Maske', 15, 3, 'adet', 500.00, 'Cilt Bakım', 'In Stock', now() - interval '6 months'),
-('b0000008-0000-0000-0000-000000000008', '11111111-1111-1111-1111-111111111111', 'İpek Kirpik Seti', 45, 10, 'adet', 180.00, 'Kirpik', 'In Stock', now() - interval '6 months'),
-('b0000009-0000-0000-0000-000000000009', '11111111-1111-1111-1111-111111111111', 'G5 Masaj Yağı', 30, 8, 'adet', 100.00, 'Masaj', 'In Stock', now() - interval '6 months'),
-('b0000010-0000-0000-0000-000000000010', '11111111-1111-1111-1111-111111111111', 'RF Jeli', 40, 10, 'adet', 80.00, 'Radyofrekans', 'In Stock', now() - interval '6 months'),
-('b0000011-0000-0000-0000-000000000011', '11111111-1111-1111-1111-111111111111', 'Eldiven (100lü)', 100, 20, 'kutu', 50.00, 'Sarf Malzemesi', 'In Stock', now() - interval '6 months'),
-('b0000012-0000-0000-0000-000000000012', '11111111-1111-1111-1111-111111111111', 'Steril Gazlı Bez', 200, 50, 'kutu', 10.00, 'Sarf Malzemesi', 'In Stock', now() - interval '6 months'),
--- Düşük stoklu ürünler
-('b0000013-0000-0000-0000-000000000013', '11111111-1111-1111-1111-111111111111', 'Anestezik Krem', 4, 5, 'adet', 200.00, 'Anestezi', 'Low Stock', now() - interval '6 months'),
-('b0000014-0000-0000-0000-000000000014', '11111111-1111-1111-1111-111111111111', 'Kirpik Yapıştırıcı', 3, 5, 'adet', 120.00, 'Kirpik', 'Low Stock', now() - interval '6 months'),
--- Stok bitti
-('b0000015-0000-0000-0000-000000000015', '11111111-1111-1111-1111-111111111111', 'Premium Dudak Dolgusu', 0, 3, 'adet', 2000.00, 'Dolgu', 'Out of Stock', now() - interval '6 months')
-ON CONFLICT (id) DO NOTHING;
-
--- ============================================================================
--- 6. GENERATE HISTORICAL APPOINTMENTS (6 months)
--- ============================================================================
--- This creates ~300 historical appointments with realistic patterns
-
--- Create temporary function to generate appointments
 DO $$
 DECLARE
-    v_date DATE;
-    v_time TIME;
-    v_client_id UUID;
-    v_service_id UUID;
+    v_first_names_female TEXT[] := ARRAY['Ayşe', 'Fatma', 'Emine', 'Hatice', 'Zeynep', 'Elif', 'Merve', 'Gamze', 'Esra', 'Özlem', 'Sema', 'Derya', 'Aylin', 'Selin', 'Ece', 'Melis', 'Buse', 'İrem', 'Gizem', 'Kübra', 'Büşra', 'Tuğba', 'Sibel', 'Filiz', 'Yasemin', 'Nuray', 'Sevim', 'Gülşah', 'Pınar', 'Demet', 'Arzu', 'Didem', 'Aslı', 'Banu', 'Ceren', 'Deniz', 'Duygu', 'Ebru', 'Funda', 'Gonca', 'Hande', 'Işıl', 'Jale', 'Lale', 'Mine', 'Nalan', 'Oya', 'Pelin', 'Rüya', 'Sanem'];
+    v_first_names_male TEXT[] := ARRAY['Mehmet', 'Mustafa', 'Ahmet', 'Ali', 'Hüseyin', 'Hasan', 'İbrahim', 'İsmail', 'Osman', 'Yusuf', 'Murat', 'Ömer', 'Ramazan', 'Halil', 'Süleyman', 'Abdullah', 'Mahmut', 'Salih', 'Kemal', 'Recep', 'Sinan', 'Hakan', 'Serkan', 'Metin', 'Adem', 'Fatih', 'Burak', 'Emre', 'Kaan', 'Volkan', 'Gökhan', 'Uğur', 'Tolga', 'Kerem', 'Cem', 'Ozan', 'Eren', 'Mert', 'Can', 'Barış'];
+    v_last_names TEXT[] := ARRAY['Yılmaz', 'Kaya', 'Demir', 'Çelik', 'Şahin', 'Yıldız', 'Yıldırım', 'Öztürk', 'Aydın', 'Özdemir', 'Arslan', 'Doğan', 'Kılıç', 'Aslan', 'Çetin', 'Kara', 'Koç', 'Kurt', 'Özkan', 'Şimşek', 'Polat', 'Korkmaz', 'Özer', 'Yavuz', 'Can', 'Acar', 'Erdoğan', 'Yücel', 'Güler', 'Yalçın', 'Güneş', 'Ünal', 'Aksoy', 'Taş', 'Kalkan', 'Bal', 'Sönmez', 'Akgün', 'Ulu', 'Turan', 'Bulut', 'Keskin', 'Avcı', 'Işık', 'Gül'];
+    v_clinic_id UUID := '11111111-1111-1111-1111-111111111111';
+    v_first_name TEXT;
+    v_last_name TEXT;
+    v_email TEXT;
+    v_phone TEXT;
+    v_gender TEXT;
     v_status TEXT;
-    v_day_of_week INT;
-    v_appointments_per_day INT;
-    v_i INT;
-    v_hour INT;
-    v_minute INT;
-    v_client_ids UUID[] := ARRAY[
-        'c0000001-0000-0000-0000-000000000001'::uuid, 'c0000002-0000-0000-0000-000000000002'::uuid,
-        'c0000003-0000-0000-0000-000000000003'::uuid, 'c0000004-0000-0000-0000-000000000004'::uuid,
-        'c0000005-0000-0000-0000-000000000005'::uuid, 'c0000006-0000-0000-0000-000000000006'::uuid,
-        'c0000007-0000-0000-0000-000000000007'::uuid, 'c0000008-0000-0000-0000-000000000008'::uuid,
-        'c0000009-0000-0000-0000-000000000009'::uuid, 'c0000010-0000-0000-0000-000000000010'::uuid,
-        'c0000011-0000-0000-0000-000000000011'::uuid, 'c0000012-0000-0000-0000-000000000012'::uuid,
-        'c0000013-0000-0000-0000-000000000013'::uuid, 'c0000014-0000-0000-0000-000000000014'::uuid,
-        'c0000015-0000-0000-0000-000000000015'::uuid, 'c0000016-0000-0000-0000-000000000016'::uuid,
-        'c0000017-0000-0000-0000-000000000017'::uuid, 'c0000018-0000-0000-0000-000000000018'::uuid,
-        'c0000019-0000-0000-0000-000000000019'::uuid, 'c0000020-0000-0000-0000-000000000020'::uuid
-    ];
-    v_service_ids UUID[] := ARRAY[
-        'a0000001-0000-0000-0000-000000000001'::uuid, 'a0000002-0000-0000-0000-000000000002'::uuid,
-        'a0000003-0000-0000-0000-000000000003'::uuid, 'a0000004-0000-0000-0000-000000000004'::uuid,
-        'a0000005-0000-0000-0000-000000000005'::uuid, 'a0000006-0000-0000-0000-000000000006'::uuid,
-        'a0000007-0000-0000-0000-000000000007'::uuid, 'a0000008-0000-0000-0000-000000000008'::uuid,
-        'a0000009-0000-0000-0000-000000000009'::uuid, 'a0000010-0000-0000-0000-000000000010'::uuid,
-        'a0000011-0000-0000-0000-000000000011'::uuid, 'a0000012-0000-0000-0000-000000000012'::uuid,
-        'a0000013-0000-0000-0000-000000000013'::uuid, 'a0000014-0000-0000-0000-000000000014'::uuid,
-        'a0000015-0000-0000-0000-000000000015'::uuid
-    ];
+    v_notes TEXT;
+    v_birth_date DATE;
+    v_created_at TIMESTAMP;
 BEGIN
-    -- Loop through last 180 days (6 months)
-    FOR v_date IN SELECT generate_series(CURRENT_DATE - 180, CURRENT_DATE - 1, '1 day'::interval)::date LOOP
-        v_day_of_week := EXTRACT(DOW FROM v_date);
-        
-        -- Skip Sundays (0)
-        IF v_day_of_week = 0 THEN
-            CONTINUE;
-        END IF;
-        
-        -- Determine appointments per day (busier on weekdays)
-        IF v_day_of_week = 6 THEN
-            v_appointments_per_day := 3 + floor(random() * 3)::int; -- Saturday: 3-5
+    FOR i IN 1..150 LOOP
+        -- Select gender and name
+        IF random() < 0.85 THEN -- 85% Female clients
+            v_gender := 'Kadın';
+            v_first_name := v_first_names_female[1 + floor(random() * array_length(v_first_names_female, 1))::int];
         ELSE
-            v_appointments_per_day := 5 + floor(random() * 5)::int; -- Weekday: 5-9
+            v_gender := 'Erkek';
+            v_first_name := v_first_names_male[1 + floor(random() * array_length(v_first_names_male, 1))::int];
         END IF;
         
-        -- Generate appointments for this day
-        FOR v_i IN 1..v_appointments_per_day LOOP
-            -- Random time between 09:00 and 18:00
-            v_hour := 9 + floor(random() * 9)::int;
-            v_minute := (floor(random() * 4)::int) * 15; -- 0, 15, 30, or 45
-            v_time := (v_hour || ':' || lpad(v_minute::text, 2, '0'))::time;
-            
-            -- Random client and service
-            v_client_id := v_client_ids[1 + floor(random() * array_length(v_client_ids, 1))::int];
-            v_service_id := v_service_ids[1 + floor(random() * array_length(v_service_ids, 1))::int];
-            
-            -- Status (historical appointments are mostly completed)
-            IF random() < 0.85 THEN
-                v_status := 'Completed';
-            ELSIF random() < 0.5 THEN
-                v_status := 'Cancelled';
-            ELSE
-                v_status := 'NoShow';
-            END IF;
-            
-            -- Insert appointment (staff_id is NULL - will be assigned when user signs up)
-            INSERT INTO public.appointments (
-                clinic_id, client_id, service_id,
-                date, time, status, created_at
-            ) VALUES (
-                '11111111-1111-1111-1111-111111111111',
-                v_client_id, v_service_id,
-                v_date, v_time, v_status, v_date::timestamp
-            ) ON CONFLICT DO NOTHING;
-        END LOOP;
+        v_last_name := v_last_names[1 + floor(random() * array_length(v_last_names, 1))::int];
+        
+        -- Generate unique-ish email
+        v_email := lower(replace(v_first_name, 'ı', 'i')) || '.' || lower(replace(v_last_name, 'ö', 'o')) || i || '@email.com';
+        v_email := replace(v_email, 'ş', 's');
+        v_email := replace(v_email, 'ğ', 'g');
+        v_email := replace(v_email, 'ü', 'u');
+        v_email := replace(v_email, 'ç', 'c');
+        v_email := replace(v_email, 'ö', 'o');
+        
+        -- Phone number
+        v_phone := '05' || (30 + floor(random() * 25))::int || ' ' || (100 + floor(random() * 899))::int || ' ' || (10 + floor(random() * 89))::int || (10 + floor(random() * 89))::int;
+        
+        -- Birth date (20-60 years old)
+        v_birth_date := CURRENT_DATE - (floor(random() * 40 * 365) + 20 * 365)::int * '1 day'::interval;
+        
+        -- Random creation date within last 2 years
+        v_created_at := now() - (floor(random() * 730))::int * '1 day'::interval;
+        
+        -- Notes (randomly filled)
+        IF random() < 0.3 THEN
+            v_notes := CASE (floor(random() * 5))::int
+                WHEN 0 THEN 'Hassas cilt yapısı var'
+                WHEN 1 THEN 'Öğle arası randevularını tercih ediyor'
+                WHEN 2 THEN 'Botox alerjisi var mı sorulmalı'
+                WHEN 3 THEN 'VIP Müşteri, kahve ikram edilmeli'
+                ELSE 'Düzenli taksit ödemesi yapıyor'
+            END;
+        ELSE
+            v_notes := NULL;
+        END IF;
+
+        IF random() < 0.9 THEN v_status := 'Active'; ELSE v_status := 'Inactive'; END IF;
+
+        INSERT INTO public.clients (
+            clinic_id, first_name, last_name, phone, email, birth_date, gender, notes, status, created_at
+        ) VALUES (
+            v_clinic_id, v_first_name, v_last_name, v_phone, v_email, v_birth_date, v_gender, v_notes, v_status, v_created_at
+        );
     END LOOP;
 END $$;
 
 -- ============================================================================
--- 7. CREATE FUTURE APPOINTMENTS (Next 2 weeks)
+-- 4. CREATE INVENTORY ITEMS
+-- ============================================================================
+
+INSERT INTO public.inventory (id, clinic_id, name, stock, min_stock_alert, unit, price, cost_price, sale_price, category, status, created_at) VALUES
+-- Dermal Dolgular
+('b0000001-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'Juvederm Voluma (2x1ml)', 15, 5, 'kutu', 0, 3500.00, 4500.00, 'Dolgu', 'In Stock', now()),
+('b0000002-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111111', 'Teosyal Kiss (2x1ml)', 20, 5, 'kutu', 0, 3200.00, 4200.00, 'Dolgu', 'In Stock', now()),
+('b0000003-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111111', 'Aliaxin FL (2x1ml)', 8, 5, 'kutu', 0, 3000.00, 4000.00, 'Dolgu', 'In Stock', now()),
+
+-- Botulinum Toksin
+('b0000010-0000-0000-0000-000000000010', '11111111-1111-1111-1111-111111111111', 'Botox Allergan 100iu', 35, 10, 'flakon', 0, 1800.00, 3500.00, 'Botox', 'In Stock', now()),
+('b0000011-0000-0000-0000-000000000011', '11111111-1111-1111-1111-111111111111', 'Dysport 500iu', 25, 8, 'flakon', 0, 2000.00, 3800.00, 'Botox', 'In Stock', now()),
+
+-- Mezoterapi & Profesyonel Bakım
+('b0000020-0000-0000-0000-000000000020', '11111111-1111-1111-1111-111111111111', 'Jalupro Gençlik Aşısı', 40, 10, 'kutu', 0, 1500.00, 2500.00, 'Mezoterapi', 'In Stock', now()),
+('b0000021-0000-0000-0000-000000000021', '11111111-1111-1111-1111-111111111111', 'Dermapen İğne Başlığı', 150, 30, 'adet', 0, 25.00, 0, 'Sarf Malzemesi', 'In Stock', now()),
+('b0000022-0000-0000-0000-000000000022', '11111111-1111-1111-1111-111111111111', 'Anestol Pomad 30g', 5, 10, 'tüp', 0, 150.00, 0, 'Anestezi', 'Low Stock', now()), -- Low stock example
+('b0000023-0000-0000-0000-000000000023', '11111111-1111-1111-1111-111111111111', 'Hydrafacial Solüsyon Seti', 2, 3, 'set', 0, 4500.00, 0, 'Cilt Bakım', 'Low Stock', now()),
+
+-- Satış Ürünleri
+('b0000030-0000-0000-0000-000000000030', '11111111-1111-1111-1111-111111111111', 'Güneş Kremi SPF 50+', 50, 10, 'adet', 0, 250.00, 600.00, 'Perakende', 'In Stock', now()),
+('b0000031-0000-0000-0000-000000000031', '11111111-1111-1111-1111-111111111111', 'Yüz Yıkama Jeli', 30, 10, 'adet', 0, 180.00, 450.00, 'Perakende', 'In Stock', now()),
+('b0000032-0000-0000-0000-000000000032', '11111111-1111-1111-1111-111111111111', 'C Vitamin Serumu', 0, 5, 'adet', 0, 400.00, 950.00, 'Perakende', 'Out of Stock', now()) -- Out of stock example
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- 5. GENERATE APPOINTMENTS & 6. TRANSACTIONS
 -- ============================================================================
 
 DO $$
@@ -302,199 +183,132 @@ DECLARE
     v_time TIME;
     v_client_id UUID;
     v_service_id UUID;
+    v_service_price DECIMAL;
+    v_service_name TEXT;
     v_status TEXT;
     v_day_of_week INT;
-    v_appointments_per_day INT;
+    v_daily_count INT;
     v_i INT;
-    v_hour INT;
-    v_minute INT;
-    v_client_ids UUID[] := ARRAY[
-        'c0000001-0000-0000-0000-000000000001'::uuid, 'c0000002-0000-0000-0000-000000000002'::uuid,
-        'c0000003-0000-0000-0000-000000000003'::uuid, 'c0000004-0000-0000-0000-000000000004'::uuid,
-        'c0000005-0000-0000-0000-000000000005'::uuid, 'c0000031-0000-0000-0000-000000000031'::uuid,
-        'c0000032-0000-0000-0000-000000000032'::uuid, 'c0000033-0000-0000-0000-000000000033'::uuid,
-        'c0000034-0000-0000-0000-000000000034'::uuid, 'c0000035-0000-0000-0000-000000000035'::uuid
-    ];
-    v_service_ids UUID[] := ARRAY[
-        'a0000001-0000-0000-0000-000000000001'::uuid, 'a0000002-0000-0000-0000-000000000002'::uuid,
-        'a0000004-0000-0000-0000-000000000004'::uuid, 'a0000005-0000-0000-0000-000000000005'::uuid,
-        'a0000010-0000-0000-0000-000000000010'::uuid, 'a0000011-0000-0000-0000-000000000011'::uuid,
-        'a0000012-0000-0000-0000-000000000012'::uuid
-    ];
-BEGIN
-    -- Today's appointments
-    FOR v_i IN 1..6 LOOP
-        v_hour := 9 + (v_i * 1.5)::int;
-        v_minute := (floor(random() * 2)::int) * 30;
-        v_time := (v_hour || ':' || lpad(v_minute::text, 2, '0'))::time;
-        
-        v_client_id := v_client_ids[1 + floor(random() * array_length(v_client_ids, 1))::int];
-        v_service_id := v_service_ids[1 + floor(random() * array_length(v_service_ids, 1))::int];
-        
-        IF random() < 0.7 THEN
-            v_status := 'Confirmed';
-        ELSE
-            v_status := 'Scheduled';
-        END IF;
-        
-        INSERT INTO public.appointments (
-            clinic_id, client_id, service_id,
-            date, time, status, created_at
-        ) VALUES (
-            '11111111-1111-1111-1111-111111111111',
-            v_client_id, v_service_id,
-            CURRENT_DATE, v_time, v_status, now() - interval '2 days'
-        ) ON CONFLICT DO NOTHING;
-    END LOOP;
+    v_clinic_id UUID := '11111111-1111-1111-1111-111111111111';
     
-    -- Next 14 days
-    FOR v_date IN SELECT generate_series(CURRENT_DATE + 1, CURRENT_DATE + 14, '1 day'::interval)::date LOOP
+    -- Arrays to hold IDs for random selection
+    v_client_ids UUID[];
+    v_service_rec RECORD;
+BEGIN
+    -- Get all client IDs into an array
+    SELECT array_agg(id) INTO v_client_ids FROM public.clients WHERE clinic_id = v_clinic_id;
+
+    -- Generate history: Last 6 months
+    FOR v_date IN SELECT generate_series(CURRENT_DATE - 180, CURRENT_DATE + 14, '1 day'::interval)::date LOOP
         v_day_of_week := EXTRACT(DOW FROM v_date);
         
+        -- Closed on Sundays (0)
         IF v_day_of_week = 0 THEN CONTINUE; END IF;
         
+        -- Busy Saturdays (6), Normal Weekdays
         IF v_day_of_week = 6 THEN
-            v_appointments_per_day := 2 + floor(random() * 3)::int;
+            v_daily_count := 8 + floor(random() * 5)::int; -- 8-12 appointments
         ELSE
-            v_appointments_per_day := 4 + floor(random() * 4)::int;
+            v_daily_count := 4 + floor(random() * 6)::int; -- 4-9 appointments
         END IF;
-        
-        FOR v_i IN 1..v_appointments_per_day LOOP
-            v_hour := 9 + floor(random() * 9)::int;
-            v_minute := (floor(random() * 4)::int) * 15;
-            v_time := (v_hour || ':' || lpad(v_minute::text, 2, '0'))::time;
-            
+
+        FOR v_i IN 1..v_daily_count LOOP
+            -- Select random client
             v_client_id := v_client_ids[1 + floor(random() * array_length(v_client_ids, 1))::int];
-            v_service_id := v_service_ids[1 + floor(random() * array_length(v_service_ids, 1))::int];
             
-            IF random() < 0.5 THEN
-                v_status := 'Confirmed';
+            -- Select random service
+            SELECT id, price, name INTO v_service_rec FROM public.services WHERE clinic_id = v_clinic_id ORDER BY random() LIMIT 1;
+            
+            -- Random time (09:00 - 18:00)
+            v_time := make_time(9 + floor(random() * 9)::int, (floor(random()*4)*15)::int, 0);
+
+            -- Status based on date
+            IF v_date < CURRENT_DATE THEN
+                IF random() < 0.85 THEN v_status := 'Completed';
+                ELSIF random() < 0.6 THEN v_status := 'Cancelled';
+                ELSE v_status := 'NoShow'; END IF;
             ELSE
-                v_status := 'Scheduled';
+                IF random() < 0.8 THEN v_status := 'Confirmed';
+                ELSE v_status := 'Scheduled'; END IF;
+            END IF;
+
+            -- Insert Appointment
+            INSERT INTO public.appointments (
+                clinic_id, client_id, service_id, date, time, status, created_at
+            ) VALUES (
+                v_clinic_id, v_client_id, v_service_rec.id, v_date, v_time, v_status, v_date::timestamp
+            );
+
+            -- Calculate Income if Completed
+            IF v_status = 'Completed' THEN
+                INSERT INTO public.transactions (
+                    clinic_id, client_id, type, amount, category, description, date, created_at
+                ) VALUES (
+                    v_clinic_id, v_client_id, 'income', v_service_rec.price, 'Hizmet', v_service_rec.name, v_date, v_date::timestamp
+                );
             END IF;
             
-            INSERT INTO public.appointments (
-                clinic_id, client_id, service_id,
-                date, time, status, created_at
-            ) VALUES (
-                '11111111-1111-1111-1111-111111111111',
-                v_client_id, v_service_id,
-                v_date, v_time, v_status, now() - interval '1 week'
-            ) ON CONFLICT DO NOTHING;
         END LOOP;
+        
+        -- Add daily expenses occasionally
+        IF v_date < CURRENT_DATE AND random() < 0.1 THEN
+             INSERT INTO public.transactions (
+                clinic_id, type, amount, category, description, date, created_at
+            ) VALUES (
+                v_clinic_id, 'expense', (100 + floor(random() * 2000))::numeric, 
+                (ARRAY['Kira', 'Faturalar', 'Yemek', 'Temizlik', 'Ürün Alımı'])[1 + floor(random() * 5)::int],
+                'Günlük/Aylık Gider', v_date, v_date::timestamp
+            );
+        END IF;
+
     END LOOP;
 END $$;
 
 -- ============================================================================
--- 8. CREATE FINANCIAL TRANSACTIONS
+-- 7. REVIEWS
 -- ============================================================================
--- Schema: id, clinic_id, type, amount, category, description, date, client_id, created_at
 
-INSERT INTO public.transactions (
-    clinic_id,
-    client_id,
-    type,
-    amount,
-    category,
-    description,
-    date,
-    created_at
-)
-SELECT
-    a.clinic_id,
-    a.client_id,
-    'income',
-    s.price,
-    'Hizmet',
-    s.name || ' - ' || c.first_name || ' ' || c.last_name,
-    a.date,
-    a.created_at
-FROM public.appointments a
-JOIN public.services s ON a.service_id = s.id
-JOIN public.clients c ON a.client_id = c.id
-WHERE a.status = 'Completed'
-  AND a.clinic_id = '11111111-1111-1111-1111-111111111111'
-ON CONFLICT DO NOTHING;
-
--- Add some expense transactions
-INSERT INTO public.transactions (
-    clinic_id,
-    type,
-    amount,
-    category,
-    description,
-    date,
-    created_at
-) VALUES
-('11111111-1111-1111-1111-111111111111', 'expense', 5000.00, 'Kira', 'Ocak ayı kira ödemesi', CURRENT_DATE - interval '5 months', now() - interval '5 months'),
-('11111111-1111-1111-1111-111111111111', 'expense', 5000.00, 'Kira', 'Şubat ayı kira ödemesi', CURRENT_DATE - interval '4 months', now() - interval '4 months'),
-('11111111-1111-1111-1111-111111111111', 'expense', 5000.00, 'Kira', 'Mart ayı kira ödemesi', CURRENT_DATE - interval '3 months', now() - interval '3 months'),
-('11111111-1111-1111-1111-111111111111', 'expense', 5000.00, 'Kira', 'Nisan ayı kira ödemesi', CURRENT_DATE - interval '2 months', now() - interval '2 months'),
-('11111111-1111-1111-1111-111111111111', 'expense', 5000.00, 'Kira', 'Mayıs ayı kira ödemesi', CURRENT_DATE - interval '1 month', now() - interval '1 month'),
-('11111111-1111-1111-1111-111111111111', 'expense', 5000.00, 'Kira', 'Haziran ayı kira ödemesi', CURRENT_DATE, now()),
-('11111111-1111-1111-1111-111111111111', 'expense', 12000.00, 'Ürün Alımı', 'Dolgu ve Botox malzeme siparişi', CURRENT_DATE - interval '3 months', now() - interval '3 months'),
-('11111111-1111-1111-1111-111111111111', 'expense', 8500.00, 'Ürün Alımı', 'Cilt bakım ürünleri stoku', CURRENT_DATE - interval '2 months', now() - interval '2 months'),
-('11111111-1111-1111-1111-111111111111', 'expense', 3200.00, 'Faturalar', 'Elektrik ve su faturaları', CURRENT_DATE - interval '1 month', now() - interval '1 month'),
-('11111111-1111-1111-1111-111111111111', 'expense', 2800.00, 'Ekipman', 'Lazer başlığı bakımı', CURRENT_DATE - interval '2 weeks', now() - interval '2 weeks')
-ON CONFLICT DO NOTHING;
+INSERT INTO public.reviews (clinic_id, source, patient_name, rating, comment, status, date, created_at) VALUES
+('11111111-1111-1111-1111-111111111111', 'Google', 'Ayşe Yılmaz', 5, 'Harika bir deneyim, herkes çok ilgiliydi.', 'Read', CURRENT_DATE - 10, now() - interval '10 days'),
+('11111111-1111-1111-1111-111111111111', 'Google', 'Mehmet Demir', 4, 'Sonuçlardan memnunum ama randevu saati biraz sarkt.', 'New', CURRENT_DATE - 2, now() - interval '2 days'),
+('11111111-1111-1111-1111-111111111111', 'Instagram', 'Zeynep Kaya', 5, 'Dudak dolgusu için tek adresim!', 'Read', CURRENT_DATE - 25, now() - interval '25 days'),
+('11111111-1111-1111-1111-111111111111', 'Website', 'Canan Çelik', 5, 'Cilt bakımından çok memnun kaldım, cildim ışıl ışıl oldu.', 'Read', CURRENT_DATE - 40, now() - interval '40 days'),
+('11111111-1111-1111-1111-111111111111', 'Google', 'Elif Şahin', 3, 'İşlem iyiydi ama bekleme salonu çok kalabalıktı.', 'Read', CURRENT_DATE - 5, now() - interval '5 days');
 
 -- ============================================================================
--- 9. CREATE REVIEWS
+-- 8. LINK USER TO CLINIC
 -- ============================================================================
--- Schema from master_schema_v5_complete.sql:
--- id, clinic_id, source, patient_name, patient_email, rating, comment, status, date
+-- If the user exists in auth.users, link them to this demo clinic as 'owner'
 
-INSERT INTO public.reviews (
-    clinic_id,
-    source,
-    patient_name,
-    rating,
-    comment,
-    status,
-    date,
-    created_at
-) VALUES
-('11111111-1111-1111-1111-111111111111', 'Google', 'Aylin Özkan', 5, 'Harika bir deneyimdi! Dr. Ayşe Hanım çok ilgili ve profesyonel. Hydrafacial sonrası cildim gözle görülür şekilde iyileşti.', 'Read', CURRENT_DATE - interval '5 months', now() - interval '5 months'),
-('11111111-1111-1111-1111-111111111111', 'Google', 'Selin Arslan', 5, 'Botox uygulaması için geldim, sonuçlar mükemmel! Çok doğal bir görüntü elde ettim.', 'Read', CURRENT_DATE - interval '4 months', now() - interval '4 months'),
-('11111111-1111-1111-1111-111111111111', 'Instagram', 'Deniz Yıldız', 4, 'Lazer epilasyon seanslarım devam ediyor. Şimdiye kadar çok memnunum, sonuçlar tatmin edici.', 'Read', CURRENT_DATE - interval '4 months', now() - interval '4 months'),
-('11111111-1111-1111-1111-111111111111', 'Google', 'Elif Kara', 5, 'Dudak dolgusu için çok endişeliydim ama ekip beni çok rahatlattı. Sonuç doğal ve zarif.', 'Read', CURRENT_DATE - interval '3 months', now() - interval '3 months'),
-('11111111-1111-1111-1111-111111111111', 'Google', 'Zeynep Demirtaş', 5, 'Anti-aging programına başladım, PRP ve mezoterapi kombinasyonu harikalar yarattı!', 'Read', CURRENT_DATE - interval '3 months', now() - interval '3 months'),
-('11111111-1111-1111-1111-111111111111', 'Instagram', 'Burcu Aydın', 4, 'Temiz ve modern bir klinik. Randevu sistemi çok pratik.', 'New', CURRENT_DATE - interval '2 months', now() - interval '2 months'),
-('11111111-1111-1111-1111-111111111111', 'Google', 'Canan Şen', 5, 'Akne izlerim için fraksiyonel lazer yaptırdım. 3 seans sonunda ciddi bir iyileşme var.', 'Read', CURRENT_DATE - interval '2 months', now() - interval '2 months'),
-('11111111-1111-1111-1111-111111111111', 'Website', 'Gamze Polat', 5, 'Güzellik Merkezi Nişantaşıyı kesinlikle tavsiye ederim. Profesyonel ekip ve kaliteli hizmet.', 'New', CURRENT_DATE - interval '1 month', now() - interval '1 month'),
-('11111111-1111-1111-1111-111111111111', 'Instagram', 'Hande Çelik', 4, 'İpek kirpik uygulaması için geldim. Çok güzel ve doğal oldu. Tek eksik biraz bekleme süresi.', 'New', CURRENT_DATE - interval '3 weeks', now() - interval '3 weeks'),
-('11111111-1111-1111-1111-111111111111', 'Google', 'İpek Koç', 5, 'Altın yüz bakımı gerçekten lüks bir deneyim. Cildim hiç bu kadar parlak olmamıştı!', 'New', CURRENT_DATE - interval '2 weeks', now() - interval '2 weeks')
-ON CONFLICT DO NOTHING;
+DO $$
+DECLARE
+    v_user_email TEXT := 'yagizefegokce2416@gmail.com';
+    v_user_id UUID;
+    v_clinic_id UUID := '11111111-1111-1111-1111-111111111111';
+BEGIN
+    -- Try to find the user ID from auth.users
+    -- NOTE: 'auth' schema access might be restricted depending on connection role.
+    -- If this fails, the user needs to manually run the update.
+    
+    BEGIN
+        SELECT id INTO v_user_id FROM auth.users WHERE email = v_user_email;
+    EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Could not access auth.users directly. Skipping auto-link.';
+    END;
 
--- ============================================================================
--- 10. ACTIVITY LOG (SKIPPED - requires user_id FK)
--- ============================================================================
--- Activity log entries will be created when real users perform actions.
--- Cannot seed without valid auth.users entries.
-
--- ============================================================================
--- COMMIT TRANSACTION
--- ============================================================================
+    IF v_user_id IS NOT NULL THEN
+        -- Update the profile
+        UPDATE public.profiles
+        SET clinic_id = v_clinic_id,
+            role = 'owner',
+            first_name = 'Yağız Efe',
+            last_name = 'Gökçe'
+        WHERE id = v_user_id;
+        
+        RAISE NOTICE 'User % linked to clinic %', v_user_email, v_clinic_id;
+    ELSE
+        RAISE NOTICE 'User % not found in auth.users yet. Please sign up first.', v_user_email;
+    END IF;
+END $$;
 
 COMMIT;
-
--- ============================================================================
--- SUMMARY
--- ============================================================================
--- This seed script creates (matches master_schema_v5_complete.sql):
--- ✓ 1 Demo Clinic (Istanbul aesthetic clinic)
--- ✓ 15 Services (facial, botox, laser, body treatments)
--- ✓ 50 Clients (with realistic Turkish names)
--- ✓ 15 Inventory Items (with stock alerts and categories)
--- ✓ ~300 Historical Appointments (6 months)
--- ✓ ~60 Future Appointments (2 weeks)
--- ✓ Financial Transactions (income from appointments + expenses)
--- ✓ 10 Client Reviews (from Google, Instagram, Website)
---
--- NOTE: After running this seed:
--- 1. Create a user via Supabase Auth (signup flow)
--- 2. Link the user to the demo clinic:
---    UPDATE public.profiles 
---    SET clinic_id = '11111111-1111-1111-1111-111111111111', role = 'owner'
---    WHERE id = 'YOUR_USER_UUID_HERE';
--- ============================================================================

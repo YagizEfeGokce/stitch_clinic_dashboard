@@ -11,7 +11,7 @@ import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
 
 export default function Settings() {
-    const { user } = useAuth();
+    const { user, refreshUserData } = useAuth();
     const { success, error: showError } = useToast();
     const [activeTab, setActiveTab] = useState(''); // Init verify later
     const [profile, setProfile] = useState(null);
@@ -243,7 +243,12 @@ export default function Settings() {
                 isOpen={isProfileModalOpen}
                 onClose={() => setIsProfileModalOpen(false)}
                 profile={profile}
-                onSuccess={fetchProfile}
+                onSuccess={async () => {
+                    await fetchProfile();
+                    if (refreshUserData && user) {
+                        await refreshUserData(user.id);
+                    }
+                }}
             />
         </div>
     );

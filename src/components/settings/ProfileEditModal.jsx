@@ -62,6 +62,8 @@ export default function ProfileEditModal({ isOpen, onClose, profile, onSuccess }
                 .from('profiles')
                 .update({
                     full_name: fullName,
+                    first_name: fullName.split(' ')[0],
+                    last_name: fullName.split(' ').slice(1).join(' '),
                     avatar_url: avatarUrl
                 })
                 .eq('id', user.id);
