@@ -88,10 +88,10 @@ export default function BetaAccessDenied() {
                         <Mail className="w-4 h-4" />
                         Sorularınız için:{' '}
                         <a
-                            href="mailto:destek@dermdesk.net"
+                            href="mailto:yagiz.gokce19@gmail.com"
                             className="text-teal-600 hover:underline font-medium"
                         >
-                            destek@dermdesk.net
+                            yagiz.gokce19@gmail.com
                         </a>
                     </p>
                 </div>

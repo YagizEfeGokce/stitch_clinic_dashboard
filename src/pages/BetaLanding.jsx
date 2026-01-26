@@ -521,7 +521,7 @@ export default function BetaLanding() {
                             </ul>
                             <div className="mt-6">
                                 <p className="text-sm text-gray-500">İletişim</p>
-                                <a href="mailto:destek@dermdesk.net" className="text-sm hover:text-white transition-colors">destek@dermdesk.net</a>
+                                <a href="mailto:yagiz.gokce19@gmail.com" className="text-sm hover:text-white transition-colors">yagiz.gokce19@gmail.com</a>
                             </div>
                         </div>
                     </div>
@@ -656,7 +656,7 @@ function BetaSuccessScreen({ position, referralCode, email }) {
                 </div>
 
                 <p className="text-sm text-gray-500">
-                    Sorularınız mı var? <a href="mailto:destek@dermdesk.net" className="text-teal-600 hover:underline">destek@dermdesk.net</a>
+                    Sorularınız mı var? <a href="mailto:yagiz.gokce19@gmail.com" className="text-teal-600 hover:underline">yagiz.gokce19@gmail.com</a>
                 </p>
             </div>
         </div>

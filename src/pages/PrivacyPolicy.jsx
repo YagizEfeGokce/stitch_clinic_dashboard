@@ -54,7 +54,7 @@ export default function PrivacyPolicy() {
 
                         <h3>6. İletişim</h3>
                         <p>
-                            Gizlilik politikamızla ilgili sorularınız için bizimle iletişime geçebilirsiniz: <a href="mailto:destek@dermdesk.com" className="text-primary hover:underline">destek@dermdesk.com</a>
+                            Gizlilik politikamızla ilgili sorularınız için bizimle iletişime geçebilirsiniz: <a href="mailto:yagiz.gokce19@gmail.com" className="text-primary hover:underline">yagiz.gokce19@gmail.com</a>
                         </p>
                     </div>
                 </div>
