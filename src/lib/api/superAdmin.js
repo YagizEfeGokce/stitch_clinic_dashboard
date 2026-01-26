@@ -6,18 +6,11 @@ import { handleError } from '../../utils/errorHelpers';
  */
 class SuperAdminAPI {
     /**
-     * Get all feedback entries with user and clinic details
+     * Get all feedback entries using Secure RPC
      */
     async getFeedbacks() {
         try {
-            const { data, error } = await supabase
-                .from('feedback')
-                .select(`
-                    *,
-                    profiles:user_id ( full_name, email ),
-                    clinics:clinic_id ( name )
-                `)
-                .order('created_at', { ascending: false });
+            const { data, error } = await supabase.rpc('get_admin_feedbacks');
 
             if (error) throw error;
             return { data, error: null };
@@ -28,18 +21,14 @@ class SuperAdminAPI {
     }
 
     /**
-     * Update feedback status
-     * @param {string} id - Feedback ID
-     * @param {string} status - New status
+     * Update feedback status using Secure RPC
      */
     async updateFeedbackStatus(id, status) {
         try {
-            const { data, error } = await supabase
-                .from('feedback')
-                .update({ status })
-                .eq('id', id)
-                .select()
-                .single();
+            const { data, error } = await supabase.rpc('update_feedback_status_admin', {
+                feedback_id: id,
+                new_status: status
+            });
 
             if (error) throw error;
             return { data, error: null };

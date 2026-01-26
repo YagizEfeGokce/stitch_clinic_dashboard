@@ -46,6 +46,7 @@ export default function Dashboard() {
                 const { data, error } = await supabase
                     .from('profiles')
                     .select('id, full_name, role')
+                    .eq('clinic_id', clinic?.id)
                     .order('full_name');
 
                 if (error) {

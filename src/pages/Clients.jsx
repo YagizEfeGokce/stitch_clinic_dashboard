@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { clientsAPI } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Spinner } from '../components/ui/Spinner';
@@ -19,11 +20,7 @@ export default function Clients() {
             setLoading(true);
             if (!profile?.clinic_id) return;
 
-            const { data, error } = await supabase
-                .from('clients')
-                .select('*')
-                .eq('clinic_id', profile.clinic_id)
-                .order('created_at', { ascending: false });
+            const { data, error } = await clientsAPI.getClientsWithStats(profile.clinic_id);
 
             if (error) throw error;
             setClients(data || []);

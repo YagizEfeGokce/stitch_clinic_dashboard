@@ -35,23 +35,29 @@ export default function Home() {
             // Perform parallel fetching
             // Note: Profile is handled by AuthContext now
 
+            // Ensure we have a clinic ID to query with
+            if (!profile?.clinic_id) return;
+
             const todaysAppointmentsPromise = supabase
                 .from('appointments')
                 .select(`
                     *,
                     services (duration_min)
                 `, { count: 'exact' })
+                .eq('clinic_id', profile.clinic_id)
                 .eq('date', today)
                 .neq('status', 'Cancelled');
 
             const activeClientsPromise = supabase
                 .from('clients')
-                .select('*', { count: 'exact', head: true }) // head: true means we only want count, lighter payload
+                .select('*', { count: 'exact', head: true })
+                .eq('clinic_id', profile.clinic_id)
                 .eq('status', 'Active');
 
             const settingsPromise = supabase
                 .from('clinics')
                 .select('settings_config')
+                .eq('id', profile.clinic_id)
                 .single();
 
             const upcomingPromise = supabase
@@ -65,6 +71,7 @@ export default function Home() {
                     clients (first_name, last_name, image_url), 
                     services (name)
                 `)
+                .eq('clinic_id', profile.clinic_id)
                 .gte('date', today)
                 .neq('status', 'Cancelled')
                 .order('date', { ascending: true })

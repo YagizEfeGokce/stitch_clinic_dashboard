@@ -23,6 +23,24 @@ class ClientsAPI extends BaseAPI {
     }
 
     /**
+     * Get all clients with computed stats (total spend, last visit)
+     * @param {string} clinicId - Clinic ID
+     */
+    async getClientsWithStats(clinicId) {
+        try {
+            const { data, error } = await supabase.rpc('get_clients_with_stats', {
+                p_clinic_id: clinicId
+            });
+
+            if (error) throw error;
+            return { data, error: null };
+        } catch (error) {
+            const message = handleError(error, { operation: 'getClientsWithStats', clinicId });
+            return { data: null, error: message };
+        }
+    }
+
+    /**
      * Search clients by name, phone, or email
      * @param {string} clinicId - Clinic ID
      * @param {string} searchTerm - Search term

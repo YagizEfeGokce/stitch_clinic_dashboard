@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { superAdminAPI } from '../lib/api';
 import Finance from '../pages/Finance';
 import Performance from '../pages/Performance';
+import Unauthorized from '../pages/Unauthorized';
 
 // Only these emails can access Super Admin
 const SUPER_ADMIN_EMAILS = [
@@ -25,9 +26,9 @@ export default function SuperAdminLayout() {
     // Check if current user is a super admin
     const isSuperAdmin = user?.email && SUPER_ADMIN_EMAILS.includes(user.email.toLowerCase());
 
-    // If not super admin, redirect to home
+    // If not super admin, show Unauthorized page
     if (!isSuperAdmin) {
-        return <Navigate to="/schedule" replace />;
+        return <Unauthorized />;
     }
 
     const handleSignOut = async () => {
@@ -124,10 +125,14 @@ function FeedbackPanel() {
 
     const updateStatus = async (id, status) => {
         try {
-            await superAdminAPI.updateFeedbackStatus(id, status);
+            console.log(`Updating feedback ${id} to ${status}...`);
+            const { error } = await superAdminAPI.updateFeedbackStatus(id, status);
+            if (error) throw error;
+            console.log('Update success');
             fetchFeedbacks();
         } catch (err) {
             console.error('Status update error:', err);
+            alert('Durum güncellenirken hata oluştu: ' + (err.message || err));
         }
     };
 
@@ -212,19 +217,35 @@ function FeedbackPanel() {
                                         </span>
                                         {getStatusBadge(fb.status)}
                                     </div>
-                                    <p className="text-slate-900 font-medium leading-relaxed">{fb.message}</p>
-                                    <div className="mt-3 flex items-center gap-4 text-xs text-slate-400">
-                                        <span>{fb.profiles?.full_name || fb.profiles?.email || 'Bilinmeyen'}</span>
-                                        <span>•</span>
-                                        <span>{fb.clinics?.name || 'Bilinmeyen Klinik'}</span>
-                                        <span>•</span>
-                                        <span>{new Date(fb.created_at).toLocaleDateString('tr-TR')}</span>
+                                    <p className="text-slate-900 font-medium leading-relaxed mb-1">{fb.message}</p>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-4 text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-slate-400">Gönderen:</span>
+                                            <span className="truncate">{fb.user_fullname || 'İsimsiz'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-slate-400">Email:</span>
+                                            <span className="truncate select-all">{fb.user_email || 'Anonim'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-slate-400">Telefon:</span>
+                                            <span className="truncate select-all">{fb.user_phone || '-'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-slate-400">Klinik:</span>
+                                            <span className="truncate">{fb.clinic_name || 'Bilinmiyor'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-slate-400">Tarih:</span>
+                                            <span>{new Date(fb.created_at).toLocaleString('tr-TR')}</span>
+                                        </div>
                                     </div>
                                 </div>
                                 {fb.status === 'new' && (
-                                    <div className="flex gap-2 shrink-0">
-                                        <button onClick={() => updateStatus(fb.id, 'resolved')} className="px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-lg hover:bg-green-100">Çözüldü</button>
-                                        <button onClick={() => updateStatus(fb.id, 'dismissed')} className="px-3 py-1.5 bg-slate-50 text-slate-500 text-xs font-bold rounded-lg hover:bg-slate-100">Reddet</button>
+                                    <div className="flex flex-col gap-2 shrink-0">
+                                        <button onClick={() => updateStatus(fb.id, 'resolved')} className="px-3 py-1.5 bg-green-50 text-green-700 text-xs font-bold rounded-lg hover:bg-green-100 border border-green-100 transition-colors">Çözüldü</button>
+                                        <button onClick={() => updateStatus(fb.id, 'dismissed')} className="px-3 py-1.5 bg-slate-50 text-slate-500 text-xs font-bold rounded-lg hover:bg-slate-100 border border-slate-200 transition-colors">Reddet</button>
                                     </div>
                                 )}
                             </div>
