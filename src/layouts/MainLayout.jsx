@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Header from '../components/layout/Header';
-import BottomNav from '../components/layout/BottomNav';
+
 import Sidebar from '../components/layout/Sidebar';
 import CommandPalette from '../components/core/CommandPalette';
 import FeedbackWidget from '../components/widgets/FeedbackWidget';
@@ -44,13 +44,12 @@ export default function MainLayout({ children }) {
                 </div>
 
                 {/* Main content with bottom padding for mobile nav */}
-                <main className="relative flex flex-col w-full max-w-7xl mx-auto p-4 md:p-8 pb-24 md:pb-8">
+                <main className="relative flex flex-col w-full max-w-7xl mx-auto p-4 md:p-8 pb-8">
                     {children}
                 </main>
             </div>
 
-            {/* Mobile Bottom Navigation */}
-            <BottomNav />
+
 
             <FeedbackWidget />
         </div>
