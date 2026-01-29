@@ -123,7 +123,7 @@ export default function BookingLinkSettings() {
     async function handleCopyLink() {
         if (!originalSlug) return;
 
-        const link = `https://dermdesk.com/book/${originalSlug}`;
+        const link = `https://dermdesk.net/book/${originalSlug}`;
         try {
             await navigator.clipboard.writeText(link);
             setCopied(true);
@@ -138,14 +138,14 @@ export default function BookingLinkSettings() {
     function handleWhatsAppShare() {
         if (!originalSlug) return;
 
-        const link = `https://dermdesk.com/book/${originalSlug}`;
+        const link = `https://dermdesk.net/book/${originalSlug}`;
         const message = encodeURIComponent(`Merhaba! ${clinic?.name || 'Kliniğimiz'} için online randevu almak için bu linki kullanabilirsiniz:\n\n${link}`);
         window.open(`https://wa.me/?text=${message}`, '_blank');
     }
 
     // Get booking URL
     const bookingUrl = originalSlug
-        ? `https://dermdesk.com/book/${originalSlug}`
+        ? `https://dermdesk.net/book/${originalSlug}`
         : null;
 
     if (loading) {
@@ -179,7 +179,7 @@ export default function BookingLinkSettings() {
                 </label>
                 <div className="flex gap-2">
                     <div className="flex-1 flex items-center bg-slate-50 rounded-xl border border-slate-200 overflow-hidden focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
-                        <span className="text-slate-400 text-sm pl-3 shrink-0">dermdesk.com/book/</span>
+                        <span className="text-slate-400 text-sm pl-3 shrink-0">dermdesk.net/book/</span>
                         <input
                             type="text"
                             value={slug}
