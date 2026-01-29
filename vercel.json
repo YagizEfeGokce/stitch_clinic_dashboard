@@ -1,6 +1,16 @@
 {
   "rewrites": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "(?<slug>[^.]+)\\.dermdesk\\.com"
+        }
+      ],
+      "destination": "/book/:slug"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

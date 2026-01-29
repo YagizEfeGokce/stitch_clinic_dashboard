@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import BrandingSettings from '../components/settings/BrandingSettings';
+import BookingLinkSettings from '../components/settings/BookingLinkSettings';
 import TeamSettings from '../components/settings/TeamSettings';
 import ProfileEditModal from '../components/settings/ProfileEditModal';
 import DataManagementSettings from '../components/settings/DataManagementSettings';
@@ -174,7 +175,12 @@ export default function Settings() {
                         <TeamSettings />
                     </>
                 )}
-                {activeTab === 'General' && <BrandingSettings />}
+                {activeTab === 'General' && (
+                    <div className="space-y-6">
+                        <BookingLinkSettings />
+                        <BrandingSettings />
+                    </div>
+                )}
 
                 {activeTab === 'Data' && <DataManagementSettings />}
                 {activeTab === 'Billing' && <BillingSettings />}

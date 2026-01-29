@@ -50,6 +50,7 @@ const AuthConfirm = lazy(() => import('./pages/AuthConfirm'));
 const BetaLanding = lazy(() => import('./pages/BetaLanding'));
 const BetaSignup = lazy(() => import('./pages/BetaSignup'));
 const BetaAccessDenied = lazy(() => import('./pages/BetaAccessDenied'));
+const PublicBookingPage = lazy(() => import('./pages/PublicBookingPage'));
 
 // Sentry Error Boundary Fallback UI
 const ErrorFallback = ({ error, componentStack, resetError }) => (
@@ -200,6 +201,9 @@ function App() {
           <ToastProvider>
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
+                {/* Public Booking Route - No Auth Required */}
+                <Route path="/book/:clinicSlug" element={<PublicBookingPage />} />
+
                 {/* Public Routes */}
                 <Route path="/" element={<BetaLanding />} />
                 <Route path="/landing" element={<Navigate to="/" replace />} />
