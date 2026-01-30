@@ -24,13 +24,19 @@ export default function Login() {
             const { data, error } = await signIn(email, password);
             if (error) throw error;
 
-            // Check role for redirect
+            // Check role and onboarding status for redirect
             if (data?.user) {
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('role')
+                    .select('role, has_completed_onboarding')
                     .eq('id', data.user.id)
                     .single();
+
+                // New users go to onboarding first
+                if (!profile?.has_completed_onboarding) {
+                    navigate('/onboarding');
+                    return;
+                }
 
                 const role = profile?.role;
                 if (role === 'super_admin') {
@@ -41,7 +47,7 @@ export default function Login() {
                     navigate('/schedule');
                 }
             } else {
-                navigate('/schedule');
+                navigate('/onboarding');
             }
         } catch (err) {
             console.error('Login error:', err);
