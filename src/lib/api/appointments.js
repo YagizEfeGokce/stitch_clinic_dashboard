@@ -132,18 +132,86 @@ class AppointmentsAPI extends BaseAPI {
     }
 
     /**
-     * Update appointment status
+     * Update appointment status with stock check for completion
      * @param {string} id - Appointment ID
      * @param {string} status - New status
+     * @param {boolean} skipStockCheck - Skip stock validation (use with caution)
      */
-    async updateStatus(id, status) {
+    async updateStatus(id, status, skipStockCheck = false) {
         const validStatuses = ['Scheduled', 'Confirmed', 'Completed', 'Cancelled', 'No Show'];
 
         if (!validStatuses.includes(status)) {
             return { data: null, error: 'Geçersiz durum değeri' };
         }
 
+        // Pre-check stock for completion
+        if (status === 'Completed' && !skipStockCheck) {
+            const stockCheck = await this.checkStockForCompletion(id);
+            if (stockCheck.error) {
+                return {
+                    data: null,
+                    error: stockCheck.error,
+                    errorCode: 'INSUFFICIENT_STOCK',
+                    insufficientItems: stockCheck.items
+                };
+            }
+        }
+
         return this.update(id, { status });
+    }
+
+    /**
+     * Check if all appointment materials have sufficient stock
+     * @param {string} appointmentId - Appointment ID
+     * @returns {Promise<{error: string|null, items: Array}>}
+     */
+    async checkStockForCompletion(appointmentId) {
+        try {
+            const { data, error } = await supabase
+                .from('appointment_materials')
+                .select(`
+                    quantity_used,
+                    item_name_snapshot,
+                    inventory:inventory_item_id (
+                        stock,
+                        name,
+                        unit
+                    )
+                `)
+                .eq('appointment_id', appointmentId)
+                .eq('deducted', false);
+
+            if (error) throw error;
+
+            // If no materials configured, allow completion
+            if (!data || data.length === 0) {
+                return { error: null, items: [] };
+            }
+
+            const insufficientItems = data
+                .filter(m => m.inventory && m.inventory.stock < m.quantity_used)
+                .map(m => ({
+                    name: m.item_name_snapshot,
+                    currentStock: m.inventory.stock,
+                    required: Math.ceil(m.quantity_used),
+                    unit: m.inventory.unit || 'adet'
+                }));
+
+            if (insufficientItems.length > 0) {
+                const itemStrings = insufficientItems.map(
+                    i => `${i.name} (${i.currentStock} mevcut, ${i.required} gerekli)`
+                );
+                return {
+                    error: `Yetersiz stok: ${itemStrings.join(', ')}`,
+                    items: insufficientItems
+                };
+            }
+
+            return { error: null, items: [] };
+        } catch (error) {
+            console.error('[Stock Check Error]', error);
+            return { error: 'Stok kontrolü yapılamadı', items: [] };
+        }
     }
 
     /**

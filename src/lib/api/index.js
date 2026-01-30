@@ -24,6 +24,8 @@ export { transactionsAPI } from './transactions';
 export { clinicsAPI, staffAPI } from './clinics';
 export { reviewsAPI } from './reviews';
 export { superAdminAPI } from './superAdmin';
+export { serviceMaterialsAPI } from './serviceMaterials';
+export { appointmentMaterialsAPI } from './appointmentMaterials';
 
 // Re-export BaseAPI for custom extensions
 export { default as BaseAPI } from './baseClient';

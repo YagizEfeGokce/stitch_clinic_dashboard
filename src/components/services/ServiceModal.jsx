@@ -4,6 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { useOptimistic } from '../../hooks/useOptimistic';
 import { logActivity } from '../../lib/logger';
 import { ButtonSpinner } from '../ui/Spinner';
+import ServiceMaterialsManager from './ServiceMaterialsManager';
 
 export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
     const { success, error: showError } = useToast();
@@ -153,6 +154,14 @@ export default function ServiceModal({ isOpen, onClose, onSuccess, service }) {
                             className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none font-medium"
                             placeholder="Tedavi hakkında kısa bilgi..."
                         ></textarea>
+                    </div>
+
+                    {/* Materials Section - Only show for existing services */}
+                    <div className="pt-2 border-t border-slate-100">
+                        <ServiceMaterialsManager
+                            serviceId={service?.id}
+                            isOpen={isOpen}
+                        />
                     </div>
 
                     <div className="pt-4 flex gap-3">

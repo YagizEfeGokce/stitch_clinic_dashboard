@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { logActivity } from '../../lib/logger';
+import { appointmentsAPI, appointmentMaterialsAPI } from '../../lib/api';
+import AppointmentMaterialsSection from './AppointmentMaterialsSection';
+import { ButtonSpinner } from '../ui/Spinner';
 
 export default function AppointmentModal({ appointment, onClose, onUpdate }) {
     const { role } = useAuth();
@@ -19,6 +22,17 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
     const [staffList, setStaffList] = useState([]);
     const [isReassigning, setIsReassigning] = useState(false);
     const [targetStaffId, setTargetStaffId] = useState('');
+
+    // Materials & Completion Dialog State
+    const [materialsInfo, setMaterialsInfo] = useState({ count: 0, hasInsufficientStock: false });
+    const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
+    const [appointmentMaterials, setAppointmentMaterials] = useState([]);
+    const [loadingMaterials, setLoadingMaterials] = useState(false);
+
+    // Handle materials info change callback - MUST be before any conditional returns
+    const handleMaterialsChange = useCallback((info) => {
+        setMaterialsInfo(info);
+    }, []);
 
     // Sync state if appointment prop updates
     useEffect(() => {
@@ -166,11 +180,89 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
         // time, // Removed unused variable
         status,
         clients,
-        staff_id // ensure this exists in selection
+        staff_id, // ensure this exists in selection
+        service_id,
+        clinic_id
     } = appointment;
 
     // const assignedStaffName = staffList.find(s => s.id === staff_id)?.full_name || 'Unknown Staff'; // Removed unused variable
 
+    // Fetch materials for completion confirmation
+    const handleShowCompleteConfirm = async () => {
+        setLoadingMaterials(true);
+        try {
+            const { data, error } = await appointmentMaterialsAPI.getAppointmentMaterials(id);
+            if (error) {
+                console.error('Error fetching materials:', error);
+            }
+
+            const activeMaterials = (data || []).filter(m => !m.deducted);
+            setAppointmentMaterials(activeMaterials);
+
+            // Check stock availability
+            if (activeMaterials.length > 0) {
+                const stockCheck = await appointmentsAPI.checkStockForCompletion(id);
+                if (stockCheck.error) {
+                    toastError(stockCheck.error);
+                    return;
+                }
+            }
+
+            setShowCompleteConfirm(true);
+        } catch (err) {
+            console.error('Error preparing completion:', err);
+            toastError('Tamamlama hazırlanırken bir hata oluştu');
+        } finally {
+            setLoadingMaterials(false);
+        }
+    };
+
+    // Handle confirmed completion with inventory deduction
+    const handleConfirmComplete = async () => {
+        setShowCompleteConfirm(false);
+        setLoading(true);
+
+        try {
+            // Update appointment status - the database trigger will handle inventory deduction
+            const { error } = await supabase
+                .from('appointments')
+                .update({
+                    status: 'Completed',
+                    notes: currentNotes
+                })
+                .eq('id', id);
+
+            if (error) {
+                // Check if it's an insufficient stock error from the trigger
+                if (error.message?.includes('INSUFFICIENT_STOCK')) {
+                    const stockMessage = error.message.split('INSUFFICIENT_STOCK:')[1]?.trim() || 'Yetersiz stok';
+                    toastError(`Yetersiz stok: ${stockMessage}`);
+                    return;
+                }
+                throw error;
+            }
+
+            await logActivity('Randevu Tamamlandı', {
+                appointment_id: id,
+                client_id: appointment.client_id,
+                materials_deducted: appointmentMaterials.length
+            });
+
+            if (appointmentMaterials.length > 0) {
+                success('Randevu tamamlandı ve malzemeler envanterden düşüldü');
+            } else {
+                success('Randevu tamamlandı');
+            }
+
+            onUpdate();
+            onClose();
+        } catch (err) {
+            console.error('Error completing appointment:', err);
+            toastError('Randevu tamamlanırken bir hata oluştu');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleUpdateStatus = async (newStatus) => {
         setLoading(true);
@@ -410,11 +502,11 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                     )}
 
                     {/* Notes */}
-                    <div className="mb-6">
+                    <div className="mb-4">
                         <label className="block text-sm font-bold text-slate-700 mb-2">Notlar</label>
                         <div className="relative">
                             <textarea
-                                rows="3"
+                                rows="2"
                                 className="w-full p-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-slate-700 resize-none bg-slate-50 focus:bg-white transition-all"
                                 placeholder="Bu ziyaret hakkında dahili notlar ekleyin..."
                                 value={currentNotes}
@@ -433,6 +525,19 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                         </div>
                     </div>
 
+                    {/* Materials Section */}
+                    {status !== 'Completed' && (
+                        <div className="mb-4">
+                            <AppointmentMaterialsSection
+                                appointmentId={id}
+                                serviceId={service_id}
+                                clinicId={clinic_id}
+                                isCompleted={status === 'Completed'}
+                                onMaterialsChange={handleMaterialsChange}
+                            />
+                        </div>
+                    )}
+
                     {/* Actions */}
                     <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
                         {status !== 'Cancelled' && (
@@ -448,12 +553,23 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
 
                         {status !== 'Completed' && (
                             <button
-                                onClick={() => handleUpdateStatus('Completed')}
-                                disabled={loading}
-                                className="py-3 px-4 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2 col-span-1 ml-auto w-full"
+                                onClick={handleShowCompleteConfirm}
+                                disabled={loading || loadingMaterials || materialsInfo.hasInsufficientStock}
+                                className={`py-3 px-4 rounded-xl font-bold shadow-lg transition-all flex items-center justify-center gap-2 col-span-1 ml-auto w-full ${materialsInfo.hasInsufficientStock
+                                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
+                                    : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/20'
+                                    }`}
+                                title={materialsInfo.hasInsufficientStock ? 'Yetersiz stok - envanterde yeterli malzeme yok' : ''}
                             >
-                                <span className="material-symbols-outlined">check_circle</span>
+                                {loadingMaterials ? (
+                                    <ButtonSpinner />
+                                ) : (
+                                    <span className="material-symbols-outlined">check_circle</span>
+                                )}
                                 Tamamla
+                                {materialsInfo.count > 0 && (
+                                    <span className="text-xs opacity-75">({materialsInfo.count})</span>
+                                )}
                             </button>
                         )}
 
@@ -471,6 +587,59 @@ export default function AppointmentModal({ appointment, onClose, onUpdate }) {
                 </div>
 
             </div>
+
+            {/* Completion Confirmation Dialog */}
+            {showCompleteConfirm && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-[2px] animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-6 max-w-sm w-full animate-in zoom-in-95 duration-200">
+                        <div className="mx-auto w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center mb-4">
+                            <span className="material-symbols-outlined text-2xl">check_circle</span>
+                        </div>
+                        <h3 className="text-center text-lg font-bold text-slate-900 mb-2">
+                            Randevuyu Tamamla
+                        </h3>
+
+                        {appointmentMaterials.length > 0 ? (
+                            <>
+                                <p className="text-center text-slate-500 text-sm mb-4">
+                                    Bu hizmeti tamamladığınızda aşağıdaki malzemeler otomatik olarak envanterden düşülecektir:
+                                </p>
+                                <div className="bg-slate-50 rounded-xl p-3 mb-4 max-h-48 overflow-y-auto">
+                                    {appointmentMaterials.map(material => (
+                                        <div key={material.id} className="flex items-center justify-between py-1.5 text-sm">
+                                            <span className="text-slate-700">{material.item_name_snapshot}</span>
+                                            <span className="font-bold text-slate-900">
+                                                x{Math.ceil(material.quantity_used)} {material.inventory?.unit || 'adet'}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <p className="text-center text-slate-500 text-sm mb-4">
+                                Bu randevuyu tamamlamak istediğinizden emin misiniz?
+                            </p>
+                        )}
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowCompleteConfirm(false)}
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors"
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={handleConfirmComplete}
+                                disabled={loading}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg shadow-green-500/20 transition-colors flex items-center justify-center gap-2"
+                            >
+                                {loading && <ButtonSpinner />}
+                                Tamamla
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
