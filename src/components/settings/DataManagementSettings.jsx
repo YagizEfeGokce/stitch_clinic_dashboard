@@ -1,92 +1,25 @@
 import { useState } from 'react';
-import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
+import { exportAllData } from '../../lib/exportData';
 
 export default function DataManagementSettings() {
     const { success, error: showError } = useToast();
-    const [loadingApt, setLoadingApt] = useState(false);
-    const [loadingClient, setLoadingClient] = useState(false);
+    const [loadingAll, setLoadingAll] = useState(false);
 
-    const downloadCSV = (content, fileName) => {
-        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', fileName);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    const exportAppointments = async () => {
-        setLoadingApt(true);
+    const handleExportAll = async () => {
+        setLoadingAll(true);
         try {
-            const { data, error } = await supabase
-                .from('appointments')
-                .select(`
-                    id, date, time, status, notes,
-                    service_name,
-                    clients (first_name, last_name, phone, email),
-                    profiles (full_name)
-                `)
-                .order('date', { ascending: false });
-
-            if (error) throw error;
-
-            // Convert to CSV
-            const header = ['ID', 'Tarih', 'Saat', 'Durum', 'Hizmet', 'Müşteri Adı', 'Müşteri Tel', 'Personel', 'Notlar'];
-            const rows = data.map(row => [
-                row.id,
-                row.date,
-                row.time,
-                row.status,
-                row.service_name,
-                row.clients ? `${row.clients.first_name} ${row.clients.last_name}` : 'Bilinmeyen',
-                row.clients?.phone || '',
-                row.profiles?.full_name || 'Atanmamış',
-                (row.notes || '').replace(/,/g, ' ') // Simple CSV escape
-            ]);
-
-            const csvContent = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
-            downloadCSV(csvContent, `randevu_export_${new Date().toISOString().split('T')[0]}.csv`);
-            success('Randevular başarıyla dışa aktarıldı');
+            const result = await exportAllData();
+            if (result.hasErrors) {
+                success('Verileriniz indirildi, ancak bazı tablolar hata içeriyor. Detaylar için hata.txt dosyasına bakın.');
+            } else {
+                success('Verileriniz başarıyla indirildi ✅');
+            }
         } catch (err) {
-            console.error('Export Error:', err);
-            showError('Randevular dışa aktarılamadı');
+            console.error('Export All Error:', err);
+            showError('Dışa aktarma sırasında hata oluştu. Lütfen tekrar deneyin.');
         } finally {
-            setLoadingApt(false);
-        }
-    };
-
-    const exportClients = async () => {
-        setLoadingClient(true);
-        try {
-            const { data, error } = await supabase
-                .from('clients')
-                .select('*')
-                .order('last_name', { ascending: true });
-
-            if (error) throw error;
-
-            const header = ['ID', 'Ad', 'Soyad', 'Telefon', 'E-posta', 'Oluşturulma Tarihi'];
-            const rows = data.map(row => [
-                row.id,
-                row.first_name,
-                row.last_name,
-                row.phone || '',
-                row.email || '',
-                row.created_at
-            ]);
-
-            const csvContent = [header.join(','), ...rows.map(r => r.join(','))].join('\n');
-            downloadCSV(csvContent, `musteri_export_${new Date().toISOString().split('T')[0]}.csv`);
-            success('Müşteriler başarıyla dışa aktarıldı');
-        } catch (err) {
-            console.error('Export Error:', err);
-            showError('Müşteriler dışa aktarılamadı');
-        } finally {
-            setLoadingClient(false);
+            setLoadingAll(false);
         }
     };
 
@@ -102,26 +35,24 @@ export default function DataManagementSettings() {
                     </div>
                     <div className="flex-1">
                         <h4 className="text-slate-900 font-bold mb-1">Verileri Dışa Aktar</h4>
-                        <p className="text-sm text-slate-500 mb-4">Yedekleme veya analiz için klinik verilerinizi CSV formatında indirin.</p>
+                        <p className="text-sm text-slate-500 mb-4">Yedekleme veya analiz için klinik verilerinizi CSV formatında indirin. Finans ve performans verileri aylık olarak gruplandırılmıştır.</p>
 
-                        <div className="flex flex-wrap gap-3">
-                            <button
-                                onClick={exportAppointments}
-                                disabled={loadingApt}
-                                className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm"
-                            >
-                                {loadingApt ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : <span className="material-symbols-outlined text-[18px]">calendar_month</span>}
-                                Randevuları İndir
-                            </button>
-                            <button
-                                onClick={exportClients}
-                                disabled={loadingClient}
-                                className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 text-sm"
-                            >
-                                {loadingClient ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : <span className="material-symbols-outlined text-[18px]">group</span>}
-                                Müşterileri İndir
-                            </button>
-                        </div>
+                        <button
+                            onClick={handleExportAll}
+                            disabled={loadingAll}
+                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loadingAll ? (
+                                <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                            ) : (
+                                <span className="material-symbols-outlined text-[18px]">folder_zip</span>
+                            )}
+                            Tüm Verileri İndir (ZIP)
+                        </button>
+
+                        <p className="text-xs text-slate-400 mt-3">
+                            İçerik: Müşteriler, Hizmetler, Envanter, Randevular, Finans, Performans
+                        </p>
                     </div>
                 </div>
 
