@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useToast } from '../../context/ToastContext';
 import { exportAllData } from '../../lib/exportData';
+import DataImportSection from './DataImportSection';
 
 export default function DataManagementSettings() {
     const { success, error: showError } = useToast();
@@ -57,6 +58,11 @@ export default function DataManagementSettings() {
                 </div>
 
                 <div className="h-px bg-slate-100 w-full"></div>
+
+                <DataImportSection />
+
+                <div className="h-px bg-slate-100 w-full"></div>
+
 
                 <div className="flex items-start gap-4 opacity-50 cursor-not-allowed">
                     <div className="size-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
