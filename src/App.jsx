@@ -9,6 +9,7 @@ import MainLayout from './layouts/MainLayout';
 import AuthProvider, { useAuth } from './context/AuthContext';
 import ToastProvider from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { QueryProvider } from './context/QueryProvider';
 import { ROLES } from './utils/constants';
 import { initAnalytics, trackPageView } from './lib/analytics';
 import { checkBetaAccess } from './middleware/betaGuard';
@@ -198,67 +199,69 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ThemeProvider>
-          <ToastProvider>
-            <Suspense fallback={<LoadingScreen />}>
-              <Routes>
-                {/* Public Booking Route - No Auth Required */}
-                <Route path="/book/:clinicSlug" element={<PublicBookingPage />} />
+        <QueryProvider>
+          <ThemeProvider>
+            <ToastProvider>
+              <Suspense fallback={<LoadingScreen />}>
+                <Routes>
+                  {/* Public Booking Route - No Auth Required */}
+                  <Route path="/book/:clinicSlug" element={<PublicBookingPage />} />
 
-                {/* Public Cancellation Route - No Auth Required */}
-                <Route path="/cancel/:appointmentId/:token" element={<CancelAppointment />} />
+                  {/* Public Cancellation Route - No Auth Required */}
+                  <Route path="/cancel/:appointmentId/:token" element={<CancelAppointment />} />
 
-                {/* Public Routes */}
-                <Route path="/" element={<BetaLanding />} />
-                <Route path="/landing" element={<Navigate to="/" replace />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/auth/confirm" element={<AuthConfirm />} />
-                <Route path="/unauthorized" element={<Unauthorized />} />
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/terms" element={<TermsOfService />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/verify-email" element={<VerifyEmail />} />
-                <Route path="/signup" element={<AcceptInvite />} />
-                <Route path="/beta" element={<BetaLanding />} />
-                <Route path="/beta-signup" element={<BetaSignup />} />
+                  {/* Public Routes */}
+                  <Route path="/" element={<BetaLanding />} />
+                  <Route path="/landing" element={<Navigate to="/" replace />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/auth/confirm" element={<AuthConfirm />} />
+                  <Route path="/unauthorized" element={<Unauthorized />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
+                  <Route path="/signup" element={<AcceptInvite />} />
+                  <Route path="/beta" element={<BetaLanding />} />
+                  <Route path="/beta-signup" element={<BetaSignup />} />
 
-                {/* Protected Routes - Beta Access Required */}
-                <Route element={<BetaProtectedRoute />}>
-                  <Route path="/onboarding" element={<Onboarding />} />
+                  {/* Protected Routes - Beta Access Required */}
+                  <Route element={<BetaProtectedRoute />}>
+                    <Route path="/onboarding" element={<Onboarding />} />
 
-                  {/* Super Admin Routes */}
-                  <Route path="/super-admin" element={<SuperAdminLayout />}>
-                    <Route index element={<AdminDashboard />} />
-                  </Route>
-
-                  {/* Routes Accessible to ALL Authenticated Users (including Staff) */}
-                  <Route element={<AppLayout />}>
-                    <Route path="/overview" element={<Home />} />
-                    <Route path="/schedule" element={<Dashboard />} />
-                    <Route path="/dashboard" element={<Navigate to="/schedule" replace />} />
-                    <Route path="/clients" element={<Clients />} />
-                    <Route path="/clients/:id" element={<ClientProfile />} />
-                    <Route path="/inventory" element={<Inventory />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/support" element={<Support />} />
-
-                    {/* Routes RESTRICTED to Admin, Owner & Doctor */}
-                    <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.OWNER, ROLES.DOCTOR, ROLES.SUPER_ADMIN]} />}>
-                      <Route path="/services" element={<Services />} />
-                      <Route path="/finance" element={<Finance />} />
-                      <Route path="/performance" element={<Performance />} />
-                      <Route path="/book" element={<BookingWizard />} />
+                    {/* Super Admin Routes */}
+                    <Route path="/super-admin" element={<SuperAdminLayout />}>
+                      <Route index element={<AdminDashboard />} />
                     </Route>
 
-                    {/* Fallback */}
-                    <Route path="*" element={<NotFound />} />
+                    {/* Routes Accessible to ALL Authenticated Users (including Staff) */}
+                    <Route element={<AppLayout />}>
+                      <Route path="/overview" element={<Home />} />
+                      <Route path="/schedule" element={<Dashboard />} />
+                      <Route path="/dashboard" element={<Navigate to="/schedule" replace />} />
+                      <Route path="/clients" element={<Clients />} />
+                      <Route path="/clients/:id" element={<ClientProfile />} />
+                      <Route path="/inventory" element={<Inventory />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/support" element={<Support />} />
+
+                      {/* Routes RESTRICTED to Admin, Owner & Doctor */}
+                      <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.OWNER, ROLES.DOCTOR, ROLES.SUPER_ADMIN]} />}>
+                        <Route path="/services" element={<Services />} />
+                        <Route path="/finance" element={<Finance />} />
+                        <Route path="/performance" element={<Performance />} />
+                        <Route path="/book" element={<BookingWizard />} />
+                      </Route>
+
+                      {/* Fallback */}
+                      <Route path="*" element={<NotFound />} />
+                    </Route>
                   </Route>
-                </Route>
-              </Routes>
-            </Suspense>
-          </ToastProvider>
-        </ThemeProvider>
+                </Routes>
+              </Suspense>
+            </ToastProvider>
+          </ThemeProvider>
+        </QueryProvider>
       </AuthProvider>
     </BrowserRouter>
   );

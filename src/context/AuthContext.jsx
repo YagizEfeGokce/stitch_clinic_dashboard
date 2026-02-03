@@ -16,13 +16,20 @@ export default function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [profileLoading, setProfileLoading] = useState(false);
     const loadingRef = useRef(true);
+    // Track if this is the initial profile load (blocks UI) vs background refresh (silent)
+    const isInitialLoadRef = useRef(true);
 
     useEffect(() => {
         loadingRef.current = loading;
     }, [loading]);
 
     const refreshUserData = async (userId, retries = 3) => {
-        setProfileLoading(true);
+        // Only block UI on initial load, not on background refreshes
+        const isInitial = isInitialLoadRef.current;
+        if (isInitial) {
+            setProfileLoading(true);
+        }
+
         try {
             // 1. Fetch Profile First (Simple query, less likely to fail)
             const { data: profileData, error: profileError } = await supabase
@@ -62,6 +69,9 @@ export default function AuthProvider({ children }) {
                         console.warn('Error fetching clinic:', clinicError);
                     }
                 }
+
+                // Mark initial load as complete - future refreshes won't block UI
+                isInitialLoadRef.current = false;
             } else if (retries > 0) {
                 // Retry logic if profile creation is lagging behind auth
                 console.log(`Profile not found, retrying... (${retries})`);
@@ -70,7 +80,9 @@ export default function AuthProvider({ children }) {
         } catch (error) {
             console.error('Fatal error in refreshUserData:', error);
         } finally {
-            setProfileLoading(false);
+            if (isInitial) {
+                setProfileLoading(false);
+            }
         }
     };
 

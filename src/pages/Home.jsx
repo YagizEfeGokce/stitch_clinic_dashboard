@@ -1,139 +1,16 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase'; // Keep for complex queries
-import { appointmentsAPI, clientsAPI, clinicsAPI } from '../lib/api';
-import { getLocalISOString } from '../utils/dateUtils';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ActionCenter from '../components/dashboard/ActionCenter';
 import { HomeSkeleton } from '../components/ui/skeletons';
 import { PageErrorBoundary } from '../components/errors';
+import { useDashboardData } from '../hooks/useDashboardData';
 
 export default function Home() {
     const { user, profile } = useAuth();
-    const [stats, setStats] = useState({
-        appointmentsToday: 0,
-        activeClients: 0,
-        revenueMonth: 0,
-    });
-    const [upcomingAppointments, setUpcomingAppointments] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { stats, upcomingAppointments, loading } = useDashboardData();
 
     // Compute display name safely
     const displayName = profile?.first_name || profile?.full_name?.split(' ')[0] || user?.user_metadata?.full_name?.split(' ')[0] || 'Doctor';
-
-    useEffect(() => {
-        if (user) {
-            fetchDashboardData();
-        }
-    }, [user]);
-
-    const fetchDashboardData = async () => {
-        try {
-            setLoading(true);
-            const today = getLocalISOString();
-
-            // Perform parallel fetching
-            // Note: Profile is handled by AuthContext now
-
-            // Ensure we have a clinic ID to query with
-            if (!profile?.clinic_id) return;
-
-            const todaysAppointmentsPromise = supabase
-                .from('appointments')
-                .select(`
-                    *,
-                    services (duration_min)
-                `, { count: 'exact' })
-                .eq('clinic_id', profile.clinic_id)
-                .eq('date', today)
-                .neq('status', 'Cancelled');
-
-            const activeClientsPromise = supabase
-                .from('clients')
-                .select('*', { count: 'exact', head: true })
-                .eq('clinic_id', profile.clinic_id)
-                .eq('status', 'Active');
-
-            const settingsPromise = supabase
-                .from('clinics')
-                .select('settings_config')
-                .eq('id', profile.clinic_id)
-                .single();
-
-            const upcomingPromise = supabase
-                .from('appointments')
-                .select(`
-                    id, 
-                    date,
-                    time, 
-                    status,
-                    client_id,
-                    clients (first_name, last_name, image_url), 
-                    services (name)
-                `)
-                .eq('clinic_id', profile.clinic_id)
-                .gte('date', today)
-                .neq('status', 'Cancelled')
-                .order('date', { ascending: true })
-                .order('time', { ascending: true })
-                .limit(5);
-
-            // Execute all requests in parallel
-            const [
-                { data: todaysAppointments, count: todayCount },
-                { count: clientCount },
-                { data: clinicData },
-                { data: upcoming }
-            ] = await Promise.all([
-                todaysAppointmentsPromise,
-                activeClientsPromise,
-                settingsPromise,
-                upcomingPromise
-            ]);
-
-            // Name handling removed from here as it's derived from context
-
-            // --- CALCULATE OCCUPANCY RATE ---
-            let occupancyRate = 0;
-            if (clinicData?.settings_config && todaysAppointments) {
-                const { working_days, working_start_hour, working_end_hour } = clinicData.settings_config;
-                const dayName = new Date(today).toLocaleDateString('en-US', { weekday: 'long' });
-
-                // Only calculate if today is a working day and settings exist
-                if (working_days && Array.isArray(working_days) && working_days.includes(dayName)) {
-                    if (working_start_hour && working_end_hour) {
-                        const startHour = parseInt(working_start_hour.split(':')[0]);
-                        const endHour = parseInt(working_end_hour.split(':')[0]);
-                        const totalWorkingMinutes = (endHour - startHour) * 60;
-
-                        if (totalWorkingMinutes > 0) {
-                            const totalBookedMinutes = todaysAppointments.reduce((acc, apt) => {
-                                // Default to 30 mins if service duration is missing
-                                const duration = apt.services?.duration_min || 30;
-                                return acc + duration;
-                            }, 0);
-
-                            occupancyRate = Math.round((totalBookedMinutes / totalWorkingMinutes) * 100);
-                            // Cap at 100% just in case of overbooking
-                            if (occupancyRate > 100) occupancyRate = 100;
-                        }
-                    }
-                }
-            }
-
-            setStats({
-                appointmentsToday: todayCount || 0,
-                activeClients: clientCount || 0,
-                occupancyRate: occupancyRate
-            });
-            setUpcomingAppointments(upcoming || []);
-
-        } catch (error) {
-            console.error('Error fetching home stats:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const getRelativeDateLabel = (dateStr) => {
         const today = new Date().toISOString().split('T')[0];
