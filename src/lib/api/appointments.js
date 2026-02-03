@@ -260,11 +260,20 @@ class AppointmentsAPI extends BaseAPI {
                         id,
                         name,
                         price,
-                        duration_min
+                        duration_min,
+                        color,
+                        category
+                    ),
+                    staff:profiles!staff_id (
+                        id,
+                        full_name,
+                        avatar_url,
+                        role
                     )
                 `)
                 .eq('client_id', clientId)
-                .order('date', { ascending: false });
+                .order('date', { ascending: false })
+                .order('time', { ascending: false });
 
             if (error) throw error;
             return { data, error: null };
