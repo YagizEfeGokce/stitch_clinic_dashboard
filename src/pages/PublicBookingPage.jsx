@@ -7,7 +7,7 @@ import TimeSlotPicker from '../components/public/TimeSlotPicker';
 import PhoneInput, { isValidTurkishPhone } from '../components/public/PhoneInput';
 import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { CheckCircle, AlertCircle, Calendar, Clock, User, Phone, FileText, Sparkles } from 'lucide-react';
+import { CheckCircle, AlertCircle, Calendar, Clock, User, Phone, FileText, Sparkles, Users } from 'lucide-react';
 
 /**
  * PublicBookingPage - Public-facing appointment booking page
@@ -25,11 +25,59 @@ export default function PublicBookingPage() {
         serviceId: '',
         date: '',
         time: '',
+        staffId: null, // null = auto-assign
         notes: ''
     });
     const [formErrors, setFormErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitResult, setSubmitResult] = useState(null); // { success: true/false, message, appointmentId }
+    const [submitResult, setSubmitResult] = useState(null);
+    const [availableStaff, setAvailableStaff] = useState([]);
+    const [loadingStaff, setLoadingStaff] = useState(false);
+
+    // Fetch available staff when date/time changes
+    useEffect(() => {
+        if (clinic?.id && formData.date && formData.time && formData.serviceId) {
+            fetchAvailableStaff();
+        } else {
+            setAvailableStaff([]);
+        }
+    }, [clinic?.id, formData.date, formData.time, formData.serviceId]);
+
+    async function fetchAvailableStaff() {
+        setLoadingStaff(true);
+        try {
+            const { data, error } = await supabasePublic.rpc('get_available_staff', {
+                p_clinic_id: clinic.id,
+                p_date: formData.date,
+                p_time: formData.time + ':00',
+                p_duration_min: selectedService?.duration_min || 30
+            });
+
+            if (!error && data) {
+                setAvailableStaff(data);
+            } else {
+                // Fallback: get all staff if RPC not available
+                const { data: profiles } = await supabasePublic
+                    .from('profiles')
+                    .select('id, full_name, role, avatar_url')
+                    .eq('clinic_id', clinic.id)
+                    .in('role', ['doctor', 'staff', 'owner']);
+
+                setAvailableStaff((profiles || []).map(p => ({
+                    staff_id: p.id,
+                    full_name: p.full_name,
+                    role: p.role,
+                    avatar_url: p.avatar_url,
+                    is_available: true,
+                    unavailable_reason: 'Müsait'
+                })));
+            }
+        } catch (err) {
+            console.error('[PublicBookingPage] Staff fetch error:', err);
+        } finally {
+            setLoadingStaff(false);
+        }
+    }
 
     // Get selected service details
     const selectedService = services.find(s => s.id === formData.serviceId);
@@ -116,15 +164,25 @@ export default function PublicBookingPage() {
                 clientId = newClient.id;
             }
 
-            // 2. Create appointment
+            // 2. Determine staff ID (auto-assign if null)
+            let finalStaffId = formData.staffId;
+            if (!finalStaffId) {
+                const firstAvailable = availableStaff.find(s => s.is_available);
+                if (firstAvailable) {
+                    finalStaffId = firstAvailable.staff_id;
+                }
+            }
+
+            // 3. Create appointment
             const { data: appointment, error: appointmentError } = await supabasePublic
                 .from('appointments')
                 .insert({
                     clinic_id: clinic.id,
                     client_id: clientId,
                     service_id: formData.serviceId,
+                    staff_id: finalStaffId,
                     date: formData.date,
-                    time: formData.time + ':00', // Add seconds for TIME type
+                    time: formData.time + ':00',
                     status: 'Scheduled',
                     booking_source: 'online',
                     notes: formData.notes || null
@@ -160,7 +218,6 @@ export default function PublicBookingPage() {
         }
     }
 
-    // Reset form for new booking
     function handleNewBooking() {
         setFormData({
             fullName: '',
@@ -168,10 +225,12 @@ export default function PublicBookingPage() {
             serviceId: '',
             date: '',
             time: '',
+            staffId: null,
             notes: ''
         });
         setFormErrors({});
         setSubmitResult(null);
+        setAvailableStaff([]);
     }
 
     // Loading state
@@ -415,6 +474,89 @@ export default function PublicBookingPage() {
                             <p className="text-red-500 text-xs mt-2 font-medium">{formErrors.time}</p>
                         )}
                     </section>
+
+                    {/* Staff Selection (Optional - shown after date/time selected) */}
+                    {formData.date && formData.time && (
+                        <section className="bg-white rounded-2xl p-5 shadow-sm">
+                            <h2 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <Users className="w-5 h-5 text-primary" />
+                                Personel Tercihi (İsteğe Bağlı)
+                            </h2>
+
+                            {loadingStaff ? (
+                                <div className="text-center py-4">
+                                    <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+                                    <p className="text-slate-400 text-sm mt-2">Personel yükleniyor...</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {/* No Preference Option */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, staffId: null }))}
+                                        className={`w-full p-4 rounded-xl border text-left transition-all ${formData.staffId === null
+                                                ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                                                : 'border-slate-200 bg-white hover:border-slate-300'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                                                <User className="w-5 h-5 text-slate-400" />
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-slate-800">Fark Etmez</p>
+                                                <p className="text-xs text-slate-500">Müsait personel otomatik atanır</p>
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    {/* Staff List */}
+                                    {availableStaff.filter(s => s.is_available).map((staff) => (
+                                        <button
+                                            key={staff.staff_id}
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, staffId: staff.staff_id }))}
+                                            className={`w-full p-4 rounded-xl border text-left transition-all ${formData.staffId === staff.staff_id
+                                                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                                                    : 'border-slate-200 bg-white hover:border-slate-300'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                {staff.avatar_url ? (
+                                                    <img
+                                                        src={staff.avatar_url}
+                                                        alt={staff.full_name}
+                                                        className="w-10 h-10 rounded-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                        <User className="w-5 h-5 text-primary" />
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <p className="font-semibold text-slate-800">{staff.full_name}</p>
+                                                    <p className="text-xs text-slate-500">
+                                                        {staff.role === 'doctor' ? 'Hekim' :
+                                                            staff.role === 'owner' ? 'Klinik Sahibi' : 'Personel'}
+                                                    </p>
+                                                </div>
+                                                <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                                    Müsait
+                                                </span>
+                                            </div>
+                                        </button>
+                                    ))}
+
+                                    {availableStaff.length === 0 && !loadingStaff && (
+                                        <p className="text-slate-400 text-sm text-center py-4">
+                                            Personel bilgisi yüklenemedi.
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </section>
+                    )}
 
                     {/* Notes (Optional) */}
                     <section className="bg-white rounded-2xl p-5 shadow-sm">

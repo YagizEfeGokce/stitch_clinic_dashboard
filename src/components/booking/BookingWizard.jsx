@@ -1,15 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { Spinner } from '../ui/Spinner';
 import ClientSelection from './ClientSelection';
 import ServiceSelection from './ServiceSelection';
 import DateTimeSelection from './DateTimeSelection';
+import StaffSelector from './StaffSelector';
 import BookingSummary from './BookingSummary';
+
+const TOTAL_STEPS = 5;
 
 export default function BookingWizard() {
     const navigate = useNavigate();
+    const { clinic } = useAuth();
     const { success, error: toastError } = useToast();
     const [step, setStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,11 +22,11 @@ export default function BookingWizard() {
         client: null,
         service: null,
         date: null,
-        time: null
+        time: null,
+        staffId: null // null = auto-assign
     });
 
     const handleNext = (newData) => {
-        // If coming from step 3 (DateTime), allow destructuring
         setData(prev => ({ ...prev, ...newData }));
         setStep(prev => prev + 1);
     };
@@ -31,19 +36,40 @@ export default function BookingWizard() {
         else setStep(prev => prev - 1);
     };
 
+    const handleStaffSelect = (staffId) => {
+        handleNext({ staffId });
+    };
+
     const handleConfirm = async () => {
         if (!data.client || !data.service || !data.time) return;
 
         setIsSubmitting(true);
         try {
-            // Convert time (e.g., "09:00 AM") to 24h format for DB TIME column
+            // Determine staff ID (auto-assign if null)
+            let finalStaffId = data.staffId;
+
+            if (!finalStaffId && clinic?.id) {
+                // Auto-assign: Get first available staff
+                const { data: availableStaff } = await supabase.rpc('get_available_staff', {
+                    p_clinic_id: clinic.id,
+                    p_date: data.date,
+                    p_time: convertTo24Hour(data.time),
+                    p_duration_min: data.service.duration_min || 30
+                });
+
+                const firstAvailable = availableStaff?.find(s => s.is_available);
+                if (firstAvailable) {
+                    finalStaffId = firstAvailable.staff_id;
+                }
+            }
 
             const { error } = await supabase.from('appointments').insert([
                 {
                     client_id: data.client.id,
                     service_id: data.service.id,
                     service_name: data.service.name,
-                    date: data.date, // Use selected date
+                    staff_id: finalStaffId,
+                    date: data.date,
                     time: convertTo24Hour(data.time),
                     status: 'Scheduled'
                 }
@@ -52,7 +78,6 @@ export default function BookingWizard() {
             if (error) throw error;
 
             success('Randevu başarıyla oluşturuldu!');
-            // Redirect to the SPECIFIC DATE of the booking
             navigate(`/schedule?date=${data.date}`);
         } catch (err) {
             console.error('Booking failed:', err);
@@ -63,11 +88,25 @@ export default function BookingWizard() {
     };
 
     const convertTo24Hour = (timeStr) => {
+        // Check if already in 24h format (no AM/PM)
+        if (!timeStr.includes(' ')) {
+            return timeStr.includes(':') ? timeStr + ':00' : timeStr;
+        }
+
         const [time, modifier] = timeStr.split(' ');
         let [hours, minutes] = time.split(':');
         if (hours === '12') hours = '00';
         if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
         return `${hours}:${minutes}:00`;
+    };
+
+    // Step labels for staff selection
+    const stepLabels = {
+        1: 'Hasta Seç',
+        2: 'Hizmet Seç',
+        3: 'Tarih & Saat',
+        4: 'Personel Seç',
+        5: 'Onay'
     };
 
     return (
@@ -79,12 +118,14 @@ export default function BookingWizard() {
                 </button>
                 <div className="flex-1">
                     <h1 className="text-lg font-bold text-slate-900 leading-none">Yeni Randevu</h1>
-                    <p className="text-xs text-slate-500 font-medium">Adım {step} / 4</p>
+                    <p className="text-xs text-slate-500 font-medium">
+                        Adım {step} / {TOTAL_STEPS} - {stepLabels[step]}
+                    </p>
                 </div>
-                <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden">
+                <div className="w-20 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                     <div
                         className="h-full bg-primary transition-all duration-300 ease-out"
-                        style={{ width: `${(step / 4) * 100}%` }}
+                        style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
                     ></div>
                 </div>
             </div>
@@ -94,7 +135,21 @@ export default function BookingWizard() {
                 {step === 1 && <ClientSelection onSelect={(client) => handleNext({ client })} />}
                 {step === 2 && <ServiceSelection onSelect={(service) => handleNext({ service })} />}
                 {step === 3 && <DateTimeSelection onSelect={(dateTime) => handleNext(dateTime)} />}
-                {step === 4 && (
+                {step === 4 && data.date && data.time && (
+                    <div className="max-w-xl mx-auto">
+                        <h2 className="text-xl font-bold text-slate-900 mb-4">Personel Seçin</h2>
+                        <StaffSelector
+                            clinicId={clinic?.id}
+                            selectedDate={data.date}
+                            selectedTime={convertTo24Hour(data.time).slice(0, 5)}
+                            duration={data.service?.duration_min || 30}
+                            value={data.staffId}
+                            onChange={handleStaffSelect}
+                            allowNoPreference={true}
+                        />
+                    </div>
+                )}
+                {step === 5 && (
                     isSubmitting ?
                         <div className="flex flex-col items-center justify-center h-full">
                             <Spinner size="xl" />
@@ -106,3 +161,4 @@ export default function BookingWizard() {
         </div>
     );
 }
+

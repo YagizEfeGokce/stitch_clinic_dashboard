@@ -273,6 +273,54 @@ class AppointmentsAPI extends BaseAPI {
             return { data: null, error: message };
         }
     }
+
+    /**
+     * Set cancellation token for an appointment
+     * @param {string} appointmentId - Appointment ID
+     * @param {string} appointmentDate - Appointment date (YYYY-MM-DD)
+     * @returns {Promise<{token: string|null, error: string|null}>}
+     */
+    async setCancellationToken(appointmentId, appointmentDate) {
+        try {
+            // Generate a new UUID token
+            const token = crypto.randomUUID();
+
+            // Set expiry to 24 hours after the appointment date or 30 days from now (whichever is later)
+            const appointmentExpiry = new Date(appointmentDate);
+            appointmentExpiry.setDate(appointmentExpiry.getDate() + 1); // +24 hours
+
+            const thirtyDaysFromNow = new Date();
+            thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+            const expiryDate = appointmentExpiry > thirtyDaysFromNow ? appointmentExpiry : thirtyDaysFromNow;
+
+            const { error } = await supabase
+                .from('appointments')
+                .update({
+                    cancellation_token: token,
+                    cancellation_token_expires_at: expiryDate.toISOString()
+                })
+                .eq('id', appointmentId);
+
+            if (error) throw error;
+
+            return { token, error: null };
+        } catch (error) {
+            const message = handleError(error, { operation: 'setCancellationToken', appointmentId });
+            return { token: null, error: message };
+        }
+    }
+
+    /**
+     * Generate a cancellation link for an appointment
+     * @param {string} appointmentId - Appointment ID
+     * @param {string} token - Cancellation token
+     * @returns {string} - Full cancellation URL
+     */
+    generateCancellationLink(appointmentId, token) {
+        const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+        return `${baseUrl}/cancel/${appointmentId}/${token}`;
+    }
 }
 
 export const appointmentsAPI = new AppointmentsAPI();
