@@ -9,6 +9,7 @@ import ClientHistoryTimeline from '../components/clients/ClientHistoryTimeline';
 import ConfirmationModal from '../components/ui/ConfirmationModal';
 import { useToast } from '../context/ToastContext';
 import { Spinner } from '../components/ui/Spinner';
+import { calculateAge } from '../lib/utils/age';
 
 export default function ClientProfile() {
     const { id } = useParams();
@@ -255,6 +256,30 @@ export default function ClientProfile() {
                             </a>
                         )}
                     </div>
+
+                    {/* Physical Metrics */}
+                    {(client.birth_date || client.weight_kg || client.height_cm) && (
+                        <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-slate-100">
+                            {client.birth_date && (
+                                <div className="flex items-center gap-1.5 text-slate-600">
+                                    <span className="material-symbols-outlined text-[18px] text-slate-400">cake</span>
+                                    <span className="text-sm font-semibold">{calculateAge(client.birth_date)} yaşında</span>
+                                </div>
+                            )}
+                            {client.weight_kg && (
+                                <div className="flex items-center gap-1.5 text-slate-600">
+                                    <span className="material-symbols-outlined text-[18px] text-slate-400">monitor_weight</span>
+                                    <span className="text-sm font-semibold">{client.weight_kg} kg</span>
+                                </div>
+                            )}
+                            {client.height_cm && (
+                                <div className="flex items-center gap-1.5 text-slate-600">
+                                    <span className="material-symbols-outlined text-[18px] text-slate-400">height</span>
+                                    <span className="text-sm font-semibold">{client.height_cm} cm</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Tab Navigation */}

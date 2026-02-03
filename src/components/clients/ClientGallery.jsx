@@ -62,7 +62,7 @@ export default function ClientGallery({ clientId }) {
                     client_id: clientId,
                     storage_path: fileName,
                     public_url: publicUrl,
-                    caption: file.name,
+                    caption: null,
                     category: 'General'
                 }]);
 
@@ -330,10 +330,12 @@ function Lightbox({ image, onClose }) {
                 />
             </div>
 
-            {/* Caption */}
-            <div className="absolute bottom-6 left-0 right-0 text-center pointer-events-none">
-                <p className="text-white/90 font-medium text-lg drop-shadow-md">{image.caption}</p>
-            </div>
+            {/* Caption - only show if exists */}
+            {image.caption && (
+                <div className="absolute bottom-6 left-0 right-0 text-center pointer-events-none">
+                    <p className="text-white/90 font-medium text-lg drop-shadow-md">{image.caption}</p>
+                </div>
+            )}
         </div>
     );
 }

@@ -29,7 +29,9 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
         phone: '',
         status: 'Active',
         note: '',
-        image_url: ''
+        image_url: '',
+        weight_kg: '',
+        height_cm: ''
     });
 
     useEffect(() => {
@@ -46,7 +48,9 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                     phone: formatPhoneNumber(client.phone || ''),
                     status: client.status || 'Active',
                     image_url: client.image_url || '',
-                    note: ''
+                    note: '',
+                    weight_kg: client.weight_kg || '',
+                    height_cm: client.height_cm || ''
                 });
                 setActiveTab('Profile');
                 fetchHistory(client.id);
@@ -59,7 +63,9 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                     phone: '',
                     status: 'Active',
                     image_url: '',
-                    note: ''
+                    note: '',
+                    weight_kg: '',
+                    height_cm: ''
                 });
                 setActiveTab('Profile');
                 setHistory([]);
@@ -136,7 +142,9 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                 email: formData.email?.trim() || null,
                 phone: formData.phone?.trim() || null,
                 status: formData.status,
-                image_url: finalImageUrl
+                image_url: finalImageUrl,
+                weight_kg: formData.weight_kg ? parseFloat(formData.weight_kg) : null,
+                height_cm: formData.height_cm ? parseFloat(formData.height_cm) : null
             };
 
             if (client) {
@@ -428,6 +436,36 @@ export default function ClientModal({ isOpen, onClose, client, onSuccess }) {
                                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
                                                 <span className="material-symbols-outlined">expand_more</span>
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Physical Metrics */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-700 mb-1.5">Kilo (kg) <span className="text-xs font-normal text-slate-400">(İsteğe Bağlı)</span></label>
+                                            <input
+                                                type="number"
+                                                min="20"
+                                                max="300"
+                                                step="0.1"
+                                                value={formData.weight_kg}
+                                                onChange={e => setFormData({ ...formData, weight_kg: e.target.value })}
+                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all"
+                                                placeholder="65"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-bold text-slate-700 mb-1.5">Boy (cm) <span className="text-xs font-normal text-slate-400">(İsteğe Bağlı)</span></label>
+                                            <input
+                                                type="number"
+                                                min="100"
+                                                max="250"
+                                                step="1"
+                                                value={formData.height_cm}
+                                                onChange={e => setFormData({ ...formData, height_cm: e.target.value })}
+                                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none font-medium transition-all"
+                                                placeholder="170"
+                                            />
                                         </div>
                                     </div>
 
