@@ -47,7 +47,7 @@ export default function PublicBookingPage() {
         if (!formData.phone) {
             errors.phone = 'Telefon numarası gerekli';
         } else if (!isValidTurkishPhone(formData.phone)) {
-            errors.phone = 'Geçerli bir telefon numarası girin';
+            errors.phone = 'Geçersiz telefon numarası. Lütfen 10 haneli bir numara girin (örn: 532 123 45 67)';
         }
 
         if (!formData.serviceId) {

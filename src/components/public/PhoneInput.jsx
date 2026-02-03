@@ -1,48 +1,30 @@
 import { useState, useEffect } from 'react';
+import { sanitizeTurkishPhone, formatPhoneDisplay, isValidTurkishPhone as validatePhone } from '../../lib/utils/phone';
 
 /**
  * PhoneInput - Turkish phone number input with formatting
  * 
- * Display format: 532 222 22 22 (without leading 0)
- * Stored as: +90xxxxxxxxxx
+ * Display format: 532 222 22 22 (with +90 visual prefix)
+ * Stored as: 5XXXXXXXXX (10 digits, no prefix)
  */
 export default function PhoneInput({ value, onChange, error, disabled }) {
     const [displayValue, setDisplayValue] = useState('');
 
-    // Convert stored value (+90...) to display format (no leading 0)
+    // Convert stored value (10-digit) to display format
     useEffect(() => {
-        if (value && value.startsWith('+90')) {
-            const digits = value.slice(3); // Remove +90
+        if (value) {
+            // Handle both old +90 format and new 10-digit format
+            let digits = value;
+            if (value.startsWith('+90')) {
+                digits = value.slice(3);
+            } else if (value.startsWith('90') && value.length > 10) {
+                digits = value.slice(2);
+            }
             setDisplayValue(formatPhoneDisplay(digits));
-        } else if (value) {
-            // Handle if user somehow passed a different format
-            const digits = value.replace(/\D/g, '').replace(/^0+/, '');
-            setDisplayValue(formatPhoneDisplay(digits));
+        } else {
+            setDisplayValue('');
         }
     }, [value]);
-
-    // Format phone for display: 5xx xxx xx xx (no leading 0)
-    function formatPhoneDisplay(input) {
-        // Remove all non-digits and any leading zeros
-        const digits = input.replace(/\D/g, '').replace(/^0+/, '').slice(0, 10);
-
-        if (digits.length <= 3) return digits;
-        if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
-        if (digits.length <= 8) return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
-        return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 8)} ${digits.slice(8, 10)}`;
-    }
-
-    // Normalize phone for storage: +90xxxxxxxxxx
-    function normalizePhone(input) {
-        // Remove all non-digits and leading zeros
-        const digits = input.replace(/\D/g, '').replace(/^0+/, '');
-
-        if (digits.length === 10) {
-            return '+90' + digits;
-        }
-        // Return partial for validation purposes
-        return '+90' + digits.slice(0, 10);
-    }
 
     function handleChange(e) {
         const input = e.target.value;
@@ -51,12 +33,15 @@ export default function PhoneInput({ value, onChange, error, disabled }) {
         const formatted = formatPhoneDisplay(cleanInput);
         setDisplayValue(formatted);
 
-        // Only call onChange if we have a valid-ish number
-        const digits = cleanInput.replace(/\D/g, '');
-        if (digits.length >= 10) {
-            onChange(normalizePhone(cleanInput));
+        // Extract digits for storage
+        const digits = cleanInput.replace(/\D/g, '').slice(0, 10);
+
+        if (digits.length === 10 && digits.startsWith('5')) {
+            // Valid complete number - store as 10-digit format
+            onChange(digits);
         } else if (digits.length > 0) {
-            onChange(normalizePhone(cleanInput)); // Partial for validation
+            // Partial number - pass through for validation feedback
+            onChange(digits);
         } else {
             onChange(''); // Clear if empty
         }
@@ -90,12 +75,16 @@ export default function PhoneInput({ value, onChange, error, disabled }) {
     );
 }
 
-// Export validation helper
+// Re-export validation helper for backward compatibility
 export function isValidTurkishPhone(phone) {
     if (!phone) return false;
-    // Check normalized format +90xxxxxxxxxx
-    if (phone.startsWith('+90') && phone.length === 13) {
-        return /^\+90[5][0-9]{9}$/.test(phone);
+
+    // Handle legacy +90 format for backward compatibility
+    if (phone.startsWith('+90')) {
+        const digits = phone.slice(3);
+        return validatePhone(digits);
     }
-    return false;
+
+    // New 10-digit format
+    return validatePhone(phone);
 }
