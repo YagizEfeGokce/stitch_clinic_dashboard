@@ -60,6 +60,10 @@ The Stitch Clinic Dashboard is designed to help clinics manage their day-to-day 
 - **`src/layouts`**: Page layouts (MainLayout).
 - **`src/lib`**: Third-party library configurations (Supabase).
 - **`src/utils`**: Helper functions and constants.
+- **`database/`**: SQL schemas, seeds, and utility scripts.
+- **`supabase/`**: Supabase CLI migrations and Edge Functions.
+- **`docs/`**: Project documentation and deliverables.
+- **`scripts/`**: Build and utility scripts.
 
 ## 📝 Key Features
 
