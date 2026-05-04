@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dermdesk – Software Architecture Document Version 2</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:     #1e40af;
+      --blue-lt:  #3b82f6;
+      --blue-bg:  #eff6ff;
+      --gray-900: #111827;
+      --gray-700: #374151;
+      --gray-500: #6b7280;
+      --gray-200: #e5e7eb;
+      --gray-100: #f3f4f6;
+      --white:    #ffffff;
+      --code-bg:  #1e293b;
+      --code-fg:  #e2e8f0;
+    }
+
+    body {
+      font-family: 'Georgia', serif;
+      font-size: 11pt;
+      line-height: 1.65;
+      color: var(--gray-900);
+      background: #d1d5db;
+    }
+
+    /* ── Page simulation ── */
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      background: var(--white);
+      margin: 16px auto;
+      padding: 22mm 22mm 24mm 22mm;
+      box-shadow: 0 4px 24px rgba(0,0,0,.18);
+      page-break-after: always;
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: 22pt; color: var(--blue); margin-bottom: 6px; }
+    h2 { font-size: 15pt; color: var(--blue); border-bottom: 2px solid var(--blue); padding-bottom: 5px; margin: 28px 0 14px; }
+    h3 { font-size: 12pt; color: var(--gray-700); margin: 20px 0 8px; }
+    h4 { font-size: 11pt; color: var(--gray-700); margin: 14px 0 6px; font-style: italic; }
+    p  { margin-bottom: 10px; }
+    ul, ol { margin: 8px 0 10px 22px; }
+    li { margin-bottom: 4px; }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 10pt; }
+    th { background: var(--blue); color: var(--white); padding: 7px 10px; text-align: left; font-family: Arial, sans-serif; }
+    td { padding: 6px 10px; border: 1px solid var(--gray-200); vertical-align: top; }
+    tr:nth-child(even) td { background: var(--gray-100); }
+
+    /* ── Code blocks ── */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-fg);
+      padding: 14px 16px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 8.5pt;
+      line-height: 1.55;
+      overflow-x: auto;
+      margin: 12px 0;
+      white-space: pre;
+    }
+    code.inline {
+      background: var(--gray-100);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 9pt;
+    }
+
+    /* ── Mermaid diagrams ── */
+    .diagram-wrap {
+      background: var(--blue-bg);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 18px 14px;
+      margin: 16px 0;
+      overflow-x: auto;
+      text-align: center;
+    }
+    .diagram-wrap .mermaid { display: inline-block; }
+    .diagram-caption {
+      text-align: center;
+      font-size: 9pt;
+      color: var(--gray-500);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* ── Cover page specifics ── */
+    .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 297mm; text-align: center; }
+    .cover-logo { width: 64px; height: 64px; background: var(--blue); border-radius: 16px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; }
+    .cover-logo span { color: white; font-size: 26pt; font-family: Arial; font-weight: bold; }
+    .cover h1 { font-size: 26pt; }
+    .cover .subtitle { font-size: 13pt; color: var(--gray-700); margin: 8px 0 4px; }
+    .cover .meta { font-size: 10pt; color: var(--gray-500); margin: 2px 0; }
+    .cover .divider { width: 60mm; height: 3px; background: var(--blue-lt); margin: 24px auto; }
+    .cover table { margin: 24px auto; width: 80%; }
+    .cover th { font-size: 10pt; }
+
+    /* ── Section header badge ── */
+    .section-badge {
+      display: inline-block;
+      background: var(--blue);
+      color: white;
+      font-size: 9pt;
+      font-family: Arial, sans-serif;
+      padding: 2px 10px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Info box ── */
+    .info-box {
+      background: var(--blue-bg);
+      border-left: 4px solid var(--blue-lt);
+      padding: 10px 14px;
+      margin: 14px 0;
+      border-radius: 0 4px 4px 0;
+      font-size: 10pt;
+    }
+
+    /* ── TOC ── */
+    .toc-entry { display: flex; justify-content: space-between; margin: 5px 0; font-size: 10.5pt; }
+    .toc-entry .dots { flex: 1; border-bottom: 1px dotted var(--gray-200); margin: 0 6px 4px; }
+    .toc-entry.sub { padding-left: 16px; font-size: 10pt; color: var(--gray-700); }
+
+    /* ── Syntax highlight helpers (manual) ── */
+    .kw  { color: #93c5fd; }
+    .fn  { color: #6ee7b7; }
+    .str { color: #fcd34d; }
+    .cmt { color: #94a3b8; font-style: italic; }
+    .num { color: #fb923c; }
+    .cls { color: #f0abfc; }
+
+    /* ── Print ── */
+    @media print {
+      body { background: white; }
+      .page { margin: 0; box-shadow: none; padding: 18mm 18mm 20mm 18mm; }
+      pre { font-size: 7.5pt; }
+    }
+  </style>
+</head>
+<body>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    themeVariables: { primaryColor: '#1e40af', primaryTextColor: '#111827', edgeLabelBackground: '#eff6ff' },
+    fontFamily: 'Arial, sans-serif',
+    fontSize: 13
+  });
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 1 – COVER
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <div class="cover">
+    <div class="cover-logo"><span>D</span></div>
+    <p class="meta" style="margin-bottom:6px;">Software Architecture Course – Bachelor's Project</p>
+    <h1>Dermdesk</h1>
+    <p class="subtitle">Aesthetic Clinic Management System</p>
+    <div class="divider"></div>
+    <p class="subtitle" style="font-weight:bold;">Software Architecture Document (SAD)</p>
+    <p class="subtitle">Version 2.0</p>
+    <p class="meta">Phase 2 – Complete Architecture &amp; Deployment</p>
+    <p class="meta">Date: May 24, 2026</p>
+
+    <table style="margin-top:32px;">
+      <thead>
+        <tr>
+          <th>Team Member</th>
+          <th>Student No.</th>
+          <th>Contribution</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Yağız Efe Gökçe</strong></td>
+          <td>2309111075</td>
+          <td>Frontend architecture, React component design, React Query integration, UI implementation, booking wizard, public booking page</td>
+        </tr>
+        <tr>
+          <td><strong>Kerem Özcan</strong></td>
+          <td>2309111049</td>
+          <td>Backend architecture, Supabase schema design, RLS policy definitions, API layer implementation, authentication flow, inventory &amp; finance modules</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="meta" style="margin-top: 36px;">Architecture Style: Layered SPA + Backend-as-a-Service REST API</p>
+    <p class="meta">Tech Stack: React 19 · Vite · Tailwind CSS · Supabase · React Query</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 2 – TABLE OF CONTENTS
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <h2 style="margin-top:0;">Table of Contents</h2>
+
+  <div class="toc-entry"><span>1. Introduction</span><span class="dots"></span><span>3</span></div>
+  <div class="toc-entry sub"><span>1.1 Purpose of this Document</span><span class="dots"></span><span>3</span></div>
+  <div class="toc-entry sub"><span>1.2 Scope</span><span class="dots"></span><span>3</span></div>
+  <div class="toc-entry sub"><span>1.3 Architecture Style</span><span class="dots"></span><span>3</span></div>
+  <div class="toc-entry sub"><span>1.4 Glossary</span><span class="dots"></span><span>3</span></div>
+
+  <div class="toc-entry" style="margin-top:8px;"><span>2. System Selection</span><span class="dots"></span><span>4</span></div>
+  <div class="toc-entry sub"><span>2.1 Target System Overview</span><span class="dots"></span><span>4</span></div>
+  <div class="toc-entry sub"><span>2.2 System Purpose</span><span class="dots"></span><span>4</span></div>
+  <div class="toc-entry sub"><span>2.3 Users and Stakeholders</span><span class="dots"></span><span>4</span></div>
+  <div class="toc-entry sub"><span>2.4 Core Functionalities</span><span class="dots"></span><span>4</span></div>
+
+  <div class="toc-entry" style="margin-top:8px;"><span>3. Use Case View</span><span class="dots"></span><span>5</span></div>
+  <div class="toc-entry sub"><span>3.1 Actors</span><span class="dots"></span><span>5</span></div>
+  <div class="toc-entry sub"><span>3.2 Use Case Diagram</span><span class="dots"></span><span>5</span></div>
+  <div class="toc-entry sub"><span>3.3 Use Case Descriptions</span><span class="dots"></span><span>6</span></div>
+  <div class="toc-entry sub"><span>3.4 Partial UI Code – Booking Wizard</span><span class="dots"></span><span>7</span></div>
+
+  <div class="toc-entry" style="margin-top:8px;"><span>4. Logical View</span><span class="dots"></span><span>8</span></div>
+  <div class="toc-entry sub"><span>4.1 System Architecture Overview</span><span class="dots"></span><span>8</span></div>
+  <div class="toc-entry sub"><span>4.2 Layered Architecture Diagram</span><span class="dots"></span><span>8</span></div>
+  <div class="toc-entry sub"><span>4.3 Component Class Diagram</span><span class="dots"></span><span>9</span></div>
+  <div class="toc-entry sub"><span>4.4 Database Schema Overview</span><span class="dots"></span><span>10</span></div>
+  <div class="toc-entry sub"><span>4.5 Partial Backend Code – Appointments API</span><span class="dots"></span><span>11</span></div>
+
+  <div class="toc-entry" style="margin-top:8px;"><span>5. Process View</span><span class="dots"></span><span>12</span></div>
+  <div class="toc-entry sub"><span>5.1 Authentication Flow</span><span class="dots"></span><span>12</span></div>
+  <div class="toc-entry sub"><span>5.2 Appointment Creation Flow</span><span class="dots"></span><span>13</span></div>
+  <div class="toc-entry sub"><span>5.3 Public Client Booking Flow</span><span class="dots"></span><span>14</span></div>
+  <div class="toc-entry sub"><span>5.4 Code Snippets</span><span class="dots"></span><span>15</span></div>
+
+  <div class="toc-entry" style="margin-top:8px;"><span>6. Development View</span><span class="dots"></span><span>16</span></div>
+  <div class="toc-entry sub"><span>6.1 Module Organization</span><span class="dots"></span><span>16</span></div>
+  <div class="toc-entry sub"><span>6.2 Component Dependency Diagram</span><span class="dots"></span><span>16</span></div>
+  <div class="toc-entry sub"><span>6.3 Build System &amp; Packaging</span><span class="dots"></span><span>17</span></div>
+  <div class="toc-entry sub"><span>6.4 Code-to-Module Mapping</span><span class="dots"></span><span>18</span></div>
+
+  <div class="toc-entry" style="margin-top:8px;"><span>7. Deployment View</span><span class="dots"></span><span>19</span></div>
+  <div class="toc-entry sub"><span>7.1 Deployment Overview</span><span class="dots"></span><span>19</span></div>
+  <div class="toc-entry sub"><span>7.2 Infrastructure Topology Diagram</span><span class="dots"></span><span>19</span></div>
+  <div class="toc-entry sub"><span>7.3 Environment Configuration</span><span class="dots"></span><span>20</span></div>
+  <div class="toc-entry sub"><span>7.4 Security &amp; Network Boundaries</span><span class="dots"></span><span>20</span></div>
+  <div class="toc-entry sub"><span>7.5 Final Summary</span><span class="dots"></span><span>21</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 3 – INTRODUCTION + SYSTEM SELECTION
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+
+  <!-- SECTION 1 -->
+  <span class="section-badge">Section 1</span>
+  <h2 style="margin-top:4px;">1. Introduction</h2>
+
+  <h3>1.1 Purpose of this Document</h3>
+  <p>This Software Architecture Document (SAD) describes the architecture of <strong>Dermdesk</strong>, a multi-tenant Clinic Relationship Management (CRM) SaaS platform for aesthetic clinics. The document follows the <strong>4+1 architectural view model</strong> and has been produced in two phases. Version 1 (May 4, 2026) covered the Use Case View, Logical View, and Process View. Version 2 (May 24, 2026) extends the document with the Development View and Deployment View, completing all five views required by the 4+1 model.</p>
+
+  <h3>1.2 Scope</h3>
+  <p>Dermdesk is a web-based application that allows aesthetic clinics to manage appointments, clients, staff, inventory, finances, and marketing through a single dashboard. The system also exposes a public booking page per clinic, enabling clients to schedule appointments without creating an account.</p>
+
+  <h3>1.3 Architecture Style</h3>
+  <p>The system follows a <strong>Layered Single-Page Application (SPA) architecture</strong> combined with a <strong>Backend-as-a-Service (BaaS)</strong> model:</p>
+  <ul>
+    <li>The frontend is a React SPA structured into distinct layers: Presentation, Business Logic, and Data Access.</li>
+    <li>The backend is provided by <strong>Supabase</strong> (PostgreSQL database, Auth service, Row-Level Security policies, Realtime subscriptions, and Storage).</li>
+    <li>Communication between the frontend and backend occurs via <strong>RESTful HTTP</strong> (PostgREST) and <strong>WebSocket</strong> (Realtime channels).</li>
+    <li>Multi-tenancy is enforced at the database level using Row-Level Security (RLS) policies scoped to each clinic's unique ID.</li>
+  </ul>
+
+  <h3>1.4 Glossary</h3>
+  <table>
+    <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+    <tbody>
+      <tr><td><strong>SAD</strong></td><td>Software Architecture Document</td></tr>
+      <tr><td><strong>SPA</strong></td><td>Single-Page Application – a web app that loads a single HTML page and updates dynamically</td></tr>
+      <tr><td><strong>BaaS</strong></td><td>Backend-as-a-Service – a cloud platform providing pre-built backend infrastructure</td></tr>
+      <tr><td><strong>RLS</strong></td><td>Row-Level Security – PostgreSQL feature that restricts which rows a user can access</td></tr>
+      <tr><td><strong>JWT</strong></td><td>JSON Web Token – a signed token used for authentication</td></tr>
+      <tr><td><strong>RBAC</strong></td><td>Role-Based Access Control – restricting system access based on user roles</td></tr>
+      <tr><td><strong>Clinic Slug</strong></td><td>A URL-friendly identifier for a clinic (e.g., <code class="inline">my-clinic</code>), used for public booking URLs</td></tr>
+      <tr><td><strong>React Query</strong></td><td>A server-state management library for React that handles caching, background refetching, and synchronisation</td></tr>
+      <tr><td><strong>Vite</strong></td><td>Next-generation frontend build tool using Rollup for production bundling</td></tr>
+      <tr><td><strong>CDN</strong></td><td>Content Delivery Network – geographically distributed edge servers for low-latency static asset delivery</td></tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 2 -->
+  <span class="section-badge">Section 2</span>
+  <h2 style="margin-top:4px;">2. System Selection</h2>
+
+  <h3>2.1 Target System Overview</h3>
+  <p>The selected system is <strong>Dermdesk</strong> — a full-stack CRM and operational management platform designed specifically for aesthetic clinics in Turkey. The platform is delivered as a web SaaS product accessible from any modern browser.</p>
+
+  <h3>2.2 System Purpose</h3>
+  <p>Dermdesk removes the operational burden from clinic owners by centralising appointment scheduling, client records, staff management, inventory tracking, and financial reporting in a single interface. The system also provides each clinic with a shareable public booking link so clients can self-book appointments at any time.</p>
+
+  <h3>2.3 Users and Stakeholders</h3>
+  <table>
+    <thead><tr><th>Stakeholder</th><th>Role</th><th>Interests</th></tr></thead>
+    <tbody>
+      <tr><td>Clinic Owner</td><td>Primary operator; full system access</td><td>Business overview, team control, financial reports</td></tr>
+      <tr><td>Admin</td><td>Delegated manager; full access</td><td>Day-to-day management, scheduling, inventory</td></tr>
+      <tr><td>Doctor</td><td>Clinical staff; appointment &amp; client access</td><td>Schedule, client notes, service catalogue</td></tr>
+      <tr><td>Staff</td><td>Reception / assistant; limited access</td><td>View schedules, manage clients</td></tr>
+      <tr><td>Client</td><td>End customer; no account required</td><td>Book appointments online, receive confirmations</td></tr>
+      <tr><td>Super Admin</td><td>Platform operator</td><td>Manage all clinics, approve beta users, monitor usage</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.4 Core Functionalities</h3>
+  <ul>
+    <li><strong>Appointment Scheduling</strong> – visual daily/weekly calendar with drag-and-drop rescheduling</li>
+    <li><strong>Client Management</strong> – full client profiles including history, photos, medical notes, and physical metrics</li>
+    <li><strong>Public Booking</strong> – per-clinic booking page accessible without authentication via <code class="inline">/book/:clinicSlug</code></li>
+    <li><strong>Service Catalogue</strong> – configurable treatments with pricing, duration, and material requirements</li>
+    <li><strong>Inventory Tracking</strong> – stock management with automatic deduction on appointment completion</li>
+    <li><strong>Financial Reporting</strong> – revenue charts, transaction ledger, KPI cards</li>
+    <li><strong>Team Management</strong> – invite staff by email, assign roles, set availability schedules</li>
+    <li><strong>Performance Analytics</strong> – staff KPIs, client growth charts, campaign effectiveness</li>
+    <li><strong>Role-Based Access Control (RBAC)</strong> – route-level and data-level enforcement</li>
+    <li><strong>Multi-Tenancy</strong> – complete data isolation between clinics via PostgreSQL RLS</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 4 – USE CASE VIEW
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <span class="section-badge">Section 3</span>
+  <h2 style="margin-top:4px;">3. Use Case View</h2>
+
+  <h3>3.1 Actors</h3>
+  <table>
+    <thead><tr><th>Actor</th><th>Type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>Owner / Admin</td><td>Primary</td><td>Clinic operator with full system access; manages team, services, finances, and settings</td></tr>
+      <tr><td>Doctor</td><td>Primary</td><td>Clinical professional; manages appointments and views client records</td></tr>
+      <tr><td>Staff</td><td>Primary</td><td>Reception/assistant role; views schedule and manages basic client data</td></tr>
+      <tr><td>Client (Public)</td><td>Primary</td><td>End customer; interacts only through the unauthenticated public booking and cancellation pages</td></tr>
+      <tr><td>Super Admin</td><td>Secondary</td><td>Platform operator; manages clinic registrations and beta access approvals</td></tr>
+      <tr><td>Supabase Auth</td><td>System</td><td>External authentication service that issues and validates JWT tokens</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.2 Use Case Diagram</h3>
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart LR
+    OWN["Owner / Admin"]
+    DOC["Doctor"]
+    STF["Staff"]
+    CLI["Client (Public)"]
+    SUA["Super Admin"]
+
+    subgraph SYS["Dermdesk System"]
+        direction TB
+        UC1(["Authenticate"])
+        UC2(["Manage Appointments"])
+        UC3(["Manage Clients"])
+        UC4(["Manage Services"])
+        UC5(["Manage Inventory"])
+        UC6(["Financial Tracking"])
+        UC7(["Performance Analytics"])
+        UC8(["Team Management"])
+        UC9(["Settings & Branding"])
+        UC10(["View Dashboard"])
+        UC11(["Public Booking"])
+        UC12(["Cancel Appointment"])
+    end
+
+    OWN --> UC1
+    OWN --> UC2
+    OWN --> UC3
+    OWN --> UC4
+    OWN --> UC5
+    OWN --> UC6
+    OWN --> UC7
+    OWN --> UC8
+    OWN --> UC9
+    OWN --> UC10
+
+    DOC --> UC1
+    DOC --> UC2
+    DOC --> UC3
+    DOC --> UC4
+    DOC --> UC7
+    DOC --> UC10
+
+    STF --> UC1
+    STF --> UC2
+    STF --> UC3
+    STF --> UC10
+
+    CLI --> UC11
+    CLI --> UC12
+
+    SUA --> UC1
+    SUA --> UC8
+    </div>
+  </div>
+  <p class="diagram-caption">Figure 3.1 – Use Case Diagram for Dermdesk</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 5 – USE CASE DESCRIPTIONS
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <h3>3.3 Use Case Descriptions</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Use Case</th><th>Actor(s)</th><th>Precondition</th><th>Main Flow</th><th>Postcondition</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>UC1</td>
+        <td>Authenticate</td>
+        <td>All staff roles, Super Admin</td>
+        <td>User has a registered account</td>
+        <td>User enters email and password; system verifies credentials via Supabase Auth; JWT issued; profile and clinic data loaded; user redirected to dashboard</td>
+        <td>User is authenticated; role and clinic context are available</td>
+      </tr>
+      <tr>
+        <td>UC2</td>
+        <td>Manage Appointments</td>
+        <td>Owner, Admin, Doctor, Staff</td>
+        <td>User is authenticated</td>
+        <td>User opens Schedule; views calendar; creates/edits/cancels appointments via Booking Wizard; status updated (Scheduled → Confirmed → Completed / Cancelled)</td>
+        <td>Appointment record persisted; timeline auto-refreshed via Realtime</td>
+      </tr>
+      <tr>
+        <td>UC3</td>
+        <td>Manage Clients</td>
+        <td>Owner, Admin, Doctor, Staff</td>
+        <td>User is authenticated</td>
+        <td>User opens Clients; creates/edits/views client profile including photos, notes, appointment history, and physical metrics</td>
+        <td>Client record updated in database</td>
+      </tr>
+      <tr>
+        <td>UC4</td>
+        <td>Manage Services</td>
+        <td>Owner, Admin, Doctor</td>
+        <td>User has admin or doctor role</td>
+        <td>User opens Services; adds or edits treatment (name, price, duration, required materials); materials linked to inventory items</td>
+        <td>Service catalogue updated; booking wizard reflects new services</td>
+      </tr>
+      <tr>
+        <td>UC5</td>
+        <td>Manage Inventory</td>
+        <td>Owner, Admin</td>
+        <td>User has owner or admin role</td>
+        <td>User opens Inventory; adds/updates stock items; system auto-deducts stock when appointment is marked Completed</td>
+        <td>Stock levels updated; low-stock warnings visible on dashboard</td>
+      </tr>
+      <tr>
+        <td>UC6</td>
+        <td>Financial Tracking</td>
+        <td>Owner, Admin</td>
+        <td>User has owner or admin role</td>
+        <td>User opens Finance; views revenue chart, KPI cards, and transaction ledger; can add manual transactions</td>
+        <td>Financial data visible; reports exportable</td>
+      </tr>
+      <tr>
+        <td>UC7</td>
+        <td>Performance Analytics</td>
+        <td>Owner, Admin, Doctor</td>
+        <td>User has appropriate role</td>
+        <td>User opens Performance; views staff KPIs, client growth charts, service analytics, and campaign effectiveness</td>
+        <td>Analytics rendered from live data</td>
+      </tr>
+      <tr>
+        <td>UC8</td>
+        <td>Team Management</td>
+        <td>Owner, Super Admin</td>
+        <td>User has owner or super_admin role</td>
+        <td>Owner invites staff by email; invitation token generated and emailed; staff accepts invite and creates account; role assigned</td>
+        <td>New staff member added; profile linked to clinic</td>
+      </tr>
+      <tr>
+        <td>UC9</td>
+        <td>Settings &amp; Branding</td>
+        <td>Owner, Admin</td>
+        <td>User has owner or admin role</td>
+        <td>User opens Settings; updates clinic name, logo, working hours, booking link slug, and notification preferences</td>
+        <td>Clinic configuration persisted; public booking page reflects new branding</td>
+      </tr>
+      <tr>
+        <td>UC10</td>
+        <td>View Dashboard</td>
+        <td>All staff roles</td>
+        <td>User is authenticated</td>
+        <td>User opens Overview; views today's stats, upcoming appointments, quick action buttons, and recent activity feed</td>
+        <td>Dashboard displays real-time clinic data</td>
+      </tr>
+      <tr>
+        <td>UC11</td>
+        <td>Public Booking</td>
+        <td>Client (public, unauthenticated)</td>
+        <td>Clinic has a public slug configured</td>
+        <td>Client visits <code class="inline">/book/:clinicSlug</code>; selects service, date, time, and (optionally) staff member; enters name and phone; submits; confirmation displayed</td>
+        <td>Appointment created with status Scheduled; clinic staff notified</td>
+      </tr>
+      <tr>
+        <td>UC12</td>
+        <td>Cancel Appointment</td>
+        <td>Client (public, unauthenticated)</td>
+        <td>Client holds a valid cancellation link with token</td>
+        <td>Client visits <code class="inline">/cancel/:id/:token</code>; system validates token expiry; appointment status set to Cancelled</td>
+        <td>Appointment cancelled; slot freed; confirmation shown to client</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 6 – PARTIAL UI CODE
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <h3>3.4 Partial UI Code – Booking Wizard</h3>
+  <div class="info-box">
+    The <code class="inline">BookingWizard</code> component (<code class="inline">src/components/booking/BookingWizard.jsx</code>) implements UC2 (Manage Appointments). It is a five-step multi-screen wizard: Client Selection → Service Selection → Date &amp; Time → Staff Selector → Booking Summary. The snippet below shows the state management, step navigation, and appointment submission logic.
+  </div>
+
+<pre><span class="cmt">// src/components/booking/BookingWizard.jsx (excerpt)</span>
+<span class="kw">import</span> { useState } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> { useNavigate } <span class="kw">from</span> <span class="str">'react-router-dom'</span>;
+<span class="kw">import</span> { supabase } <span class="kw">from</span> <span class="str">'../../lib/supabase'</span>;
+<span class="kw">import</span> { useAuth } <span class="kw">from</span> <span class="str">'../../context/AuthContext'</span>;
+<span class="kw">import</span> { useToast } <span class="kw">from</span> <span class="str">'../../context/ToastContext'</span>;
+
+<span class="kw">const</span> TOTAL_STEPS = <span class="num">5</span>; <span class="cmt">// Client → Service → DateTime → Staff → Summary</span>
+
+<span class="kw">export default function</span> <span class="fn">BookingWizard</span>() {
+  <span class="kw">const</span> navigate = <span class="fn">useNavigate</span>();
+  <span class="kw">const</span> { clinic } = <span class="fn">useAuth</span>();
+  <span class="kw">const</span> { success, error: toastError } = <span class="fn">useToast</span>();
+
+  <span class="kw">const</span> [step, setStep] = <span class="fn">useState</span>(<span class="num">1</span>);
+  <span class="kw">const</span> [isSubmitting, setIsSubmitting] = <span class="fn">useState</span>(<span class="kw">false</span>);
+  <span class="kw">const</span> [data, setData] = <span class="fn">useState</span>({
+    client: <span class="kw">null</span>, service: <span class="kw">null</span>,
+    date: <span class="kw">null</span>, time: <span class="kw">null</span>, staffId: <span class="kw">null</span>
+  });
+
+  <span class="cmt">// Advance wizard and merge new step data into shared state</span>
+  <span class="kw">const</span> <span class="fn">handleNext</span> = (newData) => {
+    setData(prev => ({ ...prev, ...newData }));
+    setStep(prev => prev + <span class="num">1</span>);
+  };
+
+  <span class="kw">const</span> <span class="fn">handleConfirm</span> = <span class="kw">async</span> () => {
+    <span class="kw">if</span> (!data.client || !data.service || !data.time) <span class="kw">return</span>;
+    setIsSubmitting(<span class="kw">true</span>);
+
+    <span class="kw">try</span> {
+      <span class="cmt">// Auto-assign first available staff when none is explicitly chosen</span>
+      <span class="kw">let</span> finalStaffId = data.staffId;
+      <span class="kw">if</span> (!finalStaffId &amp;&amp; clinic?.id) {
+        <span class="kw">const</span> { data: available } = <span class="kw">await</span> supabase.<span class="fn">rpc</span>(<span class="str">'get_available_staff'</span>, {
+          p_clinic_id: clinic.id,  p_date: data.date,
+          p_time: <span class="fn">convertTo24Hour</span>(data.time),
+          p_duration_min: data.service.duration_min || <span class="num">30</span>
+        });
+        <span class="kw">const</span> first = available?.<span class="fn">find</span>(s => s.is_available);
+        <span class="kw">if</span> (first) finalStaffId = first.staff_id;
+      }
+
+      <span class="kw">const</span> { error } = <span class="kw">await</span> supabase.<span class="fn">from</span>(<span class="str">'appointments'</span>).<span class="fn">insert</span>([{
+        client_id:    data.client.id,
+        service_id:   data.service.id,
+        service_name: data.service.name,
+        staff_id:     finalStaffId,
+        date:         data.date,
+        time:         <span class="fn">convertTo24Hour</span>(data.time),
+        status:       <span class="str">'Scheduled'</span>,
+        clinic_id:    clinic.id,
+      }]);
+
+      <span class="kw">if</span> (error) <span class="kw">throw</span> error;
+      <span class="fn">success</span>(<span class="str">'Randevu başarıyla oluşturuldu!'</span>); <span class="cmt">// "Appointment created successfully!"</span>
+      <span class="fn">navigate</span>(<span class="str">'/schedule'</span>);
+    } <span class="kw">catch</span> (err) {
+      <span class="fn">toastError</span>(<span class="str">'Randevu oluşturulamadı. Lütfen tekrar deneyin.'</span>);
+    } <span class="kw">finally</span> {
+      setIsSubmitting(<span class="kw">false</span>);
+    }
+  };
+}</pre>
+
+  <div class="info-box">
+    <strong>Architecture note:</strong> The wizard follows a unidirectional data flow pattern — each child step component calls <code class="inline">handleNext(data)</code> to pass its result upward. The parent accumulates all step data before the final Supabase <code class="inline">insert</code> call on confirmation. This keeps step components stateless and independently testable.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 7 – LOGICAL VIEW
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <span class="section-badge">Section 4</span>
+  <h2 style="margin-top:4px;">4. Logical View</h2>
+
+  <h3>4.1 System Architecture Overview</h3>
+  <p>Dermdesk employs a <strong>four-tier layered architecture</strong> on the frontend, backed by the Supabase BaaS platform. All tiers communicate through clearly defined interfaces; no tier skips its neighbour.</p>
+
+  <table>
+    <thead><tr><th>Layer</th><th>Responsibility</th><th>Key Technologies</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Presentation</strong></td><td>Renders UI, handles user events, route-based navigation</td><td>React 19, React Router 7, Tailwind CSS, Framer Motion</td></tr>
+      <tr><td><strong>Business Logic</strong></td><td>Data fetching rules, caching strategies, conflict detection, RBAC enforcement</td><td>React Query (TanStack), Custom Hooks, Route Guards</td></tr>
+      <tr><td><strong>Data Access</strong></td><td>Abstracts Supabase queries into typed API classes; handles errors uniformly</td><td>AppointmentsAPI, ClientsAPI, ServicesAPI, InventoryAPI</td></tr>
+      <tr><td><strong>Data / Backend</strong></td><td>Persistence, authentication, real-time events, file storage, RLS enforcement</td><td>Supabase PostgreSQL, Auth, Realtime, Storage</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.2 Layered Architecture Diagram</h3>
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart TB
+    subgraph PL["Presentation Layer"]
+        direction LR
+        PA[Pages: Dashboard, Clients,\nSchedule, Finance, Services…]
+        PB[Components: BookingWizard,\nTimeline, ClientList…]
+        PC[Layouts: MainLayout\nSuperAdminLayout]
+    end
+
+    subgraph BL["Business Logic Layer"]
+        direction LR
+        BA[Custom Hooks:\nuseAppointments, useDashboardData…]
+        BB[Route Guards:\nProtectedRoute, BetaProtectedRoute]
+    end
+
+    subgraph DA["Data Access Layer"]
+        direction LR
+        DC[API Classes:\nAppointmentsAPI, ClientsAPI,\nServicesAPI, InventoryAPI]
+        DD[Supabase Clients:\nsupabase authenticated\nsupabasePublic anonymous]
+    end
+
+    subgraph SM["State Management"]
+        direction LR
+        SE[AuthContext\nReact Query Cache\nThemeContext / ToastContext]
+    end
+
+    subgraph BE["Supabase BaaS"]
+        direction LR
+        BF[(PostgreSQL + RLS)]
+        BG[Auth Service]
+        BH[Realtime]
+        BI[Storage]
+    end
+
+    PL --> BL
+    PL --> SM
+    BL --> DA
+    SM --> DA
+    DA --> BE
+    </div>
+  </div>
+  <p class="diagram-caption">Figure 4.1 – Layered Architecture of Dermdesk</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 8 – CLASS DIAGRAM
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <h3>4.3 Component Class Diagram</h3>
+  <div class="diagram-wrap">
+    <div class="mermaid">
+classDiagram
+    class BaseAPI {
+        #tableName string
+        +create(data) Promise
+        +update(id, data) Promise
+        +delete(id) Promise
+        +getById(id) Promise
+    }
+
+    class AppointmentsAPI {
+        +getAppointments(clinicId, start, end)
+        +createAppointment(data, checkConflicts)
+        +updateStatus(id, status)
+        +checkStockForCompletion(appointmentId)
+        +setCancellationToken(appointmentId, date)
+        +generateCancellationLink(id, token)
+    }
+
+    class ClientsAPI {
+        +getClients(clinicId)
+        +getClientById(id)
+        +createClient(data)
+        +updateClient(id, data)
+    }
+
+    class ServicesAPI {
+        +getServices(clinicId)
+        +createService(data)
+        +updateService(id, data)
+    }
+
+    class AuthContext {
+        +user User
+        +role string
+        +profile Profile
+        +clinic Clinic
+        +signIn(email, password)
+        +signOut()
+        +signUp(email, password, name)
+        +refreshUserData(userId)
+    }
+
+    class BookingWizard {
+        -step number
+        -data BookingData
+        +handleNext(newData)
+        +handleBack()
+        +handleConfirm()
+    }
+
+    class PublicBookingPage {
+        -formData FormState
+        -availableStaff Staff[]
+        +fetchAvailableStaff()
+        +validateForm()
+        +handleSubmit()
+    }
+
+    BaseAPI <|-- AppointmentsAPI
+    BaseAPI <|-- ClientsAPI
+    BaseAPI <|-- ServicesAPI
+
+    BookingWizard --> AppointmentsAPI : creates appointment
+    BookingWizard --> AuthContext : reads clinic context
+
+    PublicBookingPage --> AppointmentsAPI : inserts booking
+    </div>
+  </div>
+  <p class="diagram-caption">Figure 4.2 – Key Classes and Relationships</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 9 – DATABASE SCHEMA + BACKEND CODE
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <h3>4.4 Database Schema Overview</h3>
+  <p>The database is hosted on Supabase (PostgreSQL 15). All tables have <strong>Row-Level Security (RLS)</strong> enabled, isolating each clinic's data by <code class="inline">clinic_id</code>. The schema follows a <strong>hub-and-spoke multi-tenant model</strong> where <code class="inline">clinics</code> is the root tenant entity.</p>
+
+  <table>
+    <thead><tr><th>Table</th><th>Primary Key</th><th>Key Columns</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><strong>clinics</strong></td><td>id (UUID)</td><td>name, slug, branding_config, subscription_tier, subscription_status</td><td>Tenant root; one row per clinic</td></tr>
+      <tr><td><strong>profiles</strong></td><td>id (UUID → auth.users)</td><td>clinic_id, full_name, role, avatar_url, has_completed_onboarding</td><td>Staff accounts linked to auth users</td></tr>
+      <tr><td><strong>clients</strong></td><td>id (UUID)</td><td>clinic_id, first_name, last_name, email, phone, birth_date, tc_kimlik</td><td>Clinic's client records</td></tr>
+      <tr><td><strong>appointments</strong></td><td>id (UUID)</td><td>clinic_id, client_id, service_id, staff_id, date, time, status, cancellation_token</td><td>Scheduled and historical appointments</td></tr>
+      <tr><td><strong>services</strong></td><td>id (UUID)</td><td>clinic_id, name, description, duration_min, price, color</td><td>Treatment catalogue per clinic</td></tr>
+      <tr><td><strong>inventory</strong></td><td>id (UUID)</td><td>clinic_id, name, stock, unit, low_stock_threshold</td><td>Consumable stock items</td></tr>
+      <tr><td><strong>transactions</strong></td><td>id (UUID)</td><td>clinic_id, amount, type, description, date</td><td>Financial ledger entries</td></tr>
+      <tr><td><strong>invitations</strong></td><td>id (UUID)</td><td>clinic_id, email, role, token, status, expires_at</td><td>Pending team member invitations</td></tr>
+      <tr><td><strong>activity_logs</strong></td><td>id (UUID)</td><td>clinic_id, user_id, action, entity_type, entity_id</td><td>Audit trail of all system actions</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.5 Partial Backend Code – Appointments API</h3>
+  <div class="info-box">
+    The <code class="inline">AppointmentsAPI</code> class (<code class="inline">src/lib/api/appointments.js</code>) wraps all Supabase queries for the <code class="inline">appointments</code> table. The snippet below shows the conflict-aware <code class="inline">createAppointment</code> and the stock-validation logic triggered when completing an appointment.
+  </div>
+<pre><span class="cmt">// src/lib/api/appointments.js (excerpt)</span>
+<span class="kw">class</span> <span class="cls">AppointmentsAPI</span> <span class="kw">extends</span> <span class="cls">BaseAPI</span> {
+
+  <span class="cmt">/** Creates an appointment with optional double-booking guard */</span>
+  <span class="kw">async</span> <span class="fn">createAppointment</span>(appointmentData, checkConflicts = <span class="kw">false</span>) {
+    <span class="kw">try</span> {
+      <span class="kw">if</span> (checkConflicts) {
+        <span class="kw">const</span> { data: conflicts } = <span class="kw">await</span> supabase
+          .<span class="fn">from</span>(<span class="str">'appointments'</span>)
+          .<span class="fn">select</span>(<span class="str">'id'</span>)
+          .<span class="fn">eq</span>(<span class="str">'clinic_id'</span>, appointmentData.clinic_id)
+          .<span class="fn">eq</span>(<span class="str">'date'</span>, appointmentData.date)
+          .<span class="fn">eq</span>(<span class="str">'time'</span>, appointmentData.time)
+          .<span class="fn">not</span>(<span class="str">'status'</span>, <span class="str">'eq'</span>, <span class="str">'Cancelled'</span>);
+
+        <span class="kw">if</span> (conflicts?.length > <span class="num">0</span>)
+          <span class="kw">return</span> { data: <span class="kw">null</span>, error: <span class="str">'Bu tarih ve saatte başka bir randevu mevcut'</span> };
+      }
+      <span class="kw">return</span> <span class="kw">this</span>.<span class="fn">create</span>(appointmentData);
+    } <span class="kw">catch</span> (error) {
+      <span class="kw">return</span> { data: <span class="kw">null</span>, error: <span class="fn">handleError</span>(error) };
+    }
+  }
+
+  <span class="cmt">/** Validates inventory stock before marking an appointment Completed */</span>
+  <span class="kw">async</span> <span class="fn">checkStockForCompletion</span>(appointmentId) {
+    <span class="kw">const</span> { data, error } = <span class="kw">await</span> supabase
+      .<span class="fn">from</span>(<span class="str">'appointment_materials'</span>)
+      .<span class="fn">select</span>(<span class="str">`quantity_used, inventory:inventory_item_id(stock, name, unit)`</span>)
+      .<span class="fn">eq</span>(<span class="str">'appointment_id'</span>, appointmentId)
+      .<span class="fn">eq</span>(<span class="str">'deducted'</span>, <span class="kw">false</span>);
+
+    <span class="kw">if</span> (error) <span class="kw">return</span> { error: <span class="str">'Stok kontrolü yapılamadı'</span>, items: [] };
+
+    <span class="kw">const</span> insufficient = data
+      .<span class="fn">filter</span>(m => m.inventory?.stock &lt; m.quantity_used)
+      .<span class="fn">map</span>(m => ({ name: m.inventory.name, current: m.inventory.stock,
+                   required: m.quantity_used, unit: m.inventory.unit }));
+
+    <span class="kw">return</span> insufficient.length > <span class="num">0</span>
+      ? { error: <span class="str">`Yetersiz stok: `</span> + insufficient.<span class="fn">map</span>(i =>
+            <span class="str">`${i.name} (${i.current} mevcut, ${i.required} gerekli)`</span>).<span class="fn">join</span>(<span class="str">', '</span>),
+          items: insufficient }
+      : { error: <span class="kw">null</span>, items: [] };
+  }
+}</pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 10 – PROCESS VIEW: AUTH FLOW
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <span class="section-badge">Section 5</span>
+  <h2 style="margin-top:4px;">5. Process View</h2>
+
+  <h3>5.1 Authentication Flow</h3>
+  <p>When a user visits any protected route, <code class="inline">AuthContext</code> reacts to Supabase's <code class="inline">onAuthStateChange</code> event stream. The sequence below shows the full login flow from credential entry through to dashboard access.</p>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+sequenceDiagram
+    actor User
+    participant LP as Login Page
+    participant AC as AuthContext
+    participant SA as Supabase Auth
+    participant DB as Supabase DB
+
+    User->>LP: Enter email and password
+    LP->>SA: signInWithPassword(email, password)
+    SA-->>LP: session (JWT + user object)
+    SA--)AC: onAuthStateChange(SIGNED_IN, session)
+    AC->>DB: SELECT * FROM profiles WHERE id = user.id
+    DB-->>AC: profile row (role, clinic_id, full_name)
+    AC->>DB: SELECT * FROM clinics WHERE id = clinic_id
+    DB-->>AC: clinic row (name, settings, subscription)
+    AC-->>App: Publish { user, role, profile, clinic }
+    App->>User: Redirect to /schedule (or /overview for Owner/Admin)
+
+    note over AC: Role determines which routes\nare accessible (RBAC)
+    </div>
+  </div>
+  <p class="diagram-caption">Figure 5.1 – Authentication and Profile Loading Sequence</p>
+
+  <div class="info-box">
+    <strong>3-second failsafe:</strong> If the Supabase auth event does not fire within 3 seconds (e.g., network timeout), <code class="inline">AuthContext</code> forces <code class="inline">loading = false</code> so the UI remains responsive. Token refresh (<code class="inline">TOKEN_REFRESHED</code> event) does not reload the profile to avoid unnecessary database calls.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 11 – PROCESS VIEW: APPOINTMENT CREATION
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <h3>5.2 Appointment Creation Flow</h3>
+  <p>The Booking Wizard collects data across five steps and submits a single atomic insert. When the appointment is persisted, Supabase Realtime broadcasts the change to all open dashboard sessions for the same clinic.</p>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+sequenceDiagram
+    actor Staff
+    participant BW as BookingWizard
+    participant API as AppointmentsAPI
+    participant SDB as Supabase DB
+    participant RT as Realtime Channel
+    participant DS as Dashboard / Schedule
+
+    Staff->>BW: Step 1–4: select client, service, date/time, staff
+    Staff->>BW: Step 5: confirm booking
+    BW->>API: createAppointment(data, checkConflicts=true)
+    API->>SDB: SELECT id FROM appointments WHERE date=? AND time=? AND status≠Cancelled
+    SDB-->>API: [] (no conflict found)
+    API->>SDB: INSERT INTO appointments (clinic_id, client_id, service_id, …)
+    SDB-->>API: new appointment record
+    API-->>BW: { data: appointment, error: null }
+    BW-->>Staff: Toast — "Randevu başarıyla oluşturuldu!"
+    BW->>BW: navigate('/schedule')
+
+    SDB--)RT: Broadcast INSERT event on appointments channel
+    RT--)DS: Invalidate React Query cache (appointments key)
+    DS-->>Staff: Timeline refreshes with new appointment
+    </div>
+  </div>
+  <p class="diagram-caption">Figure 5.2 – Appointment Creation and Real-time Update Sequence</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 12 – PROCESS VIEW: PUBLIC BOOKING
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <h3>5.3 Public Client Booking Flow</h3>
+  <p>The public booking page operates with an <em>anonymous</em> Supabase client (<code class="inline">supabasePublic</code>), which uses the anon key. RLS policies on the <code class="inline">clinics</code> and <code class="inline">services</code> tables allow read-only access without authentication, while the <code class="inline">appointments</code> insert is permitted by a separate RLS policy scoped to the public booking route.</p>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+sequenceDiagram
+    actor Client
+    participant PBP as PublicBookingPage
+    participant Hook as useClinicBySlug
+    participant SPub as supabasePublic (anon)
+    participant DB as Supabase DB
+
+    Client->>PBP: Visit /book/:clinicSlug
+    PBP->>Hook: useClinicBySlug(slug)
+    Hook->>SPub: SELECT id, name, slug, settings FROM clinics WHERE slug=?
+    DB-->>Hook: clinic row
+    Hook->>SPub: SELECT id, name, price, duration_min FROM services WHERE clinic_id=?
+    DB-->>Hook: services array
+    Hook-->>PBP: { clinic, services, loading: false }
+
+    Client->>PBP: Choose service, date, time
+    PBP->>SPub: rpc('get_available_staff', { clinic_id, date, time, duration })
+    DB-->>PBP: available staff list
+    Client->>PBP: Select staff (optional), enter name and phone, submit
+
+    PBP->>PBP: validateForm() — phone format, required fields
+    PBP->>SPub: INSERT INTO appointments (clinic_id, date, time, status='Scheduled', …)
+    DB-->>PBP: created appointment id
+    PBP-->>Client: Show confirmation screen with booking details
+    </div>
+  </div>
+  <p class="diagram-caption">Figure 5.3 – Public Booking Flow (unauthenticated client)</p>
+
+  <h3 style="margin-top: 28px;">5.4 Code Snippets – Authentication Context</h3>
+  <div class="info-box">
+    The <code class="inline">AuthContext</code> (<code class="inline">src/context/AuthContext.jsx</code>) subscribes to Supabase's auth event stream and exposes the authenticated user, role, profile, and clinic to the entire component tree. The snippet below shows the event listener and the <code class="inline">refreshUserData</code> function that loads profile data after sign-in.
+  </div>
+<pre><span class="cmt">// src/context/AuthContext.jsx (excerpt)</span>
+<span class="kw">const</span> { data: { subscription } } = supabase.auth.<span class="fn">onAuthStateChange</span>(
+  <span class="kw">async</span> (event, session) => {
+    <span class="kw">if</span> (!mounted) <span class="kw">return</span>;
+
+    <span class="kw">if</span> ([<span class="str">'SIGNED_IN'</span>, <span class="str">'INITIAL_SESSION'</span>].<span class="fn">includes</span>(event)) {
+      <span class="fn">setUser</span>(session?.user ?? <span class="kw">null</span>);
+      <span class="kw">if</span> (session?.user)
+        <span class="fn">refreshUserData</span>(session.user.id); <span class="cmt">// loads profile + clinic</span>
+    } <span class="kw">else if</span> (event === <span class="str">'SIGNED_OUT'</span>) {
+      <span class="fn">setUser</span>(<span class="kw">null</span>); <span class="fn">setRole</span>(<span class="kw">null</span>);
+      <span class="fn">setProfile</span>(<span class="kw">null</span>); <span class="fn">setClinic</span>(<span class="kw">null</span>);
+    }
+    <span class="fn">setLoading</span>(<span class="kw">false</span>);
+  }
+);
+
+<span class="kw">const</span> <span class="fn">refreshUserData</span> = <span class="kw">async</span> (userId) => {
+  <span class="kw">const</span> { data: profile } = <span class="kw">await</span> supabase
+    .<span class="fn">from</span>(<span class="str">'profiles'</span>).<span class="fn">select</span>(<span class="str">'*'</span>)
+    .<span class="fn">eq</span>(<span class="str">'id'</span>, userId).<span class="fn">maybeSingle</span>();
+
+  <span class="kw">if</span> (profile) {
+    <span class="fn">setProfile</span>(profile);
+    <span class="fn">setRole</span>(profile.role);          <span class="cmt">// 'owner' | 'admin' | 'doctor' | 'staff'</span>
+
+    <span class="kw">const</span> { data: clinic } = <span class="kw">await</span> supabase
+      .<span class="fn">from</span>(<span class="str">'clinics'</span>).<span class="fn">select</span>(<span class="str">'*'</span>)
+      .<span class="fn">eq</span>(<span class="str">'id'</span>, profile.clinic_id).<span class="fn">maybeSingle</span>();
+
+    <span class="kw">if</span> (clinic) <span class="fn">setClinic</span>(clinic);
+  }
+};</pre>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 13 – DEVELOPMENT VIEW: MODULE ORGANIZATION
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <span class="section-badge">Section 6</span>
+  <h2 style="margin-top:4px;">6. Development View</h2>
+
+  <h3>6.1 Module Organization</h3>
+  <p>The Development View describes the static structure of the software source code: how source files are grouped into modules, how those modules depend on one another, and how the build system packages them into deployable artifacts. Dermdesk follows a <strong>feature-based directory structure</strong> inside <code class="inline">src/</code> — each major domain (clients, finance, inventory, etc.) owns its components, while shared infrastructure (API clients, layout shells, utility functions) lives at the root level.</p>
+
+  <table>
+    <thead><tr><th>Module / Directory</th><th>Responsibility</th><th>File Count (approx.)</th></tr></thead>
+    <tbody>
+      <tr><td><code class="inline">src/pages</code></td><td>Top-level route targets (Dashboard, Schedule, Clients, Finance, Settings, PublicBooking, etc.)</td><td>~25</td></tr>
+      <tr><td><code class="inline">src/components/*</code></td><td>Feature-scoped React components: booking, calendar, clients, dashboard, finance, inventory, marketing, onboarding, performance, public, reports, reviews, schedule, services, settings, support</td><td>~180</td></tr>
+      <tr><td><code class="inline">src/components/ui</code></td><td>Reusable generic UI primitives (buttons, modals, tables, skeletons) used across all features</td><td>~35</td></tr>
+      <tr><td><code class="inline">src/components/core</code></td><td>Cross-cutting UI concerns (ErrorBoundary, LoadingOverlay, EmptyState)</td><td>~8</td></tr>
+      <tr><td><code class="inline">src/layouts</code></td><td>Page shell layouts: MainLayout (sidebar + header) and SuperAdminLayout</td><td>2</td></tr>
+      <tr><td><code class="inline">src/context</code></td><td>React Context providers: Auth, Toast, Theme</td><td>3</td></tr>
+      <tr><td><code class="inline">src/hooks</code></td><td>Reusable custom hooks for data fetching, form handling, and UI state</td><td>~20</td></tr>
+      <tr><td><code class="inline">src/lib/api</code></td><td>Typed API wrapper classes extending BaseAPI (Appointments, Clients, Services, Inventory, Finance)</td><td>~8</td></tr>
+      <tr><td><code class="inline">src/lib/supabase.js</code></td><td>Authenticated Supabase client singleton</td><td>1</td></tr>
+      <tr><td><code class="inline">src/utils</code></td><td>Pure utility functions: date formatting, error helpers, constants, validators</td><td>~12</td></tr>
+      <tr><td><code class="inline">src/test</code></td><td>Vitest unit and integration tests</td><td>~15</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.2 Component Dependency Diagram</h3>
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart TB
+    subgraph PRES["Presentation Layer"]
+        direction LR
+        P1[pages/] --> P2[components/feature/]
+        P2 --> P3[components/ui/]
+        P2 --> P4[components/core/]
+        P1 --> P5[layouts/]
+    end
+
+    subgraph LOGIC["Business Logic Layer"]
+        direction LR
+        L1[hooks/] --> L2[context/]
+    end
+
+    subgraph DATA["Data Access Layer"]
+        direction LR
+        D1[lib/api/*API] --> D2[lib/supabase.js]
+        D3[lib/supabasePublic.js]
+    end
+
+    subgraph UTIL["Utilities"]
+        direction LR
+        U1[utils/]
+    end
+
+    PRES --> LOGIC
+    PRES --> UTIL
+    LOGIC --> DATA
+    LOGIC --> UTIL
+    DATA --> U1
+    </div>
+  </div>
+  <p class="diagram-caption">Figure 6.1 – Physical Module Dependencies</p>
+
+  <div class="info-box">
+    <strong>Design principle:</strong> Feature components in <code class="inline">src/components/feature/</code> are prohibited from importing other feature folders directly. Shared communication happens only through the Business Logic layer (hooks/context) or the generic UI layer. This enforces a <em>module boundary</em> that prevents tight coupling between unrelated domains.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 14 – DEVELOPMENT VIEW: BUILD SYSTEM & CODE MAPPING
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <h3>6.3 Build System &amp; Packaging</h3>
+  <p>Dermdesk uses <strong>Vite 7</strong> as the build tool. Vite leverages native ES modules during development for instant hot-module replacement, and uses <strong>Rollup</strong> for optimised production bundling. The production bundle is split into multiple <em>manual chunks</em> to improve caching and reduce initial load time.</p>
+
+  <h4>Build Configuration (<code class="inline">vite.config.js</code>)</h4>
+<pre><span class="kw">import</span> { defineConfig } <span class="kw">from</span> <span class="str">'vite'</span>
+<span class="kw">import</span> react <span class="kw">from</span> <span class="str">'@vitejs/plugin-react'</span>
+
+<span class="kw">export default</span> <span class="fn">defineConfig</span>({
+  plugins: [<span class="fn">react</span>()],
+  build: {
+    chunkSizeWarningLimit: <span class="num">1000</span>,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          <span class="str">'vendor-react'</span>:    [<span class="str">'react'</span>, <span class="str">'react-dom'</span>, <span class="str">'react-router-dom'</span>],
+          <span class="str">'vendor-supabase'</span>: [<span class="str">'@supabase/supabase-js'</span>],
+          <span class="str">'vendor-ui'</span>:       [<span class="str">'framer-motion'</span>, <span class="str">'lucide-react'</span>, <span class="str">'date-fns'</span>],
+          <span class="str">'vendor-charts'</span>:   [<span class="str">'recharts'</span>],
+          <span class="str">'vendor-dnd'</span>:    [<span class="str">'@dnd-kit/core'</span>, <span class="str">'@dnd-kit/utilities'</span>, <span class="str">'@dnd-kit/modifiers'</span>]
+        }
+      }
+    }
+  }
+})</pre>
+
+  <h4>Chunk Strategy</h4>
+  <table>
+    <thead><tr><th>Chunk Name</th><th>Libraries</th><th>Purpose</th><th>Caching</th></tr></thead>
+    <tbody>
+      <tr><td><code class="inline">vendor-react</code></td><td>react, react-dom, react-router-dom</td><td>Core framework; loaded on every route</td><td>Long-term (hash-based filename)</td></tr>
+      <tr><td><code class="inline">vendor-supabase</code></td><td>@supabase/supabase-js</td><td>Backend client; loaded once per session</td><td>Long-term</td></tr>
+      <tr><td><code class="inline">vendor-ui</code></td><td>framer-motion, lucide-react, date-fns</td><td>Animation, icons, date formatting</td><td>Long-term</td></tr>
+      <tr><td><code class="inline">vendor-charts</code></td><td>recharts</td><td>Lazy-loaded on Finance / Performance pages</td><td>Long-term</td></tr>
+      <tr><td><code class="inline">vendor-dnd</code></td><td>@dnd-kit/*</td><td>Drag-and-drop on Schedule page only</td><td>Long-term</td></tr>
+      <tr><td><code class="inline">app.js</code></td><td>All local <code class="inline">src/</code> modules</td><td>Application logic; changes every deploy</td><td>No-cache</td></tr>
+    </tbody>
+  </table>
+
+  <h3>6.4 Code-to-Module Mapping</h3>
+  <p>The following table maps each architectural layer (from the Logical View) to its physical directory and build artifact.</p>
+
+  <table>
+    <thead><tr><th>Architectural Layer</th><th>Physical Directory</th><th>Build Artifact</th><th>Entry Point</th></tr></thead>
+    <tbody>
+      <tr><td>Presentation Layer</td><td><code class="inline">src/pages/</code>, <code class="inline">src/components/</code>, <code class="inline">src/layouts/</code></td><td><code class="inline">app.js</code> (dynamic chunks)</td><td><code class="inline">src/main.jsx</code> → <code class="inline">src/App.jsx</code></td></tr>
+      <tr><td>Business Logic Layer</td><td><code class="inline">src/hooks/</code>, <code class="inline">src/context/</code></td><td><code class="inline">app.js</code></td><td>Imported by pages/components</td></tr>
+      <tr><td>Data Access Layer</td><td><code class="inline">src/lib/api/</code>, <code class="inline">src/lib/supabase.js</code></td><td><code class="inline">app.js</code></td><td>Imported by hooks/context</td></tr>
+      <tr><td>State Management</td><td><code class="inline">src/context/</code>, React Query cache</td><td><code class="inline">vendor-react</code> + <code class="inline">app.js</code></td><td>Root providers in <code class="inline">main.jsx</code></td></tr>
+      <tr><td>Backend / BaaS</td><td>N/A (external service)</td><td>N/A</td><td><code class="inline">https://&lt;project&gt;.supabase.co</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 15 – DEPLOYMENT VIEW: TOPOLOGY
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <span class="section-badge">Section 7</span>
+  <h2 style="margin-top:4px;">7. Deployment View</h2>
+
+  <h3>7.1 Deployment Overview</h3>
+  <p>Dermdesk is deployed as a <strong>static SPA</strong> on <strong>Vercel</strong> (edge CDN + static hosting), with all backend services provided by <strong>Supabase</strong>. There is no custom server or virtual machine managed by the team. The entire stack is serverless:</p>
+  <ul>
+    <li><strong>Frontend</strong> — Vite production build (HTML + JS + CSS) served from Vercel's global CDN.</li>
+    <li><strong>Backend API</strong> — Supabase PostgREST (auto-generated REST API over PostgreSQL) and Supabase Auth endpoints.</li>
+    <li><strong>Realtime</strong> — Supabase Realtime WebSocket channels for live appointment updates.</li>
+    <li><strong>Storage</strong> — Supabase Storage buckets for client photos and clinic logos.</li>
+    <li><strong>Edge Functions</strong> — One Supabase Edge Function (<code class="inline">send-invite</code>) for transactional email delivery via Resend.</li>
+  </ul>
+
+  <h3>7.2 Infrastructure Topology Diagram</h3>
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart LR
+    subgraph CLIENT["Client Layer"]
+        B1[Web Browser\nChrome / Safari / Firefox]
+        B2[Mobile Browser\niOS / Android]
+    end
+
+    subgraph EDGE["Vercel Edge Network"]
+        V1[Vercel CDN\nStatic Asset Cache]
+        V2[Vercel Edge\nRouting / Rewrites]
+    end
+
+    subgraph SUPA["Supabase Platform"]
+        S1[(PostgreSQL 15\nRow-Level Security)]
+        S2[Auth Service\nJWT / OAuth / Magic Link]
+        S3[Realtime\nWebSocket Broadcast]
+        S4[Storage\nImage Buckets + RLS]
+        S5[Edge Functions\nNode.js Runtime]
+    end
+
+    subgraph THIRD["Third-Party Services"]
+        T1[Resend API\nTransactional Email]
+    end
+
+    B1 -->|HTTPS GET| V1
+    B2 -->|HTTPS GET| V1
+    V1 -->|SPA Bundle| B1
+    V2 -->|/book/* → index.html| V1
+
+    B1 -->|HTTPS POST / REST| S1
+    B1 -->|HTTPS POST| S2
+    B1 -->|WSS| S3
+    B1 -->|HTTPS PUT| S4
+
+    S5 -->|HTTPS POST| T1
+    </div>
+  </div>
+  <p class="diagram-caption">Figure 7.1 – Physical Deployment Topology for Dermdesk</p>
+
+  <div class="info-box">
+    <strong>SPA routing note:</strong> Because Dermdesk is a single-page application, all URL paths (e.g., <code class="inline">/schedule</code>, <code class="inline">/book/my-clinic</code>) must be rewritten to <code class="inline">index.html</code> at the edge. This is handled by <code class="inline">vercel.json</code> (see Section 7.3).
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE 16 – DEPLOYMENT VIEW: CONFIG + SECURITY + SUMMARY
+═══════════════════════════════════════════════════════════════ -->
+<div class="page">
+  <h3>7.3 Environment Configuration</h3>
+  <p>All environment-specific secrets and endpoints are injected at build time via Vercel's dashboard (Settings → Environment Variables). The same variables are listed in <code class="inline">.env.example</code> for local development.</p>
+
+  <table>
+    <thead><tr><th>Variable</th><th>Provider</th><th>Purpose</th><th>Scope</th></tr></thead>
+    <tbody>
+      <tr><td><code class="inline">VITE_SUPABASE_URL</code></td><td>Supabase</td><td>Project API endpoint (PostgREST, Auth, Realtime)</td><td>Build-time (Vite prefix)</td></tr>
+      <tr><td><code class="inline">VITE_SUPABASE_ANON_KEY</code></td><td>Supabase</td><td>Anonymous client key for public (RLS-gated) queries</td><td>Build-time (Vite prefix)</td></tr>
+      <tr><td><code class="inline">VITE_RESEND_API_KEY</code></td><td>Resend</td><td>API key for transactional email (invitations, confirmations)</td><td>Build-time (Vite prefix)</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Vercel Deployment Configuration (<code class="inline">vercel.json</code>)</h4>
+<pre>{
+  <span class="str">"rewrites"</span>: [
+    {
+      <span class="str">"source"</span>: <span class="str">"/(.*)"</span>,
+      <span class="str">"destination"</span>: <span class="str">"/index.html"</span>
+    }
+  ]
+}</pre>
+
+  <h3>7.4 Security &amp; Network Boundaries</h3>
+  <table>
+    <thead><tr><th>Layer</th><th>Mechanism</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>Transport</td><td>TLS 1.3 (HTTPS)</td><td>All client↔server and server↔server traffic is encrypted in transit</td></tr>
+      <tr><td>Authentication</td><td>JWT (Supabase Auth)</td><td>Short-lived access tokens + refresh tokens; revoked on sign-out</td></tr>
+      <tr><td>Data Access</td><td>PostgreSQL RLS</td><td>Every query is scoped to the authenticated user's <code class="inline">clinic_id</code>; cross-tenant leakage is impossible by policy</td></tr>
+      <tr><td>File Access</td><td>Storage RLS</td><td>Image buckets enforce read/write rules based on clinic ownership</td></tr>
+      <tr><td>Edge Functions</td><td>Supabase Secrets</td><td>API keys (e.g., Resend) are stored in Supabase vault, not in client bundle</td></tr>
+      <tr><td>Build Leakage</td><td>Vite <code class="inline">import.meta.env</code></td><td>Only variables prefixed with <code class="inline">VITE_</code> are embedded; service-role keys are never exposed</td></tr>
+      <tr><td>CORS</td><td>Supabase Dashboard</td><td>Allowed origins restricted to the Vercel production domain</td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.5 Final Summary</h3>
+  <p>This Software Architecture Document has presented the complete <strong>4+1 architectural view model</strong> for Dermdesk, a multi-tenant Clinic CRM SaaS platform:</p>
+
+  <table>
+    <thead><tr><th>View</th><th>Section</th><th>Key Artifacts</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Use Case View</strong></td><td>Section 3</td><td>6 actors, 12 use cases, Mermaid use-case diagram, BookingWizard code snippet</td></tr>
+      <tr><td><strong>Logical View</strong></td><td>Section 4</td><td>4-tier layered architecture diagram, class diagram, database schema table, AppointmentsAPI code snippet</td></tr>
+      <tr><td><strong>Process View</strong></td><td>Section 5</td><td>3 sequence diagrams (auth, appointment creation with Realtime, public booking), AuthContext code snippet</td></tr>
+      <tr><td><strong>Development View</strong></td><td>Section 6</td><td>Module organization table, component dependency diagram, Vite build configuration with manual chunks, code-to-module mapping</td></tr>
+      <tr><td><strong>Deployment View</strong></td><td>Section 7</td><td>Vercel + Supabase topology diagram, environment variables table, security boundaries table, vercel.json configuration</td></tr>
+    </tbody>
+  </table>
+
+  <div class="info-box" style="margin-top:20px;">
+    <strong>End of SAD Version 2.0</strong> — This document concludes the Software Architecture bachelor's project for Dermdesk. All five views of the 4+1 model have been described with diagrams, tables, and partial code excerpts drawn from the production codebase.
+  </div>
+</div>
+
+</body>
+</html>

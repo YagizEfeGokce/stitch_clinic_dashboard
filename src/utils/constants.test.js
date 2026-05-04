@@ -8,6 +8,7 @@ describe('Application Constants', () => {
             expect(ROLES.ADMIN).toBe('admin');
             expect(ROLES.DOCTOR).toBe('doctor');
             expect(ROLES.STAFF).toBe('staff');
+            expect(ROLES.SUPER_ADMIN).toBe('super_admin');
         });
 
         it('should have string values', () => {
@@ -15,10 +16,11 @@ describe('Application Constants', () => {
             expect(typeof ROLES.ADMIN).toBe('string');
             expect(typeof ROLES.DOCTOR).toBe('string');
             expect(typeof ROLES.STAFF).toBe('string');
+            expect(typeof ROLES.SUPER_ADMIN).toBe('string');
         });
 
-        it('should have 4 roles defined', () => {
-            expect(Object.keys(ROLES)).toHaveLength(4);
+        it('should have 5 roles defined', () => {
+            expect(Object.keys(ROLES)).toHaveLength(5);
         });
     });
 
