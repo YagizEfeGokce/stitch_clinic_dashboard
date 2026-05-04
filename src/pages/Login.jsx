@@ -164,6 +164,34 @@ export default function Login() {
                         </button>
                     </form>
 
+                    {/* Demo Account Card */}
+                    <div className="mt-6 p-4 rounded-2xl bg-teal-50 border border-teal-100">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="material-symbols-outlined text-primary text-xl">badge</span>
+                            <span className="text-sm font-bold text-slate-700">Demo Hesabı</span>
+                        </div>
+                        <div className="space-y-2 mb-4">
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-slate-500 font-medium">E-posta</span>
+                                <span className="font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200">demo@dermdesk.net</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-slate-500 font-medium">Şifre</span>
+                                <span className="font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200">demo123456!</span>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setEmail('demo@dermdesk.net');
+                                setPassword('demo123456!');
+                            }}
+                            className="w-full py-2.5 rounded-xl bg-white border border-teal-200 text-primary font-bold text-sm hover:bg-teal-100 transition-colors"
+                        >
+                            Demo Bilgilerini Doldur
+                        </button>
+                    </div>
+
                     {/* Waitlist Link */}
                     <div className="mt-6 text-center">
                         <p className="text-sm text-slate-500">
