@@ -211,7 +211,7 @@ function App() {
                   <Route path="/cancel/:appointmentId/:token" element={<CancelAppointment />} />
 
                   {/* Public Routes */}
-                  <Route path="/" element={<BetaLanding />} />
+                  <Route path="/" element={<LandingPage />} />
                   <Route path="/landing" element={<Navigate to="/" replace />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/auth/confirm" element={<AuthConfirm />} />
@@ -222,8 +222,8 @@ function App() {
                   <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/verify-email" element={<VerifyEmail />} />
                   <Route path="/signup" element={<AcceptInvite />} />
-                  <Route path="/beta" element={<BetaLanding />} />
-                  <Route path="/beta-signup" element={<BetaSignup />} />
+                  <Route path="/beta" element={<Navigate to="/" replace />} />
+                  <Route path="/beta-signup" element={<Navigate to="/" replace />} />
 
                   {/* Protected Routes - Beta Access Required */}
                   <Route element={<BetaProtectedRoute />}>
